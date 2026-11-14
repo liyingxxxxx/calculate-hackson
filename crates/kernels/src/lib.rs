@@ -8,6 +8,8 @@
 //! | [`timestep_embed!`] | 时间步嵌入 `[cos(t·f), sin(t·f)]`（f32 规约 + sin / cos 近似） | 新写（DESIGN D7） |
 //! | [`group_norm!`] | GroupNorm（NCHW，可带 SiLU），可选 `parts = N` 显式给段数（小组时控住 docc 展开的代码量，DESIGN F22） | 抄 calblas `group_norm!`，加 `parts`（VENDORED.md） |
 //! | [`gn_stats!`] / [`gn_apply!`] | NHWC 原生的 GroupNorm（+ SiLU），直接在带边框的图上算、不转排布：统计一遍、归一一遍，中间一条屏障 | 新写（DESIGN D16） |
+//! | [`ln_nhwc!`] | NHWC 原生的 LayerNorm（每像素沿通道），直接在带边框的图上算、只写内部 | 新写（DESIGN D18） |
+//! | [`geglu!`] | GEGLU 的后半 `y = h · gelu(g)`（torch 精确 GELU，A&S 7.1.26），逐元素 | 算式抄 calblas `act!(gelu_erf)`（VENDORED.md） |
 //! | [`attn_wide!`] | 头维宽（> 256）的自注意力，头维按 128 一段切（正式 VAE 中间块：单头 512 维） | 抄 calblas `attention!` / `spatial_attn!` 改（VENDORED.md，DESIGN D14） |
 //!
 //! 宏里经 `$crate::calblas::…` 用 calblas 的片段（`halves!`、`rd!`、`Cols`……），所以调用方只要依赖 `npu`（`#[npu::kernel]` 展开成 `::npu::…`）和本 crate。
@@ -18,9 +20,10 @@ pub use calblas;
 mod attn;
 mod conv;
 mod gn;
+mod ln;
 mod norm;
 mod pointwise;
 mod temb;
 pub use conv::conv_tile;
-pub use gn::gn_px;
+pub use gn::{gn_px, GN_CC};
 pub use temb::temb_len;

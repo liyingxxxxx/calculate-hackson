@@ -145,7 +145,8 @@ macro_rules! conv2d {
         } else if TILED {
             // （本仓加）列块快路：每块 WT 个输出像素；输入的 K 段（第 oy + ky 行、从第 x0 列起 WS 个像素）依次铺进 VB
             // ⇒ 抽头 (ky, kx)、块内第 p 个像素 ⇒ VB 的第 ky · WS + kx + p 行（同快路，只是行长从 WI 换成 WS）
-            const NT: usize = W / WT;
+            // 不走这条路时 WT 是 0：常量照样要算（Rust 不跳过死分支里的 const），所以除数取 1（2026-11-14 UNet 的 32² 以下卷积踩到）
+            const NT: usize = if WT > 0 { W / WT } else { 1 };
             const WS: usize = WT + K - 1;
             const G4T: usize = WT / 64;
             let xin = vcache::<bf16, _>([K * WS, CI]);

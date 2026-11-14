@@ -8,7 +8,7 @@
 | A1 | 新写的算子（quick_gelu、erf-GELU / GEGLU、时间步嵌入、NHWC GroupNorm+SiLU……），各配独立参照与边界测试 | 进行中：时间步嵌入**真机实测**过了（2026-11-14 npu3；cos_approx 分辨率 1/128，DESIGN F19）；quick_gelu、NHWC GroupNorm 未写 |
 | B1 | VAE 解码上 NPU（先 TAESD，再正式 VAE），接进 ComfyUI | ✅ 2026-11-14：TAESD 与正式 VAE 都**真机跑通**、ComfyUI 解码走 npu；正式 VAE 优化后 0.98 s，比 CPU 快约 1.75 倍（V7） |
 | B2 | CLIP 文本编码器上 NPU | |
-| B3 | UNet 一次前向对 diffusers | |
+| B3 | UNet 一次前向对 diffusers | 进行中：U0 可行性探针、U1 独立参照做完（2026-11-14） |
 | B4 | ComfyUI 原生工作流 512² 出图（去噪循环在设备上，见 DESIGN D2） | |
 | B5 | 性能、多尺寸档位、一键拉起、文档 | |
 
@@ -155,6 +155,20 @@ UNet（B3）几乎全要用 ⇒ 先在一个「只跑一次前向、好对 diffu
       每一步都对参照（58.3 / 56.9 dB）、3 遍逐字节一致。**比同机 CPU fp32（1.71 s）快约 1.75 倍**；ComfyUI 的 VAE 节点 5.89 ⇒ 0.99 s。
       结果在 `test/results/npu3-20261114/vae-opt/`（含三份逐 kernel 计时），性能表在 `test/PERF.md`。
 - [ ] V8 还能抠的：GroupNorm 统计那一遍（512² 一次约 20 ms，3.5–6.5 GB/s）、`attn_wide!`（0.51 TFLOPS）、把注意力那一段也并进去（要先把它的 GN 换成 NHWC 版）。
+
+## B3 UNet 一次前向上 NPU（2026-11-14 开始；计划在 DESIGN D18 / D19）
+
+- [x] 2026-11-14 U0 可行性探针（DESIGN F25）：UNet 要用的卷积（35 种形状）、带边框 token 的注意力（自 / 交叉，4 种分辨率）、上下文 k / v 的 `linear!`、
+      LayerNorm、宽通道的 GroupNorm、GEGLU 全部编得过。为此：修了列块快路在 W < 64 时除以 0 的 bug（TAESD、VAE 编出来逐字节不变）；
+      NHWC GroupNorm 改成通道按 64 一段（支持 320–2560 通道；VAE 换上之后**真机重测**：58.3 / 56.9 dB、3 遍逐字节一致、0.98 s，和原来一样）；
+      新写 `ln_nhwc!`（NHWC LayerNorm）与 `geglu!`（GEGLU 的后半），都还没上卡。
+- [x] 2026-11-14 U1 独立参照 `ref/unet_ref.py`：diffusers fp32 与按 D18 的切法逐 kernel 舍 bf16 的参照（时间步投影折进 conv1 的 bias、投影当 1×1 卷积、GEGLU 拆开）。
+      `python -I ref/unet_ref.py`：bf16 参照对 fp32 —— t = 999、500.5 时余弦 ≥ 0.999996、信噪比 51–52 dB，t = 1 时 41 dB（有提示词、空提示词一样）；CPU 上一次 fp32 约 1 s。
+- [ ] U2 时间步那一路：`timestep_embed!`（已有）⇒ `linear!` 320（补到 384）→ 1280 ⇒ SiLU ⇒ 1280 → 1280 ⇒ SiLU ⇒ 全部 ResNet 的 time_emb_proj 一次算完 ⇒ 加进各 conv1 的 f32 bias（小 kernel）。
+- [ ] U3 偏移表与切段：先按探针的代码量估每段 < 1 MB（约 6–8 段），跳连的图按通道窗口放、跨段经主机转手。
+- [ ] U4 整步程序 `crates/unet` + 打包 `host/sd15npu/unet.py` + 模拟器认新模板（`ln_nhwc`、`geglu`、`attention`）⇒ 模拟对两份参照。
+- [ ] U5 上板（负责人点头）：先单 kernel（ln_nhwc、geglu、带边框 token 的注意力），再整个 UNet，量每步时间。
+- [ ] U6 ComfyUI：自定义 MODEL（`apply_model` 调 NPU 的 UNet，每步一次、CFG 两路同一次调用）⇒ 原生 KSampler 照用；再看要不要把去噪循环放进设备（D2 / D19）。
 
 之后：B2 CLIP（LLM 式模板现成：`layer_norm!`、`linear!`、`attention!(mask = full)`；新写 quick_gelu）⇒ B3 UNet 一次前向 ⇒ B4 去噪循环进设备（D2）⇒ B5 性能与多尺寸。
 

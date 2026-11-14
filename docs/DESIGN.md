@@ -42,6 +42,8 @@
 
 | F24 | **真机实测**（`tools/prof.py`：每个 kernel 在卡上就地连调 4 遍，扣掉一次调用的固定开销）：正式 VAE 原来 5.18 s 里，**排布转换（`nhwc_to_nchw!` / `nchw_to_nhwc!`）只有约 1.3 GB/s，合计约 2.7 s**（512² × 256 通道一次 0.2 s），calblas `group_norm!` 约 6 GB/s、合计约 0.8 s，原路卷积 1.75–2.6 TFLOPS、合计约 1.25 s，64² 的快路卷积 3.5–5 TFLOPS，`attn_wide!` 0.51 TFLOPS（67 ms）。卷积换成列块快路之后 4.2–4.6 TFLOPS | `out/prof/board-before.json`、`board-tiled.json`、`board-gn.json`；`test/PERF.md` | 先换掉 GroupNorm 的排布转换（D16），再是卷积的列块快路（`sd_kernels::conv2d!`），然后并段（D17）。5.18 ⇒ 4.51 ⇒ 1.23 ⇒ 0.98 s |
 
+| F25 | UNet 要用的 kernel，docc 0.4.1 收不收（2026-11-14 探针，只编不跑）：35 种卷积形状都收（列块快路修了「W < 64 时除以 0」之后；3×3 代码 15–254 KB，Cin 1280 以上走分段的原路）；`attention!` 把**带边框的图当 token**（64² 是 68² = 4624 ⇒ 补到 4736）、头维 40 / 80 补零到 64 / 96（scale 给真头维）、交叉注意力 77 个 key 补到 128，自注意力 / 交叉注意力 4 种分辨率都收（19–173 KB）；`linear!` 多行要 K、N 是 128 的倍数（320 不是）⇒ 投影一律当 1×1 卷积；calblas `layer_norm!` 在 64² × 320 不收 ⇒ 新写 `ln_nhwc!`；NHWC GroupNorm 原来那版在 320 / 1920 / 2560 通道不收（VU 与标量运算的行宽、VB 放不下）⇒ 改成通道按 64 一段（`[PX, C/64, 64]`）；卷积尾处理并 gelu 时 VB 放不下 ⇒ GEGLU 另写逐元素的 `geglu!` | `$CALCULET_HOME/work/vprobe`（`u_*` 探针） | UNet 全程在带边框的 NHWC 图上算（D18），不在图与稠密 token 之间来回搬 |
+
 calBLAS 文档里写的、我们还没亲自核的（上板时核）：KS1 的 exp / rsqrt 是查表近似（≤ 1 ULP），除法精确；DDR 实测约 84 GB/s；
 35B（21 GB）光部署权重 195 秒（粗算 0.1 GB/s 量级）。
 
@@ -84,6 +86,9 @@ calBLAS 文档里写的、我们还没亲自核的（上板时核）：KS1 的 e
 
 - **D16 GroupNorm 直接在 NHWC 上算**（取代 D13 的三步，`sd_kernels::gn_stats!` / `gn_apply!`）：统计一遍（每核每通道的 Σx、Σx² 写进 [4][C] 的中转）⇒ 屏障 ⇒ 归一一遍（按组合成 mean / rstd，折成每通道的 a、b'，`y = SiLU(x · a + b')`，只写内部）。读两遍、写一遍；w、b 是 `[C]`，不再展开。组内求和用一张 `[32][C]` 的 0 / 1 掩码（每组只有 4 个通道时 docc 不收沿最后一维的归约与转置）。方差用 E[x²] − mean²（f32），比 calblas 的两遍法少读一遍，精度由模拟对参照与真卡对参照守着（真卡 58.3 dB，和换之前一样）。代码也小：一对约 25 KB（calblas 的 64² 那个 292 KB）。只有注意力前面那个（不带 SiLU、后面要转成 token）还走 D13。
 - **D17 正式 VAE 并成 3 段**（取代 D15 的 6 段）：D16 之后 s3–s6 合起来只有约 580 KB 代码，并成一段，128² 以上的大特征图（66–130 MB）不再经主机转手。s2（注意力，910 KB）还单独一段。
+
+- **D18 UNet 全程在带边框的 NHWC 图上算**：ResNet 同 VAE（NHWC GroupNorm + SiLU、列块快路卷积）；Transformer 的 LayerNorm 用 `ln_nhwc!`，q / k / v / to_out / 前馈的投影都当 1×1 卷积（只要 16 的倍数，320 通道也行），注意力把整张带边框的图当 token、边框与补齐的 key 用掩码去掉（多算的 query 写到输出图的边框与余量里，只被 1×1 卷积按内部读），头维补零到 32 的倍数；交叉注意力的 k / v 是上下文过 `linear!`；GEGLU 是两个 1×1 卷积 + `geglu!`。时间步：`timestep_embed!` ⇒ 两层 `linear!`（320 补到 384）⇒ 一次把全部 ResNet 的 time_emb_proj 算出来、加进各自 conv1 的 f32 bias（不另走一遍整图）。跳连的拼接靠通道窗口（D3）。参照 `ref/unet_ref.py` 照这个切法舍 bf16。
+- **D19 UNet 先「每步调一次」，量清楚再定要不要把去噪循环放进设备**：UNet bf16 权重 1.6 GB，按实测的部署速度（约 3.5 GB/s）一次部署约 0.45 s；代码量估计要切 6–8 段（每段 < 1 MB，F22），每段每次调用都要部署自己那份权重 ⇒ 每步至少 0.45 s 的部署，CFG 两路放进同一次调用里共用。粗估每步 0.45 + 2 × 0.4 s ≈ 1.25 s，20 步约 25 s（现在 CPU 上约 49 s）。权重能常驻（要问组委会，F1）才能再降到约 16 s。
 
 ## 未定 / 要问组委会
 

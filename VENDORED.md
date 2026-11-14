@@ -11,6 +11,8 @@ AGENTS.md 硬规矩 7：从别处复制的代码逐条记在这里。赛方说 c
 
 | `crates/kernels/src/norm.rs` 的 `group_norm!` | calblas 0.1.0 `src/kernels/vision.rs` 第 523–600 行；同 calBLAS 仓库 32d2bb8 | 文件 sha256 `218ca5a4295340451815e821ce737ca31fc6f328b4b28ddd3e7955ce41d41754` | 未声明（赛方允许复用模板） | ① `$crate::kernels::Cols`、`$crate::halves!` / `rd!` / `logistic!` 改成经 `$crate::calblas::…`；② 加可选参数 `parts = N`（一组切几段进 VB；不给就是 calblas 原来的算法），为了 128² × 512 时代码不超出 docc 的跳转范围（DESIGN F22）；③ 断言多核一条「段数整除一组的行数」。其余逐字不动 |
 
+| `crates/kernels/src/pointwise.rs` 的 `geglu!` 里的 erf-GELU 算式 | calblas 0.1.0 `src/frag.rs` 的 `act!(gelu_erf)`（Abramowitz–Stegun 7.1.26 的系数与步骤） | 同上 | 未声明（赛方允许复用模板） | 只抄了算式（系数与运算次序），套进本仓新写的逐元素 kernel，临时块在 kernel 入口申请一套 |
+
 只是**调用**、没有复制的（经 cargo 源依赖，不进本仓）：calblas 的 `upsample2!`、`fill16k!`、`halves!`、`rd!` / `wr!`、`Line` / `Rows`；npu 的原语。
 
 参考了思路、代码自己写的（不算抄，记一笔方便对照）：
@@ -21,5 +23,6 @@ AGENTS.md 硬规矩 7：从别处复制的代码逐条记在这里。赛方说 c
 | `crates/ktest` + `ref/ktest.py` | calBLAS `examples/yolo26/deploy/ktest.py` | 那份用脚本拼 MLIR 文本（calBLAS AGENTS.md 现在禁止）；本仓每个测试是一个 `npu::decls!` + `#[npu::program]` 的整步程序 |
 | `crates/layout-dump`（`#[path]` 引设备 crate 的 layout.rs） | calBLAS `examples/tiny/pack` | 同样的「设备与主机共用一份偏移表」做法 |
 | `ref/taesd_ref.py` 的模块结构 | diffusers 0.43.0 `DecoderTiny` / `AutoencoderTinyBlock`（Apache-2.0） | 只照它的结构逐层调 torch 的 `F.conv2d` 等，没有复制它的代码；fp32 那份直接调 diffusers 本身 |
+| `ref/unet_ref.py` 的模块结构 | diffusers 0.43.0 `UNet2DConditionModel`、`ResnetBlock2D`、`Transformer2DModel`、`BasicTransformerBlock`、`GEGLU`（Apache-2.0） | 同上：照结构逐层调 torch 的算子，没有复制它的代码；fp32 那份直接调 `unet(...)` |
 | `ref/vae_ref.py` 的模块结构 | diffusers 0.43.0 `AutoencoderKL` 的 `Decoder` / `ResnetBlock2D` / `Attention`（Apache-2.0） | 同上：照结构逐层调 torch 的 `F.conv2d`、`F.group_norm`、`F.linear`、`softmax`，没有复制它的代码；fp32 那份直接调 `vae.decode` |
 | `comfy/sd15_npu/nodes.py` 的缩放约定 | ComfyUI v0.45.3（GPL-3.0）`nodes.py` 的 `load_taesd`、`comfy/latent_formats.py` 的 `SD15` | 只核了常数 0.18215 与 [0, 1] 的口径，没有复制代码 |
