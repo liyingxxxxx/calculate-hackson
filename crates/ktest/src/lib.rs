@@ -16,16 +16,15 @@ mod layout;
 mod kernels;
 /// 还没有整步程序用的新 kernel（以后的 UNet 用）：特化先放这里测。
 mod extra;
+/// 正式 VAE 的 kernel 特化（同 TAESD：测的就是 6 段程序里跑的那一份）。
+#[path = "../../vae/src/kernels.rs"]
+mod vae_kernels;
 
-#[cfg(any(
-    all(feature = "conv_in", any(feature = "convr_64", feature = "conv_out", feature = "convr_512", feature = "tanh", feature = "up_256")),
-    all(feature = "convr_64", any(feature = "conv_out", feature = "convr_512", feature = "tanh", feature = "up_256")),
-    all(feature = "conv_out", any(feature = "convr_512", feature = "tanh", feature = "up_256")),
-    all(feature = "convr_512", any(feature = "tanh", feature = "up_256")),
-    all(feature = "tanh", feature = "up_256"),
-    all(feature = "temb", any(feature = "conv_in", feature = "convr_64", feature = "conv_out", feature = "convr_512", feature = "tanh", feature = "up_256")),
-))]
-compile_error!("ktest：一次只开一个 feature（每个 feature 是一个整步程序）");
+// 一次只开一个 feature（每个 feature 是一个整步程序）
+const N_FEATURES: usize = cfg!(feature = "conv_in") as usize + cfg!(feature = "convr_64") as usize + cfg!(feature = "conv_out") as usize
+    + cfg!(feature = "convr_512") as usize + cfg!(feature = "tanh") as usize + cfg!(feature = "up_256") as usize + cfg!(feature = "temb") as usize
+    + cfg!(feature = "attn_wide") as usize + cfg!(feature = "gn_128") as usize;
+const _: () = assert!(N_FEATURES <= 1, "ktest：一次只开一个 feature（每个 feature 是一个整步程序）");
 
 #[allow(unused_imports, reason = "各 feature 用到的常量不同")]
 use layout::{align, img, C, CIN0, COUT, MARGIN_PX};
@@ -128,6 +127,40 @@ mod prog {
         if core_rank() == 0 {
             crate::extra::kt_temb(in_x().cast(), w().cast(), out_y().cast());
         }
+        sync_cores();
+    }
+}
+
+/// 头维 512 的注意力（`attn_wide!`，正式 VAE 中间块那一份）：in_x = q、k、v（各 [4096][512] bf16，依次铺），out_y = o [4096][512]。
+#[cfg(feature = "attn_wide")]
+mod prog {
+    use npu::prelude::*;
+    npu::decls! {
+        in_x: input, bytes = 12582912;
+        out_y: output, bytes = 4194304;
+    }
+    const T: u64 = 4096 * 512 * 2;
+    const T2: u64 = 2 * T;
+    #[npu::program(chiplets = 1, cores = 2)]
+    pub fn step() {
+        crate::vae_kernels::va_attn(in_x().cast(), in_x().at(T).cast(), in_x().at(T2).cast(), out_y().cast());
+        sync_cores();
+    }
+}
+
+/// GroupNorm + SiLU（NCHW，128² × 512，本仓那份 `group_norm!`、切 64 段）：in_x = x [512][16384] bf16，w = 展开的 w、b（各 [65536][8] f32），out_y = y。
+#[cfg(feature = "gn_128")]
+mod prog {
+    use npu::prelude::*;
+    npu::decls! {
+        in_x: input, bytes = 16777216;
+        w: weights, bytes = 4194304;
+        out_y: output, bytes = 16777216;
+    }
+    const BO: u64 = 512 * 16384 / 128 * 8 * 4;
+    #[npu::program(chiplets = 1, cores = 2)]
+    pub fn step() {
+        crate::vae_kernels::va_gn128(in_x().cast(), w().cast(), w().at(BO).cast(), out_y().cast());
         sync_cores();
     }
 }

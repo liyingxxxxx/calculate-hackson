@@ -14,7 +14,8 @@
 exp / rsqrt / tanh 在板上是近似指令，这里用精确值 ⇒ 不是板子的逐位参照（calBLAS AGENTS.md：模拟器不是金标准）。
 
 kernel 的语义按「模板 + 宏参数」认：从程序 crate 的 `kernels.rs` 里用正则读 `模板!(pub 名字: 键 = 值, …)`，
-值里的常量（LAT、C……）取自 layout-dump 的 `consts`。认得的模板：conv2d、upsample2、tanh_scale、timestep_embed、fill16k。
+值里的常量（LAT、C……）取自 layout-dump 的 `consts`。认得的模板：conv2d、upsample2、tanh_scale、timestep_embed、fill16k；
+正式 VAE 用到的 group_norm、nhwc_to_nchw、nchw_to_nhwc、transpose2d、linear（多行、`w = hf`）、attn_wide。
 """
 from __future__ import annotations
 
@@ -122,7 +123,10 @@ def parse_specs(kernels_rs: str, consts: dict) -> dict:
                 kv[k] = v
                 continue
             v = re.sub(r"(\d)f32\b", r"\1", v).replace(" / ", " // ")
-            kv[k] = eval(v, {"__builtins__": {}}, ns)  # noqa: S307（本仓自己的源码，不是外部输入）
+            try:
+                kv[k] = eval(v, {"__builtins__": {}}, ns)  # noqa: S307（本仓自己的源码，不是外部输入）
+            except NameError:
+                kv[k] = v  # 标识符形式的选项（linear! 的 `w = hf`、`bias = f32`）：原样留字符串
         specs[name] = (kind, kv)
     return specs
 
@@ -376,6 +380,96 @@ class Sim:
             raise SimError(f"{job.kernel}：块数不是常量")
         job.writes.append(self._check(job.kernel, "p", p, n * 16384))
         self._u16(p, n * 8192)[:] = bf16.bits(np.float32(c["value"]))
+
+    # ── 正式 VAE 用到的模板（calblas 的 group_norm / 排布转换 / 转置 / linear，本仓的 attn_wide）──
+    @staticmethod
+    def _norm_cols(n: int, hw: int) -> int:
+        """calblas `kernels::Cols::norm_cols`：group_norm! 一行几个像素（w、b 按行展开，读的时候要知道一行多长）。"""
+        cc = hw if hw < 128 else 128
+        while cc > 16 and (hw % cc != 0 or (n // cc) % 8 != 0):
+            cc //= 2
+        return cc
+
+    def _k_group_norm(self, job, c, args):
+        hw, ch, g, eps, act = c["hw"], c["c"], c["groups"], np.float32(c["eps"]), c["act"]
+        cc = self._norm_cols(ch // g * hw, hw)
+        rows = ch * hw // cc
+        x, wp, bp, y = args
+        job.reads.append(self._check(job.kernel, "x", x, ch * hw * 2))
+        job.reads.append(self._check(job.kernel, "w", wp, rows * 8 * 4))
+        job.reads.append(self._check(job.kernel, "b", bp, rows * 8 * 4))
+        job.writes.append(self._check(job.kernel, "y", y, ch * hw * 2))
+        xv = bf16.from_bits(self._u16(x, ch * hw)).reshape(g, -1).astype(np.float64)
+        mean = xv.mean(1, keepdims=True)
+        var = ((xv - mean) ** 2).mean(1, keepdims=True)  # 两遍法（同模板）
+        f = ((xv - mean) / np.sqrt(var + eps)).astype(np.float32).reshape(rows, cc)
+        # 逐行的 w、b：每行 8 份同一个值，模板取行内最大
+        wv = self._f32(wp, rows * 8).reshape(rows, 8).max(1)[:, None]
+        bv = self._f32(bp, rows * 8).reshape(rows, 8).max(1)[:, None]
+        out = bf16.rnd(f * wv + bv)
+        if act == "silu":
+            out = bf16.rnd(out / (1 + np.exp(-out)))
+        elif act != "none":
+            raise SimError(f"group_norm：认不得 act = {act}")
+        self._u16(y, ch * hw)[:] = bf16.bits(out.ravel())
+
+    def _k_nhwc_to_nchw(self, job, c, args):
+        h, w, ch, p = c["h"], c["w"], c["c"], c["p"]
+        x, y = args
+        job.reads.append(self._check(job.kernel, "x", x, (h + 2 * B) * (w + 2 * B) * p * 2))
+        job.writes.append(self._check(job.kernel, "y", y, ch * h * w * 2))
+        v = self._img(x, h, w, p)[B:B + h, B:B + w, :ch]
+        self._u16(y, ch * h * w)[:] = np.ascontiguousarray(v.transpose(2, 0, 1)).ravel()
+
+    def _k_nchw_to_nhwc(self, job, c, args):
+        h, w, ch, p = c["h"], c["w"], c["c"], c["p"]
+        x, y = args
+        job.reads.append(self._check(job.kernel, "x", x, ch * h * w * 2))
+        wo = w + 2 * B
+        yr = self._check(job.kernel, "y", y, (h + 2 * B) * wo * p * 2)
+        job.writes.append((yr[0], yr[1] + (B * wo + B) * p * 2, yr[1] + (((B + h - 1) * wo + B + w - 1) * p + ch) * 2))
+        v = self._u16(x, ch * h * w).reshape(ch, h, w)
+        self._img(y, h, w, p)[B:B + h, B:B + w, :ch] = v.transpose(1, 2, 0)
+
+    def _k_transpose2d(self, job, c, args):
+        r, cl = c["rows"], c["cols"]
+        x, y = args
+        job.reads.append(self._check(job.kernel, "x", x, r * cl * 2))
+        job.writes.append(self._check(job.kernel, "y", y, r * cl * 2))
+        self._u16(y, r * cl)[:] = np.ascontiguousarray(self._u16(x, r * cl).reshape(r, cl).T).ravel()
+
+    def _k_linear(self, job, c, args):
+        if c.get("w") != "hf" or c.get("bias") not in (None, "f32") or c.get("act") or c.get("parts") or c.get("ks"):
+            raise SimError(f"{job.kernel}：模拟器只写了 linear! 的多行 w = hf（可带 f32 bias）")
+        r, k, n = c["rows"], c["k"], c["n"]
+        if c.get("bias"):
+            x, wp, bp, y = args
+        else:
+            (x, wp, y), bp = args, None
+        job.reads.append(self._check(job.kernel, "x", x, r * k * 2))
+        job.reads.append(self._check(job.kernel, "w", wp, n * k * 2))
+        xv = bf16.from_bits(self._u16(x, r * k)).reshape(r, k)
+        wv = bf16.from_bits(self._u16(wp, n * k)).reshape(n, k)
+        out = xv @ wv.T
+        if bp is not None:
+            job.reads.append(self._check(job.kernel, "b", bp, n * 4))
+            out = out + self._f32(bp, n)
+        job.writes.append(self._check(job.kernel, "y", y, r * n * 2))
+        self._u16(y, r * n)[:] = bf16.bits(out.astype(np.float32).ravel())
+
+    def _k_attn_wide(self, job, c, args):
+        t, hh, d = c["rows"], c["heads"], c["head"]
+        q, k, v, o = args
+        for name, p in (("q", q), ("k", k), ("v", v)):
+            job.reads.append(self._check(job.kernel, name, p, t * hh * d * 2))
+        job.writes.append(self._check(job.kernel, "o", o, t * hh * d * 2))
+        qv, kv, vv = (bf16.from_bits(self._u16(p, t * hh * d)).reshape(t, hh, d) for p in (q, k, v))
+        out = np.empty((t, hh, d), np.float32)
+        for h in range(hh):
+            s_ = (qv[:, h] @ kv[:, h].T) * np.float32(1 / np.sqrt(d))
+            s_ = np.exp(s_ - s_.max(1, keepdims=True))
+            out[:, h] = (s_ / s_.sum(1, keepdims=True)) @ vv[:, h]
+        self._u16(o, t * hh * d)[:] = bf16.bits(out.ravel())
 
     def report(self) -> str:
         by = {}

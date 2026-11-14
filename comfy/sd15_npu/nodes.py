@@ -60,5 +60,40 @@ class TAESDDecodeNPU:
         return (torch.stack(out),)
 
 
-NODE_CLASS_MAPPINGS = {"SD15NPU_TAESDDecode": TAESDDecodeNPU}
-NODE_DISPLAY_NAME_MAPPINGS = {"SD15NPU_TAESDDecode": "SD15 NPU · TAESD Decode"}
+class VAEDecodeNPU:
+    """正式 VAE（AutoencoderKL）解码，6 段设备程序（DESIGN D15）。ComfyUI 的 LATENT 本来就在 VAE 原空间 ⇒ 原样喂，不乘 0.18215。"""
+
+    DESCRIPTION = ("SD1.5 的正式 VAE 解码（512×512，画质同 ComfyUI 自带的 VAEDecode）。npu：在 Calculet NPU 上依次跑 6 段整步程序"
+                   "（要 SD15NPU_ALLOW_BOARD=1）；npu-sim：CPU 上 numpy 模拟同一份设备程序（不是 NPU，一张约半分钟）；cpu：diffusers fp32（CPU 兜底，会计数）。")
+    CATEGORY = "sd15-npu"
+    RETURN_TYPES = ("IMAGE",)
+    FUNCTION = "decode"
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {"required": {
+            "samples": ("LATENT",),
+            "backend": (list(runner.BACKENDS), {"default": os.environ.get("SD15NPU_BACKEND", "npu-sim")}),
+        }}
+
+    def decode(self, samples, backend):
+        lat = samples["samples"]
+        if lat.ndim != 4 or lat.shape[1] != 4:
+            raise ValueError(f"sd15-npu：要 SD1.5 的 4 通道 latent [B, 4, H, W]，给的是 {list(lat.shape)}")
+        h, w = lat.shape[2], lat.shape[3]
+        if (h, w) != (64, 64):
+            raise ValueError(f"sd15-npu：正式 VAE 的 NPU 程序现在只有 512×512 的档位（latent 64×64），这个是 {w * 8}×{h * 8}")
+        key = ("vae", backend)
+        dec = _decoders.get(key) or _decoders.setdefault(key, runner.VaeDecoder(backend))
+        out = []
+        for b in range(lat.shape[0]):
+            img, info = dec.decode(lat[b].to(torch.float32).cpu().numpy())
+            logging.getLogger("sd15_npu").info(
+                "[sd15-npu] VAE 解码 第 %d/%d 张：backend=%s，%.2f s%s", b + 1, lat.shape[0], info["backend"], info["seconds"],
+                f"，dort 墙钟合计 {info['dort_wall_s']:.3f} s（6 段 {info['stages']}）" if "dort_wall_s" in info else "")
+            out.append(torch.from_numpy(np.clip(img, 0.0, 1.0).transpose(1, 2, 0).copy()))
+        return (torch.stack(out),)
+
+
+NODE_CLASS_MAPPINGS = {"SD15NPU_TAESDDecode": TAESDDecodeNPU, "SD15NPU_VAEDecode": VAEDecodeNPU}
+NODE_DISPLAY_NAME_MAPPINGS = {"SD15NPU_TAESDDecode": "SD15 NPU · TAESD Decode", "SD15NPU_VAEDecode": "SD15 NPU · VAE Decode"}

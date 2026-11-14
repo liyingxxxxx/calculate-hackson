@@ -5,9 +5,10 @@
   2. 卡的状态（只读 `dort device`）：OS up / RT up、dort 没被板上运行时拒（要 DeviceRT）、没有别的进程在用
   3. 逐个 kernel（从小到大：up_256 ⇒ tanh ⇒ temb ⇒ conv_in ⇒ convr_64 ⇒ conv_out ⇒ convr_512），每个跑全部用例
   4. 整个 TAESD 解码器：只部署一次 + 整次 N 遍（确定性、时间）、对两份参照
-  5. （--comfy）ComfyUI 原生工作流，解码节点走 npu
+  4b.（--vae）正式 VAE 解码器：6 段程序依次跑（tools/vae.py board），每段只部署一次 + 整条 N 遍、对两份参照
+  5. （--comfy）ComfyUI 原生工作流，解码节点走 npu（加 --vae 时再跑一条正式 VAE 解码的工作流）
 
-用法：SD15NPU_ALLOW_BOARD=1 [SD15NPU_DORT_INDEX=0] [SD15NPU_BOARD_LOCK=…] $CALCULET_HOME/venv/bin/python -I tools/board_check.py [--tests a,b] [--runs 3] [--no-build] [--comfy]
+用法：SD15NPU_ALLOW_BOARD=1 [SD15NPU_DORT_INDEX=0] [SD15NPU_BOARD_LOCK=…] $CALCULET_HOME/venv/bin/python -I tools/board_check.py [--tests a,b] [--runs 3] [--no-build] [--vae] [--comfy]
 结果：out/board[-dryrun]/summary-<时间>.json（每一步的结果与用时）；各步自己的结果在 out/ktest/<测试>/<用例>/board*.json、out/taesd-board*/。
 挂死就停、找工程师：⛔ kill 在飞的 dort、⛔ 复位、⛔ 刷写（AGENTS.md 硬规矩 3）。
 
@@ -38,6 +39,7 @@ def main():
     ap.add_argument("--no-build", action="store_true", help="跳过第 0 步（刚出过 calbin 时）")
     ap.add_argument("--no-taesd", action="store_true")
     ap.add_argument("--comfy", action="store_true")
+    ap.add_argument("--vae", action="store_true", help="再上正式 VAE 的 6 段程序（B1b）")
     a = ap.parse_args()
 
     if not dort.allowed():
@@ -80,9 +82,15 @@ def main():
         step(f"3. 单 kernel 上板：{t}", lambda t=t: sh(py, "-I", "ref/ktest.py", "board", t, "--case", "all"))
     if not a.no_taesd:
         step(f"4. TAESD 整个解码器上板（{a.runs} 遍）", lambda: sh(py, "-I", "tools/taesd.py", "board", "--runs", str(a.runs)))
+    if a.vae:
+        vargs = ["--runs", str(a.runs)] + (["--no-build"] if a.no_build else [])
+        step(f"4b. 正式 VAE 6 段上板（{a.runs} 遍）", lambda: sh(py, "-I", "tools/vae.py", "board", *vargs))
     if a.comfy:
         cpy = Path(os.environ.get("CALCULET_HOME", ROOT.parent)) / "comfy-venv" / "bin" / "python"
         step("5. ComfyUI 原生工作流（解码走 npu）", lambda: sh(str(cpy), "-I", "comfy/run_workflow.py", "--backend", "npu", "--steps", "20"))
+        if a.vae:
+            step("5b. ComfyUI 原生工作流（正式 VAE 解码走 npu）", lambda: sh(str(cpy), "-I", "comfy/run_workflow.py", "comfy/workflows/sd15_vae_npu.api.json",
+                                                                  "--backend", "npu", "--steps", "20"))
     print(f"全部通过（{label}）。记录：{out}/summary-{stamp}.json")
 
 

@@ -1,7 +1,8 @@
-"""ComfyUI 自定义节点：sd15-npu（Calculet NPU 上的 SD1.5）。现在有一个节点：
+"""ComfyUI 自定义节点：sd15-npu（Calculet NPU 上的 SD1.5）。现在有两个节点：
 
 - **SD15 NPU · TAESD Decode**（`SD15NPU_TAESDDecode`）：LATENT ⇒ IMAGE，用 TAESD 解码器（512² 档位）。
   backend = `npu`（真机，要 SD15NPU_ALLOW_BOARD=1）/ `npu-sim`（CPU 上 numpy 模拟设备程序，不是 NPU）/ `cpu`（diffusers fp32，CPU 兜底）。
+- **SD15 NPU · VAE Decode**（`SD15NPU_VAEDecode`）：LATENT ⇒ IMAGE，用正式 VAE 解码器（6 段设备程序，画质同 ComfyUI 自带的 VAEDecode）；backend 同上。
 
 装法：`bash comfy/setup_comfyui.sh` 把本目录链进 ComfyUI/custom_nodes；不改 ComfyUI 源码。细节见本目录 README.md。
 """

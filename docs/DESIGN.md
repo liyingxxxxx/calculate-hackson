@@ -36,6 +36,8 @@
 
 | F21 | 正式 VAE 要用的 kernel，docc 0.4.1 收不收（2026-11-14 探针，只编不跑）：卷积 3×3 512→512 @128²（快路放不下 ⇒ 原路）、@64² 带残差（快路）、1×1 512→256 @256²、3×3 128→128 @512²（原路）、32→512、128→32 都收；`group_norm!`（NCHW，G = 32，silu）在 64² × 512、256² × 512、512² × 128 都收；`nhwc_to_nchw!` / `nchw_to_nhwc!` 512² × 128 收；`upsample2!` 512 通道按两个 256 通道的窗口各调一次收。**`attention!` 头维 512 不收**：「calt-place：gib1 放不下：要到 131072 字节，只有 65536」（rhs [D, 128] bf16 = 128 KB，TU 的操作数上限 64 KB）；头维 256、128 收 | `$CALCULET_HOME/work/vprobe`（探针工程，不进交付件；`results.txt`、`logs/`） | VAE 中间块的单头 512 维注意力要新写按头维分段的 kernel（D14）；卷积在 128² 以上大多走原路（慢，calBLAS 文档说约 4 倍），先求对、性能放 B5 |
 
+| F22 | **docc 0.4.1 每颗核的代码不能超过约 1 MB**：VAE 的 45 个 kernel 编进一个程序，docc 出 ELF 时报「riscvc：链接：main0.o：.text 处到 `.LBB25_1` 的距离 -1120872 超出 21 位」（RISC-V 的跳转 ±1 MB）；docc 没有放宽它的选项。单个 kernel 的代码量（探针，每个连着一个最小的入口）：64² × 512 的 `group_norm!` 292 KB（16 组的循环被整个展开）、其余 `group_norm!` 112 KB、`attn_wide!` 215 KB、512 通道快路的卷积 106 KB、原路卷积 26–51 KB、排布转换 35–40 KB；VAE 合计约 2.7 MB | `tools/calbin.sh vae`（2026-11-14）、`$CALCULET_HOME/work/vprobe/logs/` | 大模型要切成几段程序，每段 < 1 MB（D15）；换掉排布转换 + calblas GN（D13 → NHWC 原生 GN）能省很多代码。**128² × 512 的 `group_norm!` 单个 kernel 就超**（缺省切 16 段，docc 把外层 16 组也展开，约 1.1 MB）⇒ 本仓抄一份加 `parts = N`，切 64 段是 232 KB（64² 的反过来：缺省 4 段 292 KB、64 段 788 KB，保持缺省）。切 6 段之后每核 ELF：s1 753 KB、s2 910 KB、s3 766 KB、s4 559 KB、s5 723 KB、s6 560 KB，doctor 拒收都是 0 |
+
 calBLAS 文档里写的、我们还没亲自核的（上板时核）：KS1 的 exp / rsqrt 是查表近似（≤ 1 ULP），除法精确；DDR 实测约 84 GB/s；
 35B（21 GB）光部署权重 195 秒（粗算 0.1 GB/s 量级）。
 
@@ -73,6 +75,8 @@ calBLAS 文档里写的、我们还没亲自核的（上板时核）：KS1 的 e
 
 - **D13 正式 VAE 的 GroupNorm：先走排布转换 + calblas `group_norm!`。** 每个 GN 是三步：`nhwc_to_nchw!`（带边框的图 ⇒ 稠密 NCHW）⇒ `group_norm!`（可带 silu）⇒ `nchw_to_nhwc!`（只写内部，边框保持 0）。三个都是 calblas 现成的，板上出错的面小；代价是每个 GN 多两次整图搬运，逐通道的 w、b 要按「每行一个值」展开（全部 30 个 GN 约 220 MB 参数）。跑通之后再写 NHWC 原生的 GroupNorm+SiLU（A1，UNet 也要用），换掉这三步。
 - **D14 正式 VAE 中间块的注意力走稠密 token。** GN（NCHW）⇒ `transpose2d!` ⇒ [4096 token, 512] ⇒ `linear!`（多行、HF 权重、f32 bias）出 q、k、v ⇒ 注意力 ⇒ `transpose2d!` + `nchw_to_nhwc!` 回到带边框的图 ⇒ 1×1 卷积（to_out）带残差。注意力单头 512 维，`attention!` 收不下（F21） ⇒ 从 calblas `attention!` 抄出一份，把头维按 128 一段切开：q·kᵀ 在 TU 里沿段接着累加，p·v 按段各一个累加器（记 VENDORED）。
+
+- **D15 正式 VAE 切成 6 段程序、主机串起来。** 每段一个 calbin、一次 `dort calbin run`，上一段的 out_y 原样当下一段的 in_x（F22）。切点选在「下一段只经 GroupNorm 的排布转换、残差、1×1 卷积读这张图」的地方：它们只读内部，所以上一段输出的边框不用清。每段只部署自己的权重（参数块按段打），@act 只放这一段用到的图。代价是段间的特征图经主机转手（最大一张 512² × 256 通道 136 MB），计算不在 CPU 上，记在 NPU / CPU 分工里。以后换成 NHWC 原生的 GroupNorm、代码变小了，再并段。
 
 ## 未定 / 要问组委会
 

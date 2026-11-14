@@ -17,6 +17,8 @@ convr_512 = []
 tanh = []
 up_256 = []
 temb = []
+attn_wide = []
+gn_128 = []
 
 [dependencies]
 npu.workspace = true

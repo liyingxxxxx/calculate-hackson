@@ -42,7 +42,7 @@ def main():
             ins["steps"] = a.steps
         if a.seed is not None and "seed" in ins:
             ins["seed"] = a.seed
-        if a.backend and node["class_type"] == "SD15NPU_TAESDDecode":
+        if a.backend and node["class_type"] in ("SD15NPU_TAESDDecode", "SD15NPU_VAEDecode"):
             ins["backend"] = a.backend
 
     log = ROOT / "out" / "comfy" / f"server-{a.port}.log"

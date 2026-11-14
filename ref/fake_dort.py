@@ -110,7 +110,7 @@ def _run(a):
     if match is None:
         _die(7, "找不到和 calbin 同一次构建的 .cvxo（测试替身没法知道它算什么）")
     text = match.with_suffix(".cvx").read_text()
-    krs = "\n".join(p.read_text() for p in [ROOT / "crates/taesd/src/kernels.rs", ROOT / "crates/ktest/src/extra.rs"])
+    krs = "\n".join(p.read_text() for p in [ROOT / "crates/taesd/src/kernels.rs", ROOT / "crates/ktest/src/extra.rs", ROOT / "crates/vae/src/kernels.rs"])
     decls = cvxsim.parse_cvx(text).decls
     inputs = {a.in_tensor: data}
     if "w" in decls:

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # 不上板能做的全部检查，一条命令跑完（换机器之后、改了东西之后、交之前都跑一遍）。
 # 每项的结果与用时汇总在末尾；完整输出在 $CALCULET_HOME/logs/verify-<时间>.log。任何一项不过，退出码就是 1。
-#   VERIFY_FULL=1：再加 ComfyUI 整条工作流（SD1.5 在 CPU 上 4 步 + 我们的 TAESD 节点走 npu-sim，约 1 分钟）
+#   VERIFY_FULL=1：再加 ComfyUI 整条工作流（SD1.5 在 CPU 上 4 步 + 我们的 TAESD / 正式 VAE 节点走 npu-sim，约 1.5 分钟）
 # 不跑任何会开设备的 dort 子命令（AGENTS.md 硬规矩 3）。
 set -uo pipefail
 
@@ -54,11 +54,14 @@ run "TAESD calbin（真权重）+ docc doctor" bash -c '"$0" -I tools/taesd.py c
 run "模拟器自测（7 种坏法都要抓到）" "$PY" -I ref/test_cvxsim.py
 run "TAESD 整步程序的 numpy 模拟对两份独立参照（4 组 latent）" "$PY" -I tools/taesd.py check
 run "单 kernel 测试台（7 个测试 × 边界用例：模拟对期望、calbin 出得来）" "$PY" -I ref/ktest.py all
+run "正式 VAE：6 段 calbin（真权重）+ docc doctor" "$PY" -I tools/vae.py calbin
+run "正式 VAE 6 段程序的 numpy 模拟对两份独立参照（2 组 latent）" "$PY" -I tools/vae.py check
 run "上板前静态核对（dort 认得我们的包，张量名 / 字节数 / 参数块与主机侧一致）" "$PY" -I tools/preflight.py
 run "上板流程自测（测试替身空跑全套 + 6 种该停的情形）" "$PY" -I ref/test_board_kit.py
 run "ComfyUI 加载本仓节点" comfy_loads
 if [ "${VERIFY_FULL:-0}" = 1 ]; then
   run "ComfyUI 原生工作流（SD1.5 4 步 + TAESD npu-sim）" "$CPY" -I comfy/run_workflow.py --steps 4 --port 8198
+  run "ComfyUI 原生工作流（SD1.5 4 步 + 正式 VAE npu-sim）" "$CPY" -I comfy/run_workflow.py comfy/workflows/sd15_vae_npu.api.json --steps 4 --port 8197
 fi
 
 echo

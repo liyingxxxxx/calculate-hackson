@@ -1,13 +1,15 @@
 """上板前的静态核对（⛔ 不开设备）：保证拿到一块正常的真卡时，我们的包 dort 认、主机发的字节对得上。
 
-对每个要上板的 calbin（TAESD 带真权重的那份、单 kernel 测试台的每个测试）：
+对每个要上板的 calbin（TAESD 带真权重的那份、正式 VAE 的 6 段、单 kernel 测试台的每个测试）：
 1. `dort calbin parse`（dort 自己说「纯静态，⛔ 不开设备」）能解析 —— 真跑时读包的就是它；
 2. `docc calbin doctor` 拒收 0 条；
 3. 子模型清单（`<子模型>/submodel_memory_reserved_info.txt`）里的输入 / 输出张量：名字是我们 dort 命令行里写的 in_x / out_y，
    字节数和主机侧打的输入（`--raw-in` 的文件）、解包时要读的输出一样；子模型名就是命令行里的 `-m`；
 4. calbin 里的参数块和打包出来的那份逐字节相同（calBLAS AGENTS.md §3：参数块和程序是同一次构建的产物，要一起出、一起用）。
 
-用法：$CALCULET_HOME/venv/bin/python -I tools/preflight.py（先 source env.sh；要先出过 calbin：tools/taesd.py calbin、ref/ktest.py all）。
+5. 正式 VAE：上一段的 out_y 和下一段的 in_x 字节数相同（主机原样转手，DESIGN D15）。
+
+用法：$CALCULET_HOME/venv/bin/python -I tools/preflight.py（先 source env.sh；要先出过 calbin：tools/taesd.py calbin、tools/vae.py calbin、ref/ktest.py all）。
 """
 from __future__ import annotations
 
@@ -70,6 +72,14 @@ def main():
     k = layout.load("taesd")["consts"]
     bad += check("taesd", ROOT / "out/taesd-real/cal", "taesd", k["IN_BYTES"], k["OUT_BYTES"], ROOT / "out/taesd/params/param_blk0.bin")
     n += 1
+    stages = layout.load("vae")["stages"]
+    for st in stages:
+        bad += check(f"vae/{st['name']}", ROOT / "out/vae-real" / st["name"] / "cal", "vae", st["in_bytes"], st["out_bytes"],
+                     ROOT / "out/vae/params" / st["name"] / "param_blk0.bin")
+        n += 1
+    for a, b in zip(stages, stages[1:]):
+        if a["out_bytes"] != b["in_bytes"]:
+            bad.append(f"vae：{a['name']} 的 out_y {a['out_bytes']} 字节，{b['name']} 的 in_x {b['in_bytes']} 字节（主机原样转手对不上）")
     for test, t in ktest.TESTS.items():
         case = t["cases"][0]
         d = ROOT / "out" / "ktest" / test / case

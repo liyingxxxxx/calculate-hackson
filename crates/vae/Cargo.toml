@@ -1,0 +1,23 @@
+[package]
+name = "vae"
+version = "0.1.0"
+edition = "2024"
+publish = false
+description = "正式 VAE 解码器（SD1.5 AutoencoderKL，512²）的整步程序：latent ⇒ 图，一次 dort 调用（B1b）"
+
+[lib]
+crate-type = ["rlib"]
+
+[dependencies]
+npu.workspace = true
+calblas.workspace = true
+sd-kernels = { path = "../kernels" }
+
+# 6 段程序（DESIGN D15），一次只开一个（step.rs 里有 compile_error! 守着）；不开 feature 时只有 kernel 与 layout，没有入口
+[features]
+s1 = []
+s2 = []
+s3 = []
+s4 = []
+s5 = []
+s6 = []
