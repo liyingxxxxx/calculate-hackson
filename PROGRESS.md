@@ -89,7 +89,9 @@
       tanh 4 ⇒ 1 ULP(max)、0.999 ⇒ 0.99999；temb 4 ⇒ 3 ULP(max)、0.999 ⇒ 0.9999（cos_approx 的分辨率卡着，换多项式前收不动）；
       `tools/taesd.py` 40 / 35 dB ⇒ 50 / 45 dB、余弦 0.9999 ⇒ 0.99995（板上只测过 image；按四组里最差的 randn:0 的模拟数留余量）。
       拿已有的真机结果核过：新门槛下必过用例全过。
-- [ ] TAESD 另外三组 latent（randn:0、zeros、big）上板，按实测再收 `tools/taesd.py` 的门槛（要负责人再点头）。
+- [x] 2026-11-14 TAESD 另外三组 latent 上板（**真机实测**，npu3，同一把锁；先只读查卡）：都是 3 遍逐字节一致。
+      randn:0 余弦 0.9999903、对 bf16 参照 52.7 dB、对 fp32 46.8 dB；zeros 0.9999993、65.8 / 59.4 dB；big 0.9999943、56.1 / 50.7 dB（和模拟最多差 1.5 dB）；每次整次 0.11 s、只部署 0.003–0.004 s。
+      结果在 `test/results/npu3-20261114/taesd_latents/`。`tools/taesd.py` 的门槛按最差的 randn:0 再收：余弦 0.99995 ⇒ 0.99998（PSNR 50 / 45 dB 不变）。
 
 ## B1 TAESD 解码上 NPU
 
@@ -167,6 +169,7 @@ UNet（B3）几乎全要用 ⇒ 先在一个「只跑一次前向、好对 diffu
       PATH 上最前面是工具链自带的 docc / dort 0.4.1（系统 `/usr/local/bin` 里的老版本没用到）。日志 `$CALCULET_HOME/logs/bootstrap-npu3-20261114-152526.log`、
       `verify-20261114-153614.log`。然后上了卡，见「上板准备」。
 - [x] 2026-11-14 推到 GitHub（https://github.com/liyingxxxxx/calculate-hackson ，公开，负责人确认）：`main` = 真卡上验过的稳定版，`wip/vae-decoder` = 正式 VAE 进行中。为了能在比赛提供的真卡环境里照 README 复现：去掉了文档与脚本里对非公开设备栈的点名，`check_env.sh` 改成白名单（docc / dort 必须是工具链自带的、Cargo.lock 只许赛方源与 crates.io；拿 npu3 上的老版本 dort / docc 验过会报）；赛题原文收进 `docs/赛题原文.md`；README 的复现步骤改成 `git clone … sd15-npu` ⇒ `bootstrap.sh` ⇒ `test/run_example.sh` ⇒ `board_check.py`；交接文档 `docs/HANDOFF.md` 重写。
+- [x] 2026-11-14 **从 GitHub 克隆复现（npu3，真机实测）**：在全新目录（`/home/sweet/fresh-clone/calculet`，干净环境 `env -i`，PATH 里故意留着 `/usr/local/bin` 的老版本 dort / docc）`git clone https://github.com/liyingxxxxx/calculate-hackson.git sd15-npu`（main e5280f7） ⇒ `bootstrap.sh`：约 6 分钟，`verify_all.sh` 12 项全过；TAESD 参数块 sha256 `ed33d702…` 相同，14 个权重文件的核对清单逐字相同。再 `SD15NPU_ALLOW_BOARD=1 SD15NPU_BOARD_LOCK=… bash test/run_example.sh --comfy`：只读查卡通过 ⇒ TAESD 3 遍逐字节一致、60.3 / 55.9 dB ⇒ ComfyUI 工作流成功、节点 `backend=npu`；出的三张图（TAESD、ComfyUI 的 NPU 解码与 CPU 对照）和 `test/results/npu3-20261114/` 里存的**逐字节相同**。
 - [x] 2026-11-14 `test/`：简单示例 `run_example.sh`（有卡先只读查卡再跑 TAESD，没卡走 npu-sim；`--comfy` 再跑 ComfyUI）+ npu3 真卡那次的原始结果 `results/npu3-20261114/`（图、指标、dort 日志、20 个单 kernel 用例）。没卡的那条路跑过：image 60.6 / 55.9 dB。
 
 ## 踩过的坑
