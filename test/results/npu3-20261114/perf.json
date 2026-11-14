@@ -429,5 +429,56 @@
    "vae_dort_wall_sum_s": 5.178,
    "psnr_vs_comfyui_vaedecode_db": 55.6
   }
+ },
+ "vae_512_opt": {
+  "date": "2026-11-14 17:58",
+  "stages": 3,
+  "total_median_s": 0.975,
+  "deploy_only_s": {
+   "s1": 0.006,
+   "s2": 0.006,
+   "s3": 0.027
+  },
+  "run_wall_s": [
+   {
+    "s1": 0.019,
+    "s2": 0.102,
+    "s3": 0.85
+   },
+   {
+    "s1": 0.022,
+    "s2": 0.104,
+    "s3": 0.85
+   },
+   {
+    "s1": 0.022,
+    "s2": 0.103,
+    "s3": 0.85
+   }
+  ],
+  "inference_est_s": 0.936,
+  "effective_tflops_est": 2.69,
+  "psnr_bf16_db": 58.3,
+  "psnr_fp32_db": 56.9,
+  "deterministic": true,
+  "cpu_fp32_s": 1.712,
+  "history_s": {
+   "第一版（6 段，排布转换 + calblas GN，原路卷积）": 5.18,
+   "① 卷积列块快路": 4.51,
+   "② NHWC 原生 GroupNorm": 1.23,
+   "③ 并成 3 段": 0.975
+  },
+  "comfyui": {
+   "run_s": 52.1,
+   "prompt_executed_s": 50.14,
+   "vae_node_s": 0.99,
+   "vae_dort_wall_sum_s": 0.977,
+   "psnr_vs_comfyui_vaedecode_db": 55.6
+  },
+  "kernel_profiles": [
+   "vae-opt/prof/kernels_before.json",
+   "vae-opt/prof/conv_tiled.json",
+   "vae-opt/prof/gn_nhwc.json"
+  ]
  }
 }

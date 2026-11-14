@@ -1,0 +1,58 @@
+[package]
+name = "prof"
+version = "0.1.0"
+edition = "2024"
+publish = false
+description = "真卡上逐个 kernel 计时：每个 feature 一个程序，把正式 VAE 的一个 kernel 就地连调几遍（tools/prof.py 生成，不要手改）"
+
+[lib]
+crate-type = ["rlib"]
+
+# 一次只开一个（src/lib.rs 里有断言守着）
+[features]
+base = []
+va_pqc = []
+va_cin = []
+va_c64 = []
+va_c64r = []
+va_o64r = []
+va_c128 = []
+va_c128r = []
+va_c256u = []
+va_c256a = []
+va_s256 = []
+va_c256 = []
+va_c256r = []
+va_c512u = []
+va_c512a = []
+va_s512 = []
+va_c512 = []
+va_c512r = []
+va_cout = []
+va_gs64 = []
+va_ga64 = []
+va_gs128 = []
+va_ga128 = []
+va_gs256w = []
+va_ga256w = []
+va_gs256 = []
+va_ga256 = []
+va_gs512w = []
+va_ga512w = []
+va_gs512 = []
+va_ga512 = []
+va_gn64n = []
+va_tc64 = []
+va_th64 = []
+va_tr_ct = []
+va_tr_tc = []
+va_qkv = []
+va_attn = []
+va_up64 = []
+va_up128 = []
+va_up256 = []
+
+[dependencies]
+npu.workspace = true
+calblas.workspace = true
+sd-kernels = { path = "../kernels" }

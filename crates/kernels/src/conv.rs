@@ -1,8 +1,14 @@
 //! 卷积（NHWC、四周两圈边框）：**抄自 calblas 0.1.0 的 `conv2d!`**（`src/kernels/vision.rs` 第 93–283 行，sha256 218ca5a4…），
-//! 只加了两种激活，别的逐字不动（细账见仓库根的 VENDORED.md）：
+//! 加了两种激活与一条「列块快路」，别的逐字不动（细账见仓库根的 VENDORED.md）：
 //!
 //! - `act = relu`：bias 之后 `max(y, 0)`，再加残差（若有）。TAESD 的「conv + ReLU」。
 //! - `act = res_relu`：bias 之后不激活，加残差，**再** `max(y, 0)`。TAESD Block 末尾的 `relu(conv(x) + x)`。
+//!
+//! - **列块快路**（`TILED`）：快路要「输入的 K 整行」放得进 VB（384 KB），128² × 512、256² × 256 / 512、512² × 128 / 256 通道都放不下，
+//!   原来只能走原路（每块每抽头从 DDR 读一次 lhs，calBLAS 文档说约慢 4 倍；正式 VAE 128² 以上的 3×3 卷积全是这种，DESIGN F23）。
+//!   这里按列切成宽 WT 的块（[`conv_tile`]：64 的倍数、整除 W、K 段 × (WT + K − 1) 个像素放得进 VB 的最宽那个），
+//!   每块把输入的 K 段读进 VB，块内的算法与尾处理和快路一模一样（每 4 块一组交错、各抽头的 lhs 从 VB 取）；
+//!   「行 × 列块」合成一层运行时循环（轮数多，docc 不整个展开，代码量和一行的快路差不多）。数值与快路、原路逐位相同（同一个累加次序）。
 //!
 //! 为什么抄而不是在外面接一个 `binary!(relu)`：Block 末尾那一步融进卷积的尾处理，省掉一整张特征图的读写
 //! （512² × 64 通道的 bf16 图是 34 MB，一次读写 ≈ 0.8 ms 量级，按 84 GB/s 估算，未实测）。
@@ -44,6 +50,9 @@ macro_rules! conv2d {
             const TAIL: usize = W % 16;
             // 快路：步长 1、Cin 不分段、输入的 K 行（再多 16 个像素的余量）放得进 VB ⇒ 每个输出行把输入的 K 行读进 VB 一次，各抽头的 lhs 从 VB 取
             const FAST: bool = S == 1 && KC == 1 && (K * WI + 16) * CI * 2 <= 384 * 1024;
+            // （本仓加）列块快路：快路放不下整行时按列切块，每块读 K 段（WT + K − 1 个像素）进 VB（见模块文档）
+            const WT: usize = $crate::conv_tile(W, K, CI);
+            const TILED: bool = !FAST && S == 1 && KC == 1 && TAIL == 0 && WT > 0;
             // `weights = ci_major`：权重按 [Cin][k · k][Cout]（torch 的 [Cout, Cin · k · k] 转置一次就是它，框架在设备上转）；缺省 [k · k][Cin][Cout]
             const WCM: bool = $crate::conv2d!(@wl $($wl)?);
             let gw = $crate::calblas::rd!(w, [K * K * CI, CO]);
@@ -133,6 +142,50 @@ macro_rules! conv2d {
                     }
                 }
             }
+        } else if TILED {
+            // （本仓加）列块快路：每块 WT 个输出像素；输入的 K 段（第 oy + ky 行、从第 x0 列起 WS 个像素）依次铺进 VB
+            // ⇒ 抽头 (ky, kx)、块内第 p 个像素 ⇒ VB 的第 ky · WS + kx + p 行（同快路，只是行长从 WI 换成 WS）
+            const NT: usize = W / WT;
+            const WS: usize = WT + K - 1;
+            const G4T: usize = WT / 64;
+            let xin = vcache::<bf16, _>([K * WS, CI]);
+            let gxin = $x.add(((OFF * WI + OFF) * PI + XO) * 2).bind_strided::<npu::Read, 2>([(H + K - 1) * WI + 16, CI], [PI, 1]);
+            let fl = mcache::<bf16, _>([16, CI]);
+            for nb in 0..CO / NC {
+                $($rh.load($crate::conv2d!(@wtap $gw, $wp, $ky * K + $kx, 0, nb * NC, CI, NC));)*
+                $vb.load($gb.sub([nb, 0], [1, NC]));
+                // 行 × 列块合成一层循环
+                for j in 0..$hn * NT {
+                    let oy = $h0 + j / NT;
+                    let x0 = (j % NT) * WT;
+                    for ky in 0..K {
+                        xin.rows(ky * WS, WS).load(gxin.sub([(oy + ky) * WI + x0, 0], [WS, CI]));
+                    }
+                    for g in 0..G4T {
+                        let (a0, a1) = (mcache::<f32, _>([16, NC]), mcache::<f32, _>([16, NC]));
+                        let (a2, a3) = (mcache::<f32, _>([16, NC]), mcache::<f32, _>([16, NC]));
+                        a0.fill(0.0f32);
+                        a1.fill(0.0f32);
+                        a2.fill(0.0f32);
+                        a3.fill(0.0f32);
+                        $(
+                            fl.load_v(xin.rows($ky * WS + $kx + g * 64, 16));
+                            a0.mma(fl, $rh);
+                            fl.load_v(xin.rows($ky * WS + $kx + g * 64 + 16, 16));
+                            a1.mma(fl, $rh);
+                            fl.load_v(xin.rows($ky * WS + $kx + g * 64 + 32, 16));
+                            a2.mma(fl, $rh);
+                            fl.load_v(xin.rows($ky * WS + $kx + g * 64 + 48, 16));
+                            a3.mma(fl, $rh);
+                        )*
+                        let mb0 = x0 / 16 + g * 4;
+                        $crate::conv2d!(@tail a0, [$vo, $vb, $yh, $tmp, gy], oy, mb0, nb, 16, $act, [$(gr, $vr, $pr)?]);
+                        $crate::conv2d!(@tail a1, [$vo, $vb, $yh, $tmp, gy], oy, mb0 + 1, nb, 16, $act, [$(gr, $vr, $pr)?]);
+                        $crate::conv2d!(@tail a2, [$vo, $vb, $yh, $tmp, gy], oy, mb0 + 2, nb, 16, $act, [$(gr, $vr, $pr)?]);
+                        $crate::conv2d!(@tail a3, [$vo, $vb, $yh, $tmp, gy], oy, mb0 + 3, nb, 16, $act, [$(gr, $vr, $pr)?]);
+                    }
+                }
+            }
         } else {
             let ($lhs, $acc) = (mcache::<bf16, _>([16, CK]), mcache::<f32, _>([16, NC]));
             for nb in 0..CO / NC {
@@ -211,4 +264,19 @@ macro_rules! conv2d {
     (@pre res_relu $y:ident, $tmp:ident) => {};
     (@post res_relu $y:ident) => { $y.max($y, 0.0f32) };
     (@post $act:ident $y:ident) => {};
+}
+
+/// 列块快路的块宽（本仓加，见模块文档）：64 的倍数、整除 W、K 段 × (WT + K − 1) 个像素 × CI 的 bf16 放得进 384 KB 的最宽那个；没有就是 0（走原路）。
+/// 正式 VAE 里：128² × 512 ⇒ 64，256² × 512 ⇒ 64，256² × 256 ⇒ 128，512² × 256 ⇒ 128，512² × 128 ⇒ 256。
+#[doc(hidden)]
+#[must_use]
+pub const fn conv_tile(w: usize, k: usize, ci: usize) -> usize {
+    let mut wt = w - w % 64;
+    while wt >= 64 {
+        if w % wt == 0 && k * (wt + k - 1) * ci * 2 <= 384 * 1024 {
+            return wt;
+        }
+        wt -= 64;
+    }
+    0
 }

@@ -11,7 +11,7 @@
 | 输出被改坏 | 停在第一个单 kernel 测试，退出 1 |
 | 两次结果差一位 | 停在 TAESD 那一步（确定性），退出 1 |
 | dort 报错 | 停在那一步，退出 1 |
-| 正式 VAE（`--vae`，6 段） | 退出 0；6 次只部署、6 次裸字节运行，`-m vae`，上一段的输出接下一段的输入；结果标「测试替身」 |
+| 正式 VAE（`--vae`，按段表分段） | 退出 0；每段一次只部署、一次裸字节运行，`-m vae`，上一段的输出接下一段的输入；结果标「测试替身」 |
 
 用法：$CALCULET_HOME/venv/bin/python -I ref/test_board_kit.py（先 source env.sh；tools/verify_all.sh 会跑它，约 3 分钟）。
 """
@@ -91,8 +91,9 @@ def main():
         vruns = [c for c in calls if "--raw-in" in c]
         vdep = [c for c in calls if "--deploy-only" in c]
         m = json.loads((ROOT / "out/vae-board-dryrun/image/metrics.json").read_text()) if rc == 0 else {}
-        expect(f"正式 VAE 空跑：退出 0、{len(vdep)} 次只部署、{len(vruns)} 次裸字节运行（6 段）、-m vae、结果标「测试替身」并过门槛",
-               rc == 0 and len(vruns) == 6 and len(vdep) == 6 and all(c[c.index("-m") + 1] == "vae" for c in vruns)
+        nst = int(json.loads(subprocess.run([sys.executable, "-I", "-c", "import sys; sys.path.insert(0, 'host'); from sd15npu import vae; print(len(vae.layout()['stages']))"], cwd=ROOT, capture_output=True, text=True).stdout))
+        expect(f"正式 VAE 空跑：退出 0、{len(vdep)} 次只部署、{len(vruns)} 次裸字节运行（{nst} 段）、-m vae、结果标「测试替身」并过门槛",
+               rc == 0 and len(vruns) == nst and len(vdep) == nst and all(c[c.index("-m") + 1] == "vae" for c in vruns)
                and "测试替身" in m.get("measured", "") and m.get("ok"), out)
     print("上板流程的自测全过（测试替身空跑；真卡上算得对不对要真卡）")
 

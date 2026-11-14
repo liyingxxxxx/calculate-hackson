@@ -38,7 +38,9 @@
 
 | F22 | **docc 0.4.1 每颗核的代码不能超过约 1 MB**：VAE 的 45 个 kernel 编进一个程序，docc 出 ELF 时报「riscvc：链接：main0.o：.text 处到 `.LBB25_1` 的距离 -1120872 超出 21 位」（RISC-V 的跳转 ±1 MB）；docc 没有放宽它的选项。单个 kernel 的代码量（探针，每个连着一个最小的入口）：64² × 512 的 `group_norm!` 292 KB（16 组的循环被整个展开）、其余 `group_norm!` 112 KB、`attn_wide!` 215 KB、512 通道快路的卷积 106 KB、原路卷积 26–51 KB、排布转换 35–40 KB；VAE 合计约 2.7 MB | `tools/calbin.sh vae`（2026-11-14）、`$CALCULET_HOME/work/vprobe/logs/` | 大模型要切成几段程序，每段 < 1 MB（D15）；换掉排布转换 + calblas GN（D13 → NHWC 原生 GN）能省很多代码。**128² × 512 的 `group_norm!` 单个 kernel 就超**（缺省切 16 段，docc 把外层 16 组也展开，约 1.1 MB）⇒ 本仓抄一份加 `parts = N`，切 64 段是 232 KB（64² 的反过来：缺省 4 段 292 KB、64 段 788 KB，保持缺省）。切 6 段之后每核 ELF：s1 753 KB、s2 910 KB、s3 766 KB、s4 559 KB、s5 723 KB、s6 560 KB，doctor 拒收都是 0 |
 
-| F23 | **真机实测**：正式 VAE 的 6 段程序在 npu3 上第一次就算对（3 遍逐字节一致，对 bf16 参照 58.3 dB），但 6 段合计 5.18 s，比同机 CPU fp32 慢约 3 倍。每段的折合算力（估算）：64² 的快路卷积约 1 TFLOPS，128² 0.8、256² 0.6、512² 只有 0.24 TFLOPS；部署 314 MB 参数只要 0.12 s | `test/PERF.md`、`test/results/npu3-20261114/vae/` | 性能的大头在大图卷积走不了快路（输入 3 行 + 16 像素放不进 384 KB 的 VB，512² × 128 通道要 400 KB）与 GroupNorm 的排布转换（D13）；先给宽图的卷积按行切半走快路，再换 NHWC 原生 GN |
+| F23 | **真机实测**：正式 VAE 的 6 段程序在 npu3 上第一次就算对（3 遍逐字节一致，对 bf16 参照 58.3 dB），但 6 段合计 5.18 s，比同机 CPU fp32 慢约 3 倍。每段的折合算力（估算）：64² 的快路卷积约 1 TFLOPS，128² 0.8、256² 0.6、512² 只有 0.24 TFLOPS；部署 314 MB 参数只要 0.12 s | `test/PERF.md`、`test/results/npu3-20261114/vae/` | （后来按 F24 的计时优化到 0.98 s，比 CPU 快约 1.75 倍。）当时的推断是：性能的大头在大图卷积走不了快路（输入 3 行 + 16 像素放不进 384 KB 的 VB，512² × 128 通道要 400 KB）与 GroupNorm 的排布转换（D13）；先给宽图的卷积按行切半走快路，再换 NHWC 原生 GN |
+
+| F24 | **真机实测**（`tools/prof.py`：每个 kernel 在卡上就地连调 4 遍，扣掉一次调用的固定开销）：正式 VAE 原来 5.18 s 里，**排布转换（`nhwc_to_nchw!` / `nchw_to_nhwc!`）只有约 1.3 GB/s，合计约 2.7 s**（512² × 256 通道一次 0.2 s），calblas `group_norm!` 约 6 GB/s、合计约 0.8 s，原路卷积 1.75–2.6 TFLOPS、合计约 1.25 s，64² 的快路卷积 3.5–5 TFLOPS，`attn_wide!` 0.51 TFLOPS（67 ms）。卷积换成列块快路之后 4.2–4.6 TFLOPS | `out/prof/board-before.json`、`board-tiled.json`、`board-gn.json`；`test/PERF.md` | 先换掉 GroupNorm 的排布转换（D16），再是卷积的列块快路（`sd_kernels::conv2d!`），然后并段（D17）。5.18 ⇒ 4.51 ⇒ 1.23 ⇒ 0.98 s |
 
 calBLAS 文档里写的、我们还没亲自核的（上板时核）：KS1 的 exp / rsqrt 是查表近似（≤ 1 ULP），除法精确；DDR 实测约 84 GB/s；
 35B（21 GB）光部署权重 195 秒（粗算 0.1 GB/s 量级）。
@@ -79,6 +81,9 @@ calBLAS 文档里写的、我们还没亲自核的（上板时核）：KS1 的 e
 - **D14 正式 VAE 中间块的注意力走稠密 token。** GN（NCHW）⇒ `transpose2d!` ⇒ [4096 token, 512] ⇒ `linear!`（多行、HF 权重、f32 bias）出 q、k、v ⇒ 注意力 ⇒ `transpose2d!` + `nchw_to_nhwc!` 回到带边框的图 ⇒ 1×1 卷积（to_out）带残差。注意力单头 512 维，`attention!` 收不下（F21） ⇒ 从 calblas `attention!` 抄出一份，把头维按 128 一段切开：q·kᵀ 在 TU 里沿段接着累加，p·v 按段各一个累加器（记 VENDORED）。
 
 - **D15 正式 VAE 切成 6 段程序、主机串起来。** 每段一个 calbin、一次 `dort calbin run`，上一段的 out_y 原样当下一段的 in_x（F22）。切点选在「下一段只经 GroupNorm 的排布转换、残差、1×1 卷积读这张图」的地方：它们只读内部，所以上一段输出的边框不用清。每段只部署自己的权重（参数块按段打），@act 只放这一段用到的图。代价是段间的特征图经主机转手（最大一张 512² × 256 通道 136 MB），计算不在 CPU 上，记在 NPU / CPU 分工里。以后换成 NHWC 原生的 GroupNorm、代码变小了，再并段。
+
+- **D16 GroupNorm 直接在 NHWC 上算**（取代 D13 的三步，`sd_kernels::gn_stats!` / `gn_apply!`）：统计一遍（每核每通道的 Σx、Σx² 写进 [4][C] 的中转）⇒ 屏障 ⇒ 归一一遍（按组合成 mean / rstd，折成每通道的 a、b'，`y = SiLU(x · a + b')`，只写内部）。读两遍、写一遍；w、b 是 `[C]`，不再展开。组内求和用一张 `[32][C]` 的 0 / 1 掩码（每组只有 4 个通道时 docc 不收沿最后一维的归约与转置）。方差用 E[x²] − mean²（f32），比 calblas 的两遍法少读一遍，精度由模拟对参照与真卡对参照守着（真卡 58.3 dB，和换之前一样）。代码也小：一对约 25 KB（calblas 的 64² 那个 292 KB）。只有注意力前面那个（不带 SiLU、后面要转成 token）还走 D13。
+- **D17 正式 VAE 并成 3 段**（取代 D15 的 6 段）：D16 之后 s3–s6 合起来只有约 580 KB 代码，并成一段，128² 以上的大特征图（66–130 MB）不再经主机转手。s2（注意力，910 KB）还单独一段。
 
 ## 未定 / 要问组委会
 

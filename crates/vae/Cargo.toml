@@ -13,11 +13,8 @@ npu.workspace = true
 calblas.workspace = true
 sd-kernels = { path = "../kernels" }
 
-# 6 段程序（DESIGN D15），一次只开一个（step.rs 里有 compile_error! 守着）；不开 feature 时只有 kernel 与 layout，没有入口
+# 3 段程序（DESIGN D15 / D17），一次只开一个（step.rs 里有 compile_error! 守着）；不开 feature 时只有 kernel 与 layout，没有入口
 [features]
 s1 = []
 s2 = []
 s3 = []
-s4 = []
-s5 = []
-s6 = []

@@ -64,6 +64,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "prof"
+version = "0.1.0"
+dependencies = [
+ "calblas",
+ "npu",
+ "sd-kernels",
+]
+
+[[package]]
 name = "quote"
 version = "1.0.47"
 source = "registry+https://github.com/rust-lang/crates.io-index"

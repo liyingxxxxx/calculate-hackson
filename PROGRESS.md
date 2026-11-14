@@ -6,7 +6,7 @@
 | --- | --- | --- |
 | A0 | 环境、编译链、CPU 参照、算子清单 | ✅ 2026-11-14 |
 | A1 | 新写的算子（quick_gelu、erf-GELU / GEGLU、时间步嵌入、NHWC GroupNorm+SiLU……），各配独立参照与边界测试 | 进行中：时间步嵌入**真机实测**过了（2026-11-14 npu3；cos_approx 分辨率 1/128，DESIGN F19）；quick_gelu、NHWC GroupNorm 未写 |
-| B1 | VAE 解码上 NPU（先 TAESD，再正式 VAE），接进 ComfyUI | ✅ 2026-11-14：TAESD 与正式 VAE（6 段）都**真机跑通**、ComfyUI 解码走 npu；正式 VAE 比 CPU 慢约 3 倍，待优化（V7） |
+| B1 | VAE 解码上 NPU（先 TAESD，再正式 VAE），接进 ComfyUI | ✅ 2026-11-14：TAESD 与正式 VAE 都**真机跑通**、ComfyUI 解码走 npu；正式 VAE 优化后 0.98 s，比 CPU 快约 1.75 倍（V7） |
 | B2 | CLIP 文本编码器上 NPU | |
 | B3 | UNet 一次前向对 diffusers | |
 | B4 | ComfyUI 原生工作流 512² 出图（去噪循环在设备上，见 DESIGN D2） | |
@@ -147,8 +147,14 @@ UNet（B3）几乎全要用 ⇒ 先在一个「只跑一次前向、好对 diffu
       **比同机 CPU fp32（1.71 s）慢约 3 倍**：算对了，但还没优化（DESIGN F23）。
 - [ ] V2b 单 kernel 测试：`crates/ktest` 已加 `attn_wide`、`gn_128` 两个程序（编得过），`ref/ktest.py` 的期望值与用例还没写；
       之后再补原路卷积（128² 512→512）、1×1 shortcut、`linear!` 多行、512 通道上采样。整段算错时用来二分（这次第一遍就对了，没用上）。
-- [ ] V7 性能（DESIGN F23）：① 宽图卷积按行切半走快路（512² × 128 通道差一点就放得进 VB），s5、s6 是大头；
-      ② NHWC 原生 GroupNorm+SiLU 换掉 D13 的三步（省排布转换与 219 MB 的展开参数，代码也小）；③ 代码小了就并段，少几次主机转手。
+- [x] 2026-11-14 V7 性能（**真机实测**，npu3）：先做逐 kernel 计时 `tools/prof.py`（`crates/prof` 每个 kernel 一个程序、卡上就地连调 4 遍）——
+      大头不是卷积，是 GroupNorm 前后的**排布转换**（约 1.3 GB/s，合计约 2.7 s，DESIGN F24）。按测出来的次序改：
+      ① 卷积的**列块快路**（`sd_kernels::conv2d!`：快路放不下整行就按列切块）：128² 以上的 3×3 卷积 1.75–2.6 ⇒ 4.2–4.6 TFLOPS，整条 5.18 ⇒ 4.51 s；
+      ② **NHWC 原生 GroupNorm**（`gn_stats!` / `gn_apply!`，D16）：不转排布、w / b 不展开（参数 314 ⇒ 96 MB），一个 GN 从 15–487 ms 降到 1.6–26.5 ms，整条 ⇒ 1.23 s；
+      ③ **并成 3 段**（D17：s3–s6 合成一段，约 540 KB 代码）：大特征图不再经主机转手，整条 ⇒ **0.98 s**。
+      每一步都对参照（58.3 / 56.9 dB）、3 遍逐字节一致。**比同机 CPU fp32（1.71 s）快约 1.75 倍**；ComfyUI 的 VAE 节点 5.89 ⇒ 0.99 s。
+      结果在 `test/results/npu3-20261114/vae-opt/`（含三份逐 kernel 计时），性能表在 `test/PERF.md`。
+- [ ] V8 还能抠的：GroupNorm 统计那一遍（512² 一次约 20 ms，3.5–6.5 GB/s）、`attn_wide!`（0.51 TFLOPS）、把注意力那一段也并进去（要先把它的 GN 换成 NHWC 版）。
 
 之后：B2 CLIP（LLM 式模板现成：`layer_norm!`、`linear!`、`attention!(mask = full)`；新写 quick_gelu）⇒ B3 UNet 一次前向 ⇒ B4 去噪循环进设备（D2）⇒ B5 性能与多尺寸。
 

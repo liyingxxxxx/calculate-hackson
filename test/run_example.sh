@@ -5,7 +5,7 @@
 #   没有卡：            bash test/run_example.sh          ⇒ npu-sim（CPU 上照编出来的 .cvx 重放，只查接线；⛔ 不是 NPU 的数）
 #   有卡（确认可以用）：SD15NPU_ALLOW_BOARD=1 [SD15NPU_BOARD_LOCK=<现场的板锁文件>] bash test/run_example.sh
 #                                                         ⇒ 先只读查卡（OS / RT 起着、板上是 DeviceRT、没别人在用），满足才在真卡上跑
-#   加 --vae：解码器换成正式 VAE（6 段程序，画质同 ComfyUI 自带的 VAEDecode；真卡上约 5 s，模拟约 30 s）
+#   加 --vae：解码器换成正式 VAE（分段程序，画质同 ComfyUI 自带的 VAEDecode；真卡上约 1 s，模拟约 25 s）
 #   加 --comfy：再跑一遍 ComfyUI 原生工作流（提示词 → CLIP → KSampler 20 步 → SD15 NPU · TAESD / VAE Decode → 存图），解码走同一个后端
 #
 # 前提：已经 bash tools/bootstrap.sh（README「在一台新机器上复现」）。

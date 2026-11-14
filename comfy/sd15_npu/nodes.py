@@ -61,9 +61,9 @@ class TAESDDecodeNPU:
 
 
 class VAEDecodeNPU:
-    """正式 VAE（AutoencoderKL）解码，6 段设备程序（DESIGN D15）。ComfyUI 的 LATENT 本来就在 VAE 原空间 ⇒ 原样喂，不乘 0.18215。"""
+    """正式 VAE（AutoencoderKL）解码，分段设备程序（DESIGN D15 / D17）。ComfyUI 的 LATENT 本来就在 VAE 原空间 ⇒ 原样喂，不乘 0.18215。"""
 
-    DESCRIPTION = ("SD1.5 的正式 VAE 解码（512×512，画质同 ComfyUI 自带的 VAEDecode）。npu：在 Calculet NPU 上依次跑 6 段整步程序"
+    DESCRIPTION = ("SD1.5 的正式 VAE 解码（512×512，画质同 ComfyUI 自带的 VAEDecode）。npu：在 Calculet NPU 上依次跑各段整步程序"
                    "（要 SD15NPU_ALLOW_BOARD=1）；npu-sim：CPU 上 numpy 模拟同一份设备程序（不是 NPU，一张约半分钟）；cpu：diffusers fp32（CPU 兜底，会计数）。")
     CATEGORY = "sd15-npu"
     RETURN_TYPES = ("IMAGE",)
@@ -90,7 +90,7 @@ class VAEDecodeNPU:
             img, info = dec.decode(lat[b].to(torch.float32).cpu().numpy())
             logging.getLogger("sd15_npu").info(
                 "[sd15-npu] VAE 解码 第 %d/%d 张：backend=%s，%.2f s%s", b + 1, lat.shape[0], info["backend"], info["seconds"],
-                f"，dort 墙钟合计 {info['dort_wall_s']:.3f} s（6 段 {info['stages']}）" if "dort_wall_s" in info else "")
+                f"，dort 墙钟合计 {info['dort_wall_s']:.3f} s（各段 {info['stages']}）" if "dort_wall_s" in info else "")
             out.append(torch.from_numpy(np.clip(img, 0.0, 1.0).transpose(1, 2, 0).copy()))
         return (torch.stack(out),)
 

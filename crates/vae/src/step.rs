@@ -1,6 +1,6 @@
-//! 6 段入口（DESIGN D15）：每段一个 feature（`s1` … `s6`），各是一个单芯粒两核的整步程序。接线的规矩同 TAESD（`crates/taesd/src/step.rs`）：
+//! 3 段入口（DESIGN D15 / D17）：每段一个 feature（`s1` … `s3`），各是一个单芯粒两核的整步程序。接线的规矩同 TAESD（`crates/taesd/src/step.rs`）：
 //! - `cores = 2` 的 kernel（卷积、GroupNorm、线性层、注意力）两核都调，调完 `sync_cores()`；输入、输出、残差互不重叠（不原地）；
-//! - 按 `num_cores()` 分行 / 分块的单核 kernel（上采样、排布转换、转置）**两核都调**，调完也 `sync_cores()`；
+//! - 按 `num_cores()` 分行 / 分块的单核 kernel（上采样、NHWC GroupNorm、排布转换、转置）**两核都调**，调完也 `sync_cores()`；
 //! - 偏移全部是编译期常量（`const` 项），按段从 layout.rs 取（`S` 是这一段的下标，宏在调用处取它）。
 //!
 //! 每个 ResNet 的进出在 A、B 两张图之间轮换（这一段的第一个 ResNet 从 in_x 读、最后一步写 out_y），
@@ -11,13 +11,7 @@ use crate::kernels::*;
 use crate::layout::{self as L, NGN};
 use npu::prelude::*;
 
-#[cfg(any(
-    all(feature = "s1", any(feature = "s2", feature = "s3", feature = "s4", feature = "s5", feature = "s6")),
-    all(feature = "s2", any(feature = "s3", feature = "s4", feature = "s5", feature = "s6")),
-    all(feature = "s3", any(feature = "s4", feature = "s5", feature = "s6")),
-    all(feature = "s4", any(feature = "s5", feature = "s6")),
-    all(feature = "s5", feature = "s6"),
-))]
+#[cfg(any(all(feature = "s1", any(feature = "s2", feature = "s3")), all(feature = "s2", feature = "s3")))]
 compile_error!("vae：一次只开一段（每个 feature 是一个整步程序）");
 
 // layout.rs 抄的 norm_cols 和 calblas group_norm! 里用的那份逐个相同（GN 的 w、b 按这个展开）
@@ -76,17 +70,16 @@ macro_rules! conv {
     }};
 }
 
-/// 第 j 个 GroupNorm（DESIGN D13）：带边框的图 x ⇒ N1（NCHW）⇒ GN（+ SiLU）⇒ N2 ⇒ 带边框的图 g（只写内部，边框还是 0）。
-/// `[tc, gn, th]` 是这个形状的三个 kernel。
+/// 第 j 个 GroupNorm（NHWC 原生，DESIGN D16）：x ⇒ 统计（每核的 Σx、Σx² ⇒ ST）⇒ 屏障 ⇒ 归一 + SiLU ⇒ g（只写内部，边框还是 0）。
+/// `[gs, ga]` 是这个形状的两个 kernel；组掩码按这个 GN 的通道数取。
 macro_rules! gn {
-    ([$tc:ident, $gk:ident, $th:ident], $j:expr, $x:expr => $g:expr) => {{
+    ([$gs:ident, $ga:ident], $j:expr, $x:expr => $g:expr) => {{
         const GW: u64 = L::gw_off(S, $j);
         const GB: u64 = L::gb_off(S, $j);
-        $tc($x.cast(), d!(L::n1(S)).cast());
+        const MK: u64 = L::mask_off(S, L::GNS[$j].c);
+        $gs($x.cast(), d!(L::st(S)).cast());
         sync_cores();
-        $gk(d!(L::n1(S)).cast(), w().at(GW).cast(), w().at(GB).cast(), d!(L::n2(S)).cast());
-        sync_cores();
-        $th(d!(L::n2(S)).cast(), $g.cast());
+        $ga($x.cast(), d!(L::st(S)).cast(), w().at(GW).cast(), w().at(GB).cast(), w().at(MK).cast(), $g.cast());
         sync_cores();
     }};
 }
@@ -144,13 +137,13 @@ macro_rules! decls_checked {
 mod prog {
     use super::*;
     const S: usize = 0;
-    decls_checked!(S, 295936, 4734976, 11849728, 23298048);
+    decls_checked!(S, 295936, 4734976, 9834496, 14917632);
     #[npu::program(chiplets = 1, cores = 2)]
     pub fn step() {
         zero!();
         conv!(va_pqc, 0, in_x() => m!(L::L1));
         conv!(va_cin, 1, m!(L::L1) => m!(L::A64));
-        resnet!([va_tc64, va_gn64, va_th64], va_c64, va_c64r, 2, 0, [m!(L::A64), m!(L::G64), m!(L::H64), out_y()]);
+        resnet!([va_gs64, va_ga64], va_c64, va_c64r, 2, 0, [m!(L::A64), m!(L::G64), m!(L::H64), out_y()]);
     }
 }
 
@@ -159,7 +152,7 @@ mod prog {
 mod prog {
     use super::*;
     const S: usize = 1;
-    decls_checked!(S, 4734976, 4734976, 3162112, 34226176);
+    decls_checked!(S, 4734976, 4734976, 3162112, 34234368);
     #[npu::program(chiplets = 1, cores = 2)]
     pub fn step() {
         zero!();
@@ -196,74 +189,43 @@ mod prog {
     }
 }
 
-/// s3：中间块 ResNet 1 ⇒ up_blocks.0 的 3 个 ResNet（64² × 512）⇒ ×2 ⇒ G128 ⇒ 卷积 ⇒ out_y（128² × 512）。
+/// s3（原 s3–s6，D17）：中间块 ResNet 1 ⇒ up_blocks.0（64²）⇒ ×2 ⇒ up_blocks.1（128²）⇒ ×2 ⇒ up_blocks.2（256²，第一个 ResNet 512 ⇒ 256 带 shortcut）
+/// ⇒ ×2 ⇒ up_blocks.3（512²，256 ⇒ 128 带 shortcut）⇒ GN + SiLU ⇒ conv_out ⇒ out_y（[0, 1] 的图）。原来的段界 A128、X256、X512 现在是 @act 里的图。
 #[cfg(feature = "s3")]
 mod prog {
     use super::*;
     const S: usize = 2;
-    decls_checked!(S, 4734976, 17842176, 50892800, 45826048);
+    decls_checked!(S, 4734976, 17040384, 87867392, 914333696);
     #[npu::program(chiplets = 1, cores = 2)]
     pub fn step() {
         zero!();
-        resnet!([va_tc64, va_gn64, va_th64], va_c64, va_c64r, 5, 3, [in_x(), m!(L::G64), m!(L::H64), m!(L::B64)]);
-        resnet!([va_tc64, va_gn64, va_th64], va_c64, va_c64r, 7, 5, [m!(L::B64), m!(L::G64), m!(L::H64), m!(L::A64)]);
-        resnet!([va_tc64, va_gn64, va_th64], va_c64, va_c64r, 9, 7, [m!(L::A64), m!(L::G64), m!(L::H64), m!(L::B64)]);
-        resnet!([va_tc64, va_gn64, va_th64], va_c64, va_c64r, 11, 9, [m!(L::B64), m!(L::G64), m!(L::H64), m!(L::A64)]);
+        // 64²：中间块 ResNet 1、up_blocks.0 的 3 个 ResNet（in ⇒ B ⇒ A ⇒ B ⇒ A）；×2 ⇒ G128 ⇒ 卷积 ⇒ A128
+        resnet!([va_gs64, va_ga64], va_c64, va_c64r, 5, 3, [in_x(), m!(L::G64), m!(L::H64), m!(L::B64)]);
+        resnet!([va_gs64, va_ga64], va_c64, va_c64r, 7, 5, [m!(L::B64), m!(L::G64), m!(L::H64), m!(L::A64)]);
+        resnet!([va_gs64, va_ga64], va_c64, va_c64r, 9, 7, [m!(L::A64), m!(L::G64), m!(L::H64), m!(L::B64)]);
+        resnet!([va_gs64, va_ga64], va_c64, va_c64r, 11, 9, [m!(L::B64), m!(L::G64), m!(L::H64), m!(L::A64)]);
         up512!(va_up64, m!(L::A64) => m!(L::G128));
-        conv!(va_c128, 13, m!(L::G128) => out_y());
-    }
-}
-
-/// s4：up_blocks.1 的 3 个 ResNet（128² × 512）⇒ ×2 ⇒ U256 ⇒ 卷积 ⇒ out_y（256² × 512）。
-#[cfg(feature = "s4")]
-mod prog {
-    use super::*;
-    const S: usize = 3;
-    decls_checked!(S, 17842176, 69222400, 58224640, 174800896);
-    #[npu::program(chiplets = 1, cores = 2)]
-    pub fn step() {
-        zero!();
-        resnet!([va_tc128, va_gn128, va_th128], va_c128, va_c128r, 14, 11, [in_x(), m!(L::G128), m!(L::H128), m!(L::B128)]);
-        resnet!([va_tc128, va_gn128, va_th128], va_c128, va_c128r, 16, 13, [m!(L::B128), m!(L::G128), m!(L::H128), m!(L::A128)]);
-        resnet!([va_tc128, va_gn128, va_th128], va_c128, va_c128r, 18, 15, [m!(L::A128), m!(L::G128), m!(L::H128), m!(L::B128)]);
+        conv!(va_c128, 13, m!(L::G128) => m!(L::A128));
+        // 128²：up_blocks.1 的 3 个 ResNet（A ⇒ B ⇒ A ⇒ B）；×2 ⇒ U256 ⇒ 卷积 ⇒ X256
+        resnet!([va_gs128, va_ga128], va_c128, va_c128r, 14, 11, [m!(L::A128), m!(L::G128), m!(L::H128), m!(L::B128)]);
+        resnet!([va_gs128, va_ga128], va_c128, va_c128r, 16, 13, [m!(L::B128), m!(L::G128), m!(L::H128), m!(L::A128)]);
+        resnet!([va_gs128, va_ga128], va_c128, va_c128r, 18, 15, [m!(L::A128), m!(L::G128), m!(L::H128), m!(L::B128)]);
         up512!(va_up128, m!(L::B128) => m!(L::U256));
-        conv!(va_c256u, 20, m!(L::U256) => out_y());
-    }
-}
-
-/// s5：up_blocks.2：带 shortcut 的 ResNet（512 ⇒ 256）⇒ 2 个 ResNet（256² × 256）⇒ ×2 ⇒ U512 ⇒ 卷积 ⇒ out_y（512² × 256）。
-#[cfg(feature = "s5")]
-mod prog {
-    use super::*;
-    const S: usize = 4;
-    decls_checked!(S, 69222400, 136323072, 68452352, 478674944);
-    #[npu::program(chiplets = 1, cores = 2)]
-    pub fn step() {
-        zero!();
-        resnet_sc!([va_tc256w, va_gn256w, va_th256w], [va_tc256, va_gn256, va_th256], va_c256a, va_s256, va_c256r, 21, 17,
-            [in_x(), m!(L::U256), m!(L::G256), m!(L::H256), m!(L::A256)]);
-        resnet!([va_tc256, va_gn256, va_th256], va_c256, va_c256r, 24, 19, [m!(L::A256), m!(L::G256), m!(L::H256), m!(L::B256)]);
-        resnet!([va_tc256, va_gn256, va_th256], va_c256, va_c256r, 26, 21, [m!(L::B256), m!(L::G256), m!(L::H256), m!(L::A256)]);
+        conv!(va_c256u, 20, m!(L::U256) => m!(L::X256));
+        // 256²：up_blocks.2（X256 512 通道 ⇒ 带 shortcut 的 ResNet ⇒ A256 256 通道 ⇒ B ⇒ A）；×2 ⇒ U512 ⇒ 卷积 ⇒ X512
+        resnet_sc!([va_gs256w, va_ga256w], [va_gs256, va_ga256], va_c256a, va_s256, va_c256r, 21, 17,
+            [m!(L::X256), m!(L::U256), m!(L::G256), m!(L::H256), m!(L::A256)]);
+        resnet!([va_gs256, va_ga256], va_c256, va_c256r, 24, 19, [m!(L::A256), m!(L::G256), m!(L::H256), m!(L::B256)]);
+        resnet!([va_gs256, va_ga256], va_c256, va_c256r, 26, 21, [m!(L::B256), m!(L::G256), m!(L::H256), m!(L::A256)]);
         va_up256(m!(L::A256).cast(), m!(L::U512).cast());
         sync_cores();
-        conv!(va_c512u, 28, m!(L::U512) => out_y());
-    }
-}
-
-/// s6：up_blocks.3：带 shortcut 的 ResNet（256 ⇒ 128）⇒ 2 个 ResNet（512² × 128）⇒ GN + SiLU ⇒ conv_out ⇒ out_y（[0, 1] 的图）。
-#[cfg(feature = "s6")]
-mod prog {
-    use super::*;
-    const S: usize = 5;
-    decls_checked!(S, 136323072, 17040384, 136454144, 677609472);
-    #[npu::program(chiplets = 1, cores = 2)]
-    pub fn step() {
-        zero!();
-        resnet_sc!([va_tc512w, va_gn512w, va_th512w], [va_tc512, va_gn512, va_th512], va_c512a, va_s512, va_c512r, 29, 23,
-            [in_x(), m!(L::U512), m!(L::G512), m!(L::H512), m!(L::A512)]);
-        resnet!([va_tc512, va_gn512, va_th512], va_c512, va_c512r, 32, 25, [m!(L::A512), m!(L::G512), m!(L::H512), m!(L::B512)]);
-        resnet!([va_tc512, va_gn512, va_th512], va_c512, va_c512r, 34, 27, [m!(L::B512), m!(L::G512), m!(L::H512), m!(L::A512)]);
-        gn!([va_tc512, va_gn512, va_th512], 29, m!(L::A512) => m!(L::G512));
+        conv!(va_c512u, 28, m!(L::U512) => m!(L::X512));
+        // 512²：up_blocks.3（X512 256 通道 ⇒ 带 shortcut 的 ResNet ⇒ A512 128 通道 ⇒ B ⇒ A）⇒ GN + SiLU ⇒ conv_out ⇒ out_y
+        resnet_sc!([va_gs512w, va_ga512w], [va_gs512, va_ga512], va_c512a, va_s512, va_c512r, 29, 23,
+            [m!(L::X512), m!(L::U512), m!(L::G512), m!(L::H512), m!(L::A512)]);
+        resnet!([va_gs512, va_ga512], va_c512, va_c512r, 32, 25, [m!(L::A512), m!(L::G512), m!(L::H512), m!(L::B512)]);
+        resnet!([va_gs512, va_ga512], va_c512, va_c512r, 34, 27, [m!(L::B512), m!(L::G512), m!(L::H512), m!(L::A512)]);
+        gn!([va_gs512, va_ga512], 29, m!(L::A512) => m!(L::G512));
         conv!(va_cout, 36, m!(L::G512) => out_y());
     }
 }

@@ -1,10 +1,12 @@
-"""正式 VAE 解码器（6 段程序，DESIGN D15）的打包与解包（偏移全部来自 layout-dump，见 `layout.py`）。
+"""正式 VAE 解码器（分段程序，DESIGN D15 / D17）的打包与解包（偏移全部来自 layout-dump，见 `layout.py`）。
 
 - 权重：SD1.5 的 `vae/diffusion_pytorch_model.safetensors`（AutoencoderKL，diffusers 格式，注意力是老键名 query / key / value / proj_attn）
   ⇒ 每段一个 `param_blk0.bin`（那一段的 @w）：
   - 卷积：torch 的 `[Cout][Cin][k][k]` ⇒ 模板要的 `[ky·k + kx][Cin_pad][Cout_pad]` bf16（rne），bias f32 `[Cout_pad]`；补的通道是 0。
     proj_attn 是 Linear `[Cout][Cin]`，设备上当 1×1 卷积。conv_out 把 diffusers 的 (x + 1) / 2 折进去：权重 × 0.5（bf16 里精确）、bias × 0.5 + 0.5。
-  - GroupNorm：w、b（f32）按 calblas `group_norm!` 的格式展开：NCHW 里每 `cols` 个像素一行，一行一个通道的值、写 8 份 ⇒ `[C · HW / cols][8]`。
+  - GroupNorm：NHWC 原生的（DESIGN D16）w、b 就是 `[C]` f32；s2 注意力前面那个（calblas `group_norm!`，NCHW）按它的格式展开：
+    NCHW 里每 `cols` 个像素一行，一行一个通道的值、写 8 份 ⇒ `[C · HW / cols][8]`。
+  - 组掩码（NHWC GN 用）：每种通道数一份 `[32][C]` f32，第 g 行在第 g 组的 C / 32 个通道上是 1。
   - 注意力的 q、k、v：HF 原样 `[512][512]` bf16（`linear!` 的 `w = hf`）+ bias f32。
 - 输入：latent `[4][64][64]`（**VAE 原空间**，即 ComfyUI 的 LATENT、diffusers `vae.decode` 吃的那个）⇒ `[68][68][32]` bf16（NHWC、两圈 0 边框、通道 4..31 是 0）。
 - 段与段之间：上一段的 out_y 原样当下一段的 in_x（字节数相同，layout 里有断言）。
@@ -75,9 +77,13 @@ def pack_stage(L: dict, s: int, sd: dict) -> bytes:
             v = sd[g["key"] + suffix].astype(np.float32)
             if v.shape != (g["c"],):
                 raise ValueError(f"{g['key']}{suffix} 的形状 {v.shape}，layout 说是 ({g['c']},)")
-            data = _gn_rows(g, v).astype("<f4").tobytes()
+            data = (v if g["nhwc"] else _gn_rows(g, v)).astype("<f4").tobytes()
             assert len(data) == g["len"]
             put(off, data)
+    for c, off in st["masks"].items():
+        c, g = int(c), L["consts"]["GROUPS"]
+        m = (np.arange(c)[None, :] // (c // g) == np.arange(g)[:, None]).astype("<f4")
+        put(off, m.tobytes())
     if st["attn"]:
         for (wo, bo), key in zip(st["qkv"], L["qkv_keys"]):
             w = sd[key + ".weight"].astype(np.float32)
@@ -96,7 +102,7 @@ def used_keys(L: dict) -> set:
 
 
 def write_params(L: dict, safetensors_path: Path, out_root: Path) -> list[Path]:
-    """6 段的参数块 ⇒ `<out_root>/<段名>/param_blk0.bin`（+ sha256）。解码器的权重一个都不能漏打。"""
+    """各段的参数块 ⇒ `<out_root>/<段名>/param_blk0.bin`（+ sha256）。解码器的权重一个都不能漏打。"""
     from safetensors.numpy import load_file
 
     sd = load_file(str(safetensors_path))

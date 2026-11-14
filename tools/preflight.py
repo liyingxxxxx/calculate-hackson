@@ -1,6 +1,6 @@
 """上板前的静态核对（⛔ 不开设备）：保证拿到一块正常的真卡时，我们的包 dort 认、主机发的字节对得上。
 
-对每个要上板的 calbin（TAESD 带真权重的那份、正式 VAE 的 6 段、单 kernel 测试台的每个测试）：
+对每个要上板的 calbin（TAESD 带真权重的那份、正式 VAE 的各段、单 kernel 测试台的每个测试）：
 1. `dort calbin parse`（dort 自己说「纯静态，⛔ 不开设备」）能解析 —— 真跑时读包的就是它；
 2. `docc calbin doctor` 拒收 0 条；
 3. 子模型清单（`<子模型>/submodel_memory_reserved_info.txt`）里的输入 / 输出张量：名字是我们 dort 命令行里写的 in_x / out_y，

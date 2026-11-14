@@ -148,19 +148,23 @@ mod prog {
     }
 }
 
-/// GroupNorm + SiLU（NCHW，128² × 512，本仓那份 `group_norm!`、切 64 段）：in_x = x [512][16384] bf16，w = 展开的 w、b（各 [65536][8] f32），out_y = y。
+/// GroupNorm + SiLU（NHWC 原生，128² × 512，正式 VAE s4 里那一对 gn_stats / gn_apply）：in_x = x（[132][132][512] bf16），
+/// w = w [512] f32、b [512] f32、组掩码 [32][512] f32（各 4 KiB 对齐），act = ST，out_y = y（同形，只写内部）。
 #[cfg(feature = "gn_128")]
 mod prog {
     use npu::prelude::*;
     npu::decls! {
-        in_x: input, bytes = 16777216;
-        w: weights, bytes = 4194304;
-        out_y: output, bytes = 16777216;
+        in_x: input, bytes = 17842176;
+        w: weights, bytes = 73728;
+        act: workspace, bytes = 8192;
+        out_y: output, bytes = 17842176;
     }
-    const BO: u64 = 512 * 16384 / 128 * 8 * 4;
+    const _: () = assert!(super::layout::img(128, 512) == 17842176);
     #[npu::program(chiplets = 1, cores = 2)]
     pub fn step() {
-        crate::vae_kernels::va_gn128(in_x().cast(), w().cast(), w().at(BO).cast(), out_y().cast());
+        crate::vae_kernels::va_gs128(in_x().cast(), act().cast());
+        sync_cores();
+        crate::vae_kernels::va_ga128(in_x().cast(), act().cast(), w().cast(), w().at(4096).cast(), w().at(8192).cast(), out_y().cast());
         sync_cores();
     }
 }

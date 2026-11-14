@@ -54,8 +54,8 @@ run "TAESD calbin（真权重）+ docc doctor" bash -c '"$0" -I tools/taesd.py c
 run "模拟器自测（7 种坏法都要抓到）" "$PY" -I ref/test_cvxsim.py
 run "TAESD 整步程序的 numpy 模拟对两份独立参照（4 组 latent）" "$PY" -I tools/taesd.py check
 run "单 kernel 测试台（7 个测试 × 边界用例：模拟对期望、calbin 出得来）" "$PY" -I ref/ktest.py all
-run "正式 VAE：6 段 calbin（真权重）+ docc doctor" "$PY" -I tools/vae.py calbin
-run "正式 VAE 6 段程序的 numpy 模拟对两份独立参照（2 组 latent）" "$PY" -I tools/vae.py check
+run "正式 VAE：各段 calbin（真权重）+ docc doctor" "$PY" -I tools/vae.py calbin
+run "正式 VAE 各段程序的 numpy 模拟对两份独立参照（2 组 latent）" "$PY" -I tools/vae.py check
 run "上板前静态核对（dort 认得我们的包，张量名 / 字节数 / 参数块与主机侧一致）" "$PY" -I tools/preflight.py
 run "上板流程自测（测试替身空跑全套 + 6 种该停的情形）" "$PY" -I ref/test_board_kit.py
 run "ComfyUI 加载本仓节点" comfy_loads

@@ -15,7 +15,7 @@ exp / rsqrt / tanh 在板上是近似指令，这里用精确值 ⇒ 不是板�
 
 kernel 的语义按「模板 + 宏参数」认：从程序 crate 的 `kernels.rs` 里用正则读 `模板!(pub 名字: 键 = 值, …)`，
 值里的常量（LAT、C……）取自 layout-dump 的 `consts`。认得的模板：conv2d、upsample2、tanh_scale、timestep_embed、fill16k；
-正式 VAE 用到的 group_norm、nhwc_to_nchw、nchw_to_nhwc、transpose2d、linear（多行、`w = hf`）、attn_wide。
+正式 VAE 用到的 group_norm、nhwc_to_nchw、nchw_to_nhwc、transpose2d、linear（多行、`w = hf`）、attn_wide、gn_stats、gn_apply。
 """
 from __future__ import annotations
 
@@ -412,6 +412,47 @@ class Sim:
         elif act != "none":
             raise SimError(f"group_norm：认不得 act = {act}")
         self._u16(y, ch * hw)[:] = bf16.bits(out.ravel())
+
+    def _k_gn_stats(self, job, c, args):
+        """本仓 gn_stats!：两颗核各自的半边行 ⇒ 每通道 Σx、Σx²（f32）⇒ st 的第 2·core、2·core + 1 行。"""
+        h, w, ch, p = c["h"], c["w"], c["c"], c["p"]
+        x, st = args
+        job.reads.append(self._check(job.kernel, "x", x, (h + 2 * B) * (w + 2 * B) * p * 2))
+        job.writes.append(self._check(job.kernel, "st", st, 4 * ch * 4))
+        v = bf16.from_bits(self._img(x, h, w, p)[B:B + h, B:B + w, :ch]).astype(np.float64)
+        out = np.zeros((4, ch), np.float32)
+        h0 = h // 2  # 同 calblas halves!：0 号核前一半，1 号核其余
+        for core, rows in enumerate((v[:h0], v[h0:])):
+            out[2 * core] = rows.sum((0, 1))
+            out[2 * core + 1] = (rows * rows).sum((0, 1))
+        self._f32(st, 4 * ch)[:] = out.ravel()
+
+    def _k_gn_apply(self, job, c, args):
+        """本仓 gn_apply!：两核的部分和 ⇒ 每组 mean、var = E[x²] − mean² ⇒ (x − mean) · rsqrt(var + eps) · w + b ⇒ 舍 bf16 ⇒（silu）⇒ 只写内部。"""
+        h, w, ch, p, g, eps, act = c["h"], c["w"], c["c"], c["p"], c["groups"], np.float64(c["eps"]), c["act"]
+        x, st, wp, bp, mk, y = args
+        job.reads.append(self._check(job.kernel, "x", x, (h + 2 * B) * (w + 2 * B) * p * 2))
+        job.reads.append(self._check(job.kernel, "st", st, 4 * ch * 4))
+        job.reads.append(self._check(job.kernel, "w", wp, ch * 4))
+        job.reads.append(self._check(job.kernel, "b", bp, ch * 4))
+        job.reads.append(self._check(job.kernel, "mk", mk, g * ch * 4))
+        wo = w + 2 * B
+        yr = self._check(job.kernel, "y", y, (h + 2 * B) * wo * p * 2)
+        job.writes.append((yr[0], yr[1] + (B * wo + B) * p * 2, yr[1] + (((B + h - 1) * wo + B + w - 1) * p + ch) * 2))
+        sv = self._f32(st, 4 * ch).reshape(4, ch).astype(np.float64)
+        mask = self._f32(mk, g * ch).reshape(g, ch).astype(np.float64)
+        n = h * w * (ch // g)
+        mean, ex2 = mask @ (sv[0] + sv[2]) / n, mask @ (sv[1] + sv[3]) / n
+        rstd = 1 / np.sqrt(np.maximum(ex2 - mean * mean, 0) + eps)
+        a = (mask.T @ rstd) * self._f32(wp, ch)
+        bb = self._f32(bp, ch) - (mask.T @ mean) * a
+        v = bf16.from_bits(self._img(x, h, w, p)[B:B + h, B:B + w, :ch])
+        out = bf16.rnd((v * a + bb).astype(np.float32))
+        if act == "silu":
+            out = bf16.rnd(out / (1 + np.exp(-out)))
+        elif act != "none":
+            raise SimError(f"gn_apply：认不得 act = {act}")
+        self._img(y, h, w, p)[B:B + h, B:B + w, :ch] = bf16.bits(out)
 
     def _k_nhwc_to_nchw(self, job, c, args):
         h, w, ch, p = c["h"], c["w"], c["c"], c["p"]

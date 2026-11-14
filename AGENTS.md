@@ -29,7 +29,7 @@ bash tools/verify_all.sh                 # 不上板能做的全部检查；改�
 tools/check_env.sh                       # 环境自检
 tools/calbin.sh <crate> [--features f] [--params 目录]   # 整步程序 ⇒ calbin ⇒ docc doctor（不上板）
 $CALCULET_HOME/venv/bin/python -I tools/taesd.py {params|calbin|sim|check}   # TAESD（B1）
-$CALCULET_HOME/venv/bin/python -I tools/vae.py {params|calbin|sim|check}     # 正式 VAE（B1b，6 段程序）
+$CALCULET_HOME/venv/bin/python -I tools/vae.py {params|calbin|sim|check}     # 正式 VAE（B1b，分段程序，现在 3 段）
 $CALCULET_HOME/venv/bin/python -I ref/ktest.py {gen|sim|calbin} <测试>      # 单 kernel 测试台
 $CALCULET_HOME/venv/bin/python -I ref/test_cvxsim.py                        # 模拟器自测
 bash comfy/run_comfyui.sh                # ComfyUI（venv 在 $CALCULET_HOME/comfy-venv）

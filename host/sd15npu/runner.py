@@ -1,4 +1,4 @@
-"""解码器的三种执行器（ComfyUI 节点与 `tools/taesd.py`、`tools/vae.py` 共用）：TAESD（`TaesdDecoder`）、正式 VAE（`VaeDecoder`，6 段程序，DESIGN D15）。
+"""解码器的三种执行器（ComfyUI 节点与 `tools/taesd.py`、`tools/vae.py` 共用）：TAESD（`TaesdDecoder`）、正式 VAE（`VaeDecoder`，分段程序，DESIGN D15 / D17）。
 
 | backend | 谁算 | 说明 |
 | --- | --- | --- |
@@ -104,7 +104,7 @@ class TaesdDecoder:
         return img, info
 
 
-# ───────────────────────── 正式 VAE（6 段程序，DESIGN D15）─────────────────────────
+# ───────────────────────── 正式 VAE（分段程序，DESIGN D15 / D17）─────────────────────────
 
 VAE_KERNELS_RS = ROOT / "crates" / "vae" / "src" / "kernels.rs"
 VAE_PARAMS = ROOT / "out" / "vae" / "params"
@@ -127,7 +127,7 @@ def build_vae_stage(name: str):
 
 
 def ensure_vae_params(L: dict) -> list[Path]:
-    """6 段的参数块；比权重文件或 layout.rs 旧就重打。"""
+    """各段的参数块；比权重文件或 layout.rs 旧就重打。"""
     src = vae_dir() / "diffusion_pytorch_model.safetensors"
     ps = [VAE_PARAMS / st["name"] / "param_blk0.bin" for st in L["stages"]]
     newest = max(src.stat().st_mtime, (ROOT / "crates/vae/src/layout.rs").stat().st_mtime)
@@ -137,7 +137,7 @@ def ensure_vae_params(L: dict) -> list[Path]:
 
 
 class VaeDecoder:
-    """正式 VAE 解码：6 段依次跑，上一段的 out_y 原样当下一段的 in_x（段间的特征图经主机转手，不在 CPU 上算）。"""
+    """正式 VAE 解码：各段依次跑，上一段的 out_y 原样当下一段的 in_x（段间的特征图经主机转手，不在 CPU 上算）。"""
 
     def __init__(self, backend: str = "cpu"):
         if backend not in BACKENDS:
@@ -181,7 +181,7 @@ class VaeDecoder:
                     data = sim.mem["out_y"].tobytes()
                     stages[st["name"]] = sim.report()
                     del sim
-                log.info("[sd15-npu] VAE 解码：numpy 模拟 6 段设备程序（不是 NPU）")
+                log.info("[sd15-npu] VAE 解码：numpy 模拟各段设备程序（不是 NPU）")
             else:
                 from . import dort
 

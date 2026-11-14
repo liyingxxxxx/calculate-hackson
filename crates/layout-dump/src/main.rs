@@ -46,7 +46,7 @@ fn vae_json() -> String {
     let gns: Vec<String> = L::GNS
         .iter()
         .enumerate()
-        .map(|(j, g)| format!("{{\"j\": {j}, \"key\": \"{}\", \"c\": {}, \"res\": {}, \"silu\": {}, \"cols\": {}, \"len\": {}}}", g.key, g.c, g.res, g.silu, L::gn_cols(j), L::gn_len(j)))
+        .map(|(j, g)| format!("{{\"j\": {j}, \"key\": \"{}\", \"c\": {}, \"res\": {}, \"silu\": {}, \"nhwc\": {}, \"cols\": {}, \"len\": {}}}", g.key, g.c, g.res, g.silu, g.nhwc, L::gn_cols(j), L::gn_len(j)))
         .collect();
     let maps: Vec<String> = L::MAPS.iter().map(|m| format!("{{\"res\": {}, \"ch\": {}}}", m.res, m.ch)).collect();
     let mut stages = Vec::new();
@@ -54,6 +54,7 @@ fn vae_json() -> String {
         let mo: Vec<String> = st.maps.iter().map(|&i| format!("\"{i}\": {}", L::map_off(s, i))).collect();
         let cw: Vec<String> = (st.c0..st.c1).map(|i| format!("\"{i}\": [{}, {}]", L::w_off(s, i), L::b_off(s, i))).collect();
         let gw: Vec<String> = (st.g0..st.g1).map(|j| format!("\"{j}\": [{}, {}]", L::gw_off(s, j), L::gb_off(s, j))).collect();
+        let masks: Vec<String> = (0..3).filter(|&m| L::uses_mask(s, m)).map(|m| format!("\"{}\": {}", L::MASK_C[m], L::mask_off(s, L::MASK_C[m]))).collect();
         let (tok, qkv) = if st.attn {
             (
                 format!("[{}]", (0..5).map(|t| L::tok(s, t).to_string()).collect::<Vec<_>>().join(", ")),
@@ -63,10 +64,10 @@ fn vae_json() -> String {
             ("null".to_string(), "null".to_string())
         };
         stages.push(format!(
-            "{{\"s\": {s}, \"name\": \"{}\", \"c0\": {}, \"c1\": {}, \"g0\": {}, \"g1\": {}, \"attn\": {}, \"inp\": [{}, {}], \"out\": [{}, {}], \"in_bytes\": {}, \"out_bytes\": {}, \"w_bytes\": {}, \"act_bytes\": {}, \"maps_bytes\": {}, \"zero_blocks\": {}, \"n1\": {}, \"n2\": {}, \"nchw_bytes\": {}, \"tok\": {tok}, \"maps\": {{{}}}, \"convs\": {{{}}}, \"gns\": {{{}}}, \"qkv\": {qkv}}}",
+            "{{\"s\": {s}, \"name\": \"{}\", \"c0\": {}, \"c1\": {}, \"g0\": {}, \"g1\": {}, \"attn\": {}, \"inp\": [{}, {}], \"out\": [{}, {}], \"in_bytes\": {}, \"out_bytes\": {}, \"w_bytes\": {}, \"act_bytes\": {}, \"maps_bytes\": {}, \"zero_blocks\": {}, \"st\": {}, \"n1\": {}, \"n2\": {}, \"nchw_bytes\": {}, \"tok\": {tok}, \"maps\": {{{}}}, \"convs\": {{{}}}, \"gns\": {{{}}}, \"masks\": {{{}}}, \"qkv\": {qkv}}}",
             st.name, st.c0, st.c1, st.g0, st.g1, st.attn, st.inp.res, st.inp.ch, st.out.res, st.out.ch,
-            L::in_bytes(s), L::out_bytes(s), L::w_bytes(s), L::act_bytes(s), L::maps_bytes(s), L::zero_blocks(s), L::n1(s), L::n2(s), L::nchw_bytes(s),
-            mo.join(", "), cw.join(", "), gw.join(", ")
+            L::in_bytes(s), L::out_bytes(s), L::w_bytes(s), L::act_bytes(s), L::maps_bytes(s), L::zero_blocks(s), L::st(s), L::n1(s), L::n2(s), L::nchw_bytes(s),
+            mo.join(", "), cw.join(", "), gw.join(", "), masks.join(", ")
         ));
     }
     format!(

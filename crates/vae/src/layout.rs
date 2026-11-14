@@ -1,22 +1,23 @@
 //! 正式 VAE 解码器（SD1.5 的 AutoencoderKL，512² 档位，B1b）的存储布局：**设备端的整步与主机端的打包、模拟共用这一份**
 //! （主机经 `cargo run -p layout-dump -- vae` 读成 JSON）。只用 core 与 const fn，不依赖 npu。
 //!
-//! **整个解码器切成 6 段程序**（DESIGN F22 / D15：docc 每核的代码不能超过约 1 MB，45 个 kernel 合起来约 2.7 MB）。
-//! 每段是 `crates/vae` 的一个 feature（`s1` … `s6`），各出一个 calbin，主机按次序调 dort、把上一段的 out_y 原样当下一段的 in_x。
+//! **整个解码器切成 3 段程序**（DESIGN F22 / D15 / D17：docc 每核的代码不能超过约 1 MB）。
+//! 每段是 `crates/vae` 的一个 feature（`s1` … `s3`），各出一个 calbin，主机按次序调 dort、把上一段的 out_y 原样当下一段的 in_x。
 //! 段表见 [`STAGES`]；每段四个声明（`npu::decls!` 的字节数只收字面量，`step.rs` 里有断言核对和这里算的一样）：
 //!
 //! | 声明 | 内容 |
 //! | --- | --- |
 //! | `in_x`（input） | 这一段的输入：s1 是 latent（VAE 原空间，即 ComfyUI 的 LATENT）`[64 + 4][64 + 4][32]` bf16（4 个真通道 + 28 个补的 0）；其余段是上一段的输出图 |
-//! | `out_y`（output） | 这一段的输出图（带边框，边框不写）；s6 是 conv_out 的输出 `[516][516][32]` bf16，前 3 个通道是 RGB，**已经是 [0, 1] 的口径**（(x + 1) / 2 折进了 conv_out） |
-//! | `w`（weights） | 这一段的卷积（权重 `[k·k][Cin][Cout]` bf16、bias `[Cout]` f32）⇒ GroupNorm（w、b 按行展开的 f32）⇒（s2）注意力的 q、k、v（HF `[512][512]` bf16 + bias f32），各自 4 KiB 对齐 |
-//! | `act`（workspace） | 这一段用到的带边框的图（入口整块清零 ⇒ 边框全程是 0）⇒ 稠密区（GroupNorm 的 NCHW 中转 N1、N2；s2 还有注意力的 TQ、Q、K、V、O：总是先写满再读，不清零） |
+//! | `out_y`（output） | 这一段的输出图（带边框，边框不写）；s3 是 conv_out 的输出 `[516][516][32]` bf16，前 3 个通道是 RGB，**已经是 [0, 1] 的口径**（(x + 1) / 2 折进了 conv_out） |
+//! | `w`（weights） | 这一段的卷积（权重 `[k·k][Cin][Cout]` bf16、bias `[Cout]` f32）⇒ GroupNorm（NHWC 的：w、b 各 `[C]` f32；s2 注意力那个：按行展开的 f32）⇒ 组掩码（每种通道数一份 `[32][C]` f32）⇒（s2）注意力的 q、k、v（HF `[512][512]` bf16 + bias f32），各自 4 KiB 对齐 |
+//! | `act`（workspace） | 这一段用到的带边框的图（入口整块清零 ⇒ 边框全程是 0）⇒ 稠密区（GroupNorm 的统计中转 ST `[4][512]` f32；s2 还有 NCHW 中转 N1、N2 与注意力的 TQ、Q、K、V、O：总是先写满再读，不清零） |
 //!
 //! 切点选在「下一段只经 GroupNorm 的排布转换、残差、1×1 卷积读这张图」的地方：它们只读内部，所以上一段输出的边框（没人写）不用清。
 //! 特征图按「分辨率 × 通道」各占一块、互不复用：小图的边框落在大图用过的内部上就不是 0 了（同 TAESD 的 layout.rs）。
 //! 每个形状有 A、B（ResNet 的进出轮换）、G（GroupNorm 的输出 = 卷积的输入）、H（conv1 的输出；有 shortcut 的 ResNet 里 GN2 读完它之后放 shortcut）；
 //! U 放宽通道的上采样结果（有 shortcut 的那一段里之后放 GN1 的输出）。
-//! GroupNorm 一律三步（DESIGN D13）：带边框的图 ⇒ `nhwc_to_nchw!` ⇒ N1 ⇒ `group_norm!` ⇒ N2 ⇒ `nchw_to_nhwc!` ⇒ G。
+//! GroupNorm 直接在带边框的图上算（DESIGN D16）：`gn_stats!`（每核的 Σx、Σx² ⇒ ST）⇒ 屏障 ⇒ `gn_apply!`（⇒ G，只写内部）。
+//! 只有 s2 注意力前面那个（不带 SiLU、后面要转成 token）还走 D13 的三步：`nhwc_to_nchw!` ⇒ N1 ⇒ `group_norm!` ⇒ N2（再转置成 token）。
 //! 注意力（DESIGN D14）：GN ⇒ N2（NCHW [512][4096]）⇒ `transpose2d!` ⇒ TQ [4096][512] ⇒ `linear!` ⇒ Q、K、V ⇒ `attn_wide!` ⇒ O
 //! ⇒ `transpose2d!` ⇒ N1 ⇒ `nchw_to_nhwc!` ⇒ G ⇒ 1×1 卷积（proj_attn）带残差。
 
@@ -202,17 +203,19 @@ pub const fn b_len(i: usize) -> usize {
 
 // ───────────────────────── GroupNorm ─────────────────────────
 
-/// 一个 GroupNorm：键（`{key}.weight` / `.bias`）、通道数、图的边长、后面跟不跟 SiLU。
+/// 一个 GroupNorm：键（`{key}.weight` / `.bias`）、通道数、图的边长、后面跟不跟 SiLU；
+/// `nhwc`：走 NHWC 原生的 `gn_stats!` / `gn_apply!`（D16，w、b 是 `[C]` f32）；否则走 calblas `group_norm!`（NCHW，w、b 按行展开）。
 #[derive(Clone, Copy)]
 pub struct Gn {
     pub key: &'static str,
     pub c: usize,
     pub res: usize,
     pub silu: bool,
+    pub nhwc: bool,
 }
 
 const fn gn(key: &'static str, c: usize, res: usize) -> Gn {
-    Gn { key, c, res, silu: true }
+    Gn { key, c, res, silu: true, nhwc: true }
 }
 
 pub const NGN: usize = 30;
@@ -220,7 +223,7 @@ pub const NGN: usize = 30;
 pub const GNS: [Gn; NGN] = [
     gn("decoder.mid_block.resnets.0.norm1", 512, 64),
     gn("decoder.mid_block.resnets.0.norm2", 512, 64),
-    Gn { key: "decoder.mid_block.attentions.0.group_norm", c: 512, res: 64, silu: false },
+    Gn { key: "decoder.mid_block.attentions.0.group_norm", c: 512, res: 64, silu: false, nhwc: false },
     gn("decoder.mid_block.resnets.1.norm1", 512, 64),
     gn("decoder.mid_block.resnets.1.norm2", 512, 64),
     gn("decoder.up_blocks.0.resnets.0.norm1", 512, 64),
@@ -266,11 +269,20 @@ pub const fn gn_cols(i: usize) -> usize {
     let hw = GNS[i].res * GNS[i].res;
     norm_cols(GNS[i].c / GROUPS * hw, hw)
 }
-/// 第 i 个 GroupNorm 的 w（或 b）展开后的字节数：`[C · HW / CC][8]` f32（每行一个通道的值，写 8 份）。
+/// 第 i 个 GroupNorm 的 w（或 b）的字节数：NHWC 的是 `[C]` f32；NCHW 的（calblas）按行展开 `[C · HW / CC][8]` f32（每行一个通道的值，写 8 份）。
 #[must_use]
 pub const fn gn_len(i: usize) -> usize {
-    GNS[i].c * GNS[i].res * GNS[i].res / gn_cols(i) * 8 * 4
+    if GNS[i].nhwc { GNS[i].c * 4 } else { GNS[i].c * GNS[i].res * GNS[i].res / gn_cols(i) * 8 * 4 }
 }
+/// 组掩码 `[GROUPS][C]` f32 的字节数（第 g 行在第 g 组的通道上是 1）。
+#[must_use]
+pub const fn mask_len(c: usize) -> usize {
+    GROUPS * c * 4
+}
+/// 组掩码按通道数分三种（128、256、512）：第 m 种的通道数。
+pub const MASK_C: [usize; 3] = [128, 256, 512];
+/// GN 统计的中转 ST：两核各两行（Σx、Σx²）× 最多 512 个通道，f32。
+pub const ST_BYTES: usize = 4 * 512 * 4;
 
 // ───────────────────────── 注意力的 q、k、v ─────────────────────────
 
@@ -299,21 +311,26 @@ pub struct Stage {
     pub maps: &'static [usize],
 }
 
-pub const NSTAGE: usize = 6;
-/// 6 段（DESIGN D15）。代码量是按探针估的（F22），每段 < 1 MB。
+pub const NSTAGE: usize = 3;
+/// 3 段（DESIGN D15 / D17）。2026-11-14 先切 6 段（每段 < 1 MB 代码）；换成 NHWC GroupNorm（D16）之后代码小了很多，
+/// 原 s3–s6 并成一段（581 KB），128² 以上的大特征图不再经主机转手。s2（注意力）还是 910 KB，单独一段。
 pub const STAGES: [Stage; NSTAGE] = [
     // s1：post_quant_conv、conv_in、中间块 ResNet 0（latent ⇒ 64² × 512）
     Stage { name: "s1", c0: 0, c1: 4, g0: 0, g1: 2, attn: false, inp: map(LAT, CIN0), out: map(64, 512), maps: &[L1, A64, G64, H64] },
     // s2：中间块的注意力（64² × 512 ⇒ 64² × 512）
     Stage { name: "s2", c0: 4, c1: 5, g0: 2, g1: 3, attn: true, inp: map(64, 512), out: map(64, 512), maps: &[G64] },
-    // s3：中间块 ResNet 1、up_blocks.0（3 个 ResNet）、×2 + 卷积（64² × 512 ⇒ 128² × 512）
-    Stage { name: "s3", c0: 5, c1: 14, g0: 3, g1: 11, attn: false, inp: map(64, 512), out: map(128, 512), maps: &[A64, B64, G64, H64, G128] },
-    // s4：up_blocks.1（3 个 ResNet）、×2 + 卷积（128² × 512 ⇒ 256² × 512）
-    Stage { name: "s4", c0: 14, c1: 21, g0: 11, g1: 17, attn: false, inp: map(128, 512), out: map(256, 512), maps: &[A128, B128, G128, H128, U256] },
-    // s5：up_blocks.2（带 shortcut 的 ResNet 512 ⇒ 256、2 个 ResNet）、×2 + 卷积（256² × 512 ⇒ 512² × 256）
-    Stage { name: "s5", c0: 21, c1: 29, g0: 17, g1: 23, attn: false, inp: map(256, 512), out: map(512, 256), maps: &[U256, A256, B256, G256, H256, U512] },
-    // s6：up_blocks.3（带 shortcut 的 ResNet 256 ⇒ 128、2 个 ResNet）、GN + SiLU、conv_out（512² × 256 ⇒ 图）
-    Stage { name: "s6", c0: 29, c1: 37, g0: 23, g1: 30, attn: false, inp: map(512, 256), out: map(512, COUT), maps: &[U512, A512, B512, G512, H512] },
+    // s3：中间块 ResNet 1 ⇒ up_blocks.0–3（每段 3 个 ResNet，前三段末尾 ×2 + 卷积）⇒ GN + SiLU ⇒ conv_out（64² × 512 ⇒ 图）
+    Stage {
+        name: "s3",
+        c0: 5,
+        c1: 37,
+        g0: 3,
+        g1: 30,
+        attn: false,
+        inp: map(64, 512),
+        out: map(512, COUT),
+        maps: &[A64, B64, G64, H64, A128, B128, G128, H128, U256, X256, A256, B256, G256, H256, U512, X512, A512, B512, G512, H512],
+    },
 ];
 
 /// 第 s 段的 in_x / out_y 字节数（带边框、不带余量：卷积快路读不出图的末尾，TAESD 的 in_x 也是这样，板上验过）。
@@ -355,23 +372,27 @@ pub const fn maps_bytes(s: usize) -> usize {
 pub const fn zero_blocks(s: usize) -> usize {
     maps_bytes(s) / 16384
 }
-/// 第 s 段 GroupNorm 的 NCHW 中转要多大：这一段最大的那个 GN（C · HW · 2）。
+/// 第 s 段 NCHW 中转要多大：这一段走 calblas（NCHW）的 GN 里最大的那个（C · HW · 2）；没有就是 0。
 #[must_use]
 pub const fn nchw_bytes(s: usize) -> usize {
     let (mut n, mut j) = (0usize, STAGES[s].g0);
     while j < STAGES[s].g1 {
         let b = GNS[j].c * GNS[j].res * GNS[j].res * 2;
-        if b > n {
+        if !GNS[j].nhwc && b > n {
             n = b;
         }
         j += 1;
     }
     n
 }
-/// 稠密区：N1、N2（GroupNorm 的中转）；注意力那一段再加 TQ、Q、K、V、O。
+/// 稠密区：ST（GN 统计的中转）⇒ N1、N2（NCHW 的 GN 中转）⇒ 注意力那一段再加 TQ、Q、K、V、O。
+#[must_use]
+pub const fn st(s: usize) -> u64 {
+    maps_bytes(s) as u64
+}
 #[must_use]
 pub const fn n1(s: usize) -> u64 {
-    maps_bytes(s) as u64
+    st(s) + align(ST_BYTES, 4096) as u64
 }
 #[must_use]
 pub const fn n2(s: usize) -> u64 {
@@ -391,9 +412,21 @@ pub const fn act_bytes(s: usize) -> usize {
 
 // ── 第 s 段的 @w：卷积 c0..c1（权重、bias）⇒ GroupNorm g0..g1（w、b）⇒（注意力那一段）q、k、v（权重、bias），各自 4 KiB 对齐、依次铺 ──
 
-/// 第 s 段 @w 的条目数。
+/// 第 s 段用不用第 m 种组掩码（这一段有通道数是 MASK_C[m] 的 NHWC GN）。
+#[must_use]
+pub const fn uses_mask(s: usize, m: usize) -> bool {
+    let mut j = STAGES[s].g0;
+    while j < STAGES[s].g1 {
+        if GNS[j].nhwc && GNS[j].c == MASK_C[m] {
+            return true;
+        }
+        j += 1;
+    }
+    false
+}
+/// 第 s 段 @w 的条目数：卷积 2 × n、GN 2 × n、掩码（三种里用到的）、（注意力）q、k、v 2 × 3。掩码一律占 3 个位置（没用到的长度为 0）。
 const fn n_entries(s: usize) -> usize {
-    2 * (STAGES[s].c1 - STAGES[s].c0) + 2 * (STAGES[s].g1 - STAGES[s].g0) + if STAGES[s].attn { 6 } else { 0 }
+    2 * (STAGES[s].c1 - STAGES[s].c0) + 2 * (STAGES[s].g1 - STAGES[s].g0) + 3 + if STAGES[s].attn { 6 } else { 0 }
 }
 /// 第 s 段第 e 个条目的字节数。
 const fn entry_len(s: usize, e: usize) -> usize {
@@ -404,7 +437,10 @@ const fn entry_len(s: usize, e: usize) -> usize {
         if e % 2 == 0 { w_len(i) } else { b_len(i) }
     } else if e < nc + ng {
         gn_len(STAGES[s].g0 + (e - nc) / 2)
-    } else if (e - nc - ng) % 2 == 0 {
+    } else if e < nc + ng + 3 {
+        let m = e - nc - ng;
+        if uses_mask(s, m) { mask_len(MASK_C[m]) } else { 0 }
+    } else if (e - nc - ng - 3) % 2 == 0 {
         QKV_W_LEN
     } else {
         QKV_B_LEN
@@ -441,16 +477,29 @@ pub const fn gb_off(s: usize, j: usize) -> u64 {
     assert!(STAGES[s].g0 <= j && j < STAGES[s].g1, "这个 GroupNorm 不在这一段");
     entry_off(s, 2 * (STAGES[s].c1 - STAGES[s].c0) + 2 * (j - STAGES[s].g0) + 1)
 }
+/// 第 s 段里通道数为 c 的组掩码的偏移；这一段没用到就编译不过。
+#[must_use]
+pub const fn mask_off(s: usize, c: usize) -> u64 {
+    let mut m = 0;
+    while m < 3 {
+        if MASK_C[m] == c {
+            assert!(uses_mask(s, m), "这一段没有这种通道数的 NHWC GroupNorm");
+            return entry_off(s, 2 * (STAGES[s].c1 - STAGES[s].c0) + 2 * (STAGES[s].g1 - STAGES[s].g0) + m);
+        }
+        m += 1;
+    }
+    panic!("组掩码只有 128、256、512 三种通道数");
+}
 /// 注意力那一段里 q（0）、k（1）、v（2）的权重、bias 的偏移。
 #[must_use]
 pub const fn qkv_w_off(s: usize, q: usize) -> u64 {
     assert!(STAGES[s].attn && q < 3, "只有注意力那一段有 q、k、v");
-    entry_off(s, 2 * (STAGES[s].c1 - STAGES[s].c0) + 2 * (STAGES[s].g1 - STAGES[s].g0) + 2 * q)
+    entry_off(s, 2 * (STAGES[s].c1 - STAGES[s].c0) + 2 * (STAGES[s].g1 - STAGES[s].g0) + 3 + 2 * q)
 }
 #[must_use]
 pub const fn qkv_b_off(s: usize, q: usize) -> u64 {
     assert!(STAGES[s].attn && q < 3, "只有注意力那一段有 q、k、v");
-    entry_off(s, 2 * (STAGES[s].c1 - STAGES[s].c0) + 2 * (STAGES[s].g1 - STAGES[s].g0) + 2 * q + 1)
+    entry_off(s, 2 * (STAGES[s].c1 - STAGES[s].c0) + 2 * (STAGES[s].g1 - STAGES[s].g0) + 3 + 2 * q + 1)
 }
 /// 第 s 段 @w 一共多少字节。
 #[must_use]
