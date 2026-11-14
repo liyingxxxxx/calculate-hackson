@@ -135,23 +135,30 @@ macro_rules! attn_wide {
 /// mask 是 bf16 `[TK]`（0 或 −MAX，主机给：边框、补齐的 key 去掉）。D 是 32 的倍数（头维补零，`scale` 给真头维），T 是 64 的倍数。
 /// 守着它的：模拟器 `cvxsim.py` 的 `_k_flash_attn`、UNet 整条对参照（`tools/unet.py sim / board`）。
 ///
-/// 选项（DESIGN D23）：`mask = none` ⇒ 不带掩码（token 是稠密的、没有补齐的 key 时；签名里没有 mask 参数）；
+/// 选项（DESIGN D23）：`qt = 64 | 128` ⇒ 一次取几行 q（缺省 64；256 时 VB 放不下）；`mask = none` ⇒ 不带掩码（token 是稠密的、没有补齐的 key 时；签名里没有 mask 参数）；
 /// `q = prescaled` ⇒ 1/√scale 已经乘进 q 的投影权重（主机打包时），kernel 里不再乘。两样各省每块一条 VU 指令。
 #[macro_export]
 macro_rules! flash_attn {
-    ($vis:vis $name:ident: rows = $t:expr, keys = $tk:expr, heads = $h:expr, head = $d:expr, scale = $sd:expr $(, mask = $mk:ident)? $(, q = $pre:ident)?) => {
-        $crate::flash_attn!(@fn [$($mk)? keys] [$($pre)? scaled] $vis $name, $t, $tk, $h, $d, $sd);
+    ($vis:vis $name:ident: rows = $t:expr, keys = $tk:expr, heads = $h:expr, head = $d:expr, scale = $sd:expr $(, mask = $mk:ident)? $(, q = $pre:ident)? $(, qt = $qt:tt)?) => {
+        $crate::flash_attn!(@qt [$($qt)? 64] [$($mk)? keys] [$($pre)? scaled] $vis $name, $t, $tk, $h, $d, $sd);
     };
-    (@fn [keys $($_m:ident)?] $pre:tt $vis:vis $name:ident, $($a:tt)*) => {
+    // 一次取几行 q：64 ⇒ 4 个 16 行的累加器；128 ⇒ 8 个（累加器、给 TU 的 lhs 的名字在这里写好传下去：macro_rules 的卫生规则）
+    (@qt [64 $($_q:tt)?] $($rest:tt)*) => {
+        $crate::flash_attn!(@fn 64, [(a0, l0, 0) (a1, l1, 16) (a2, l2, 32) (a3, l3, 48)] $($rest)*);
+    };
+    (@qt [128 $($_q:tt)?] $($rest:tt)*) => {
+        $crate::flash_attn!(@fn 128, [(a0, l0, 0) (a1, l1, 16) (a2, l2, 32) (a3, l3, 48) (a4, l4, 64) (a5, l5, 80) (a6, l6, 96) (a7, l7, 112)] $($rest)*);
+    };
+    (@fn $qt:tt, $accs:tt [keys $($_m:ident)?] $pre:tt $vis:vis $name:ident, $($a:tt)*) => {
         #[npu::kernel(cores = 2, numerics = "ks1")]
         $vis fn $name(q: npu::Ptr<npu::Ddr, npu::bf16>, k: npu::Ptr<npu::Ddr, npu::bf16>, v: npu::Ptr<npu::Ddr, npu::bf16>, mask: npu::Ptr<npu::Ddr, npu::bf16>, o: npu::Ptr<npu::Ddr, npu::bf16>) {
-            $crate::flash_attn!(@body [keys mask] $pre q, k, v, o, $($a)*);
+            $crate::flash_attn!(@body $qt, $accs [keys mask] $pre q, k, v, o, $($a)*);
         }
     };
-    (@fn [none $($_m:ident)?] $pre:tt $vis:vis $name:ident, $($a:tt)*) => {
+    (@fn $qt:tt, $accs:tt [none $($_m:ident)?] $pre:tt $vis:vis $name:ident, $($a:tt)*) => {
         #[npu::kernel(cores = 2, numerics = "ks1")]
         $vis fn $name(q: npu::Ptr<npu::Ddr, npu::bf16>, k: npu::Ptr<npu::Ddr, npu::bf16>, v: npu::Ptr<npu::Ddr, npu::bf16>, o: npu::Ptr<npu::Ddr, npu::bf16>) {
-            $crate::flash_attn!(@body [none _nomask] $pre q, k, v, o, $($a)*);
+            $crate::flash_attn!(@body $qt, $accs [none _nomask] $pre q, k, v, o, $($a)*);
         }
     };
     // 掩码：keys ⇒ 每块从 DDR 读一行、加上；none ⇒ 什么都不做
@@ -166,107 +173,103 @@ macro_rules! flash_attn {
         $sb.add($sb, bcast($mk, &[0, 1]));
     };
     (@madd [none $mask:ident], $gm:ident, $mk:ident, $sb:ident, $kb:ident) => {};
+    // 第一遍（只求行最大）：不带掩码、q 已经缩放过时直接在 f32 的分数上求最大，省掉 f32 ⇒ bf16 ⇒ f32 两次转换（D23）。
+    // 行最大只是 exp 的稳定项：用没舍 bf16 的分数求，和第二遍舍过的分数最多差半个 bf16 ULP，p 最大到约 1.004，不影响归一。
+    (@pass1 [none $($_m:ident)?] [prescaled $($_p:ident)?], [$sf:ident, $sb:ident, $tf:ident, $top:ident, $m:ident], $gm:ident, $mk:ident, $kb:ident) => {
+        $top.reduce(Combine::Max, $sf, 1);
+        $m.max($m, $top);
+    };
+    (@pass1 $mkk:tt $pre:tt, [$sf:ident, $sb:ident, $tf:ident, $top:ident, $m:ident], $gm:ident, $mk:ident, $kb:ident) => {
+        $sb.cvt($sf, Cvt::default());
+        $crate::flash_attn!(@scale $pre, $sb);
+        $crate::flash_attn!(@madd $mkk, $gm, $mk, $sb, $kb);
+        $tf.cvt($sb, Cvt::default());
+        $top.reduce(Combine::Max, $tf, 1);
+        $m.max($m, $top);
+    };
     // 缩放：scaled ⇒ 乘 1/√scale；prescaled ⇒ 已经乘进 q
     (@scale [scaled $($_p:ident)?], $sb:ident) => { $sb.mul($sb, SCALE); };
     (@scale [prescaled $($_p:ident)?], $sb:ident) => {};
-    (@body $mk:tt $pre:tt $q:ident, $k:ident, $v:ident, $o:ident, $t:expr, $tk:expr, $h:expr, $d:expr, $sd:expr) => {{
-            use npu::prelude::*;
-            let (q, k, v, o) = ($q, $k, $v, $o);
-            const T: usize = $t;
-            const TK: usize = $tk;
-            const H: usize = $h;
-            const D: usize = $d;
-            const QT: usize = 64;
-            const KB: usize = 128;
-            const NJ: usize = TK / KB;
-            const NQ: usize = T / QT;
-            const NEG: f32 = -3.0e38;
-            const SCALE: f32 = $crate::calblas::HeadDim($sd).inv_sqrt();
-            const _: () = assert!(T % QT == 0 && TK % KB == 0 && D % 32 == 0,
-                "flash_attn：q 行数是 64 的倍数、key 行数是 128 的倍数、头维补到 32 的倍数");
-            // q、o：[T · H, QT, D]（行距 [D, H · D, 1]）的第 qt · QT · H + h 块 = 第 qt 块 64 行、第 h 头（同 calblas attention! 的 @at，16 换成 QT）
-            let gq = q.bind_strided::<npu::Read, 3>([T * H, QT, D], [D, H * D, 1]);
-            let go = o.bind_strided::<npu::Write, 3>([T * H, QT, D], [D, H * D, 1]);
-            // Kᵀ：[头, d, key]（d 行距 1、key 行距 H · D）⇒ rhs [D, 128 key]（同 calblas attention! 的缺省）
-            let gk = k.bind_strided::<npu::Read, 3>([H, D, TK], [D, 1, H * D]);
-            let gv = $crate::calblas::rd!(v, [TK, H * D]);
-            // 掩码每块一行，每块从 DDR 读一行（同 calblas attention! 的 mask = keys）
-            $crate::flash_attn!(@mdecl $mk, gm, mk);
-            let (lq, rk, sacc) = (mcache::<bf16, _>([QT, D]), mcache::<bf16, _>([D, KB]), mcache::<f32, _>([QT, KB]));
-            let rv = mcache::<bf16, _>([KB, D]);
-            let (l0, l1, l2, l3) = (mcache::<bf16, _>([16, KB]), mcache::<bf16, _>([16, KB]), mcache::<bf16, _>([16, KB]), mcache::<bf16, _>([16, KB]));
-            let (sf, sb, tf) = (vcache::<f32, _>([QT, KB]), vcache::<bf16, _>([QT, KB]), vcache::<f32, _>([QT, KB]));
-            let (m, top, mb) = (vcache::<f32, _>([QT, 1]), vcache::<f32, _>([QT, 1]), vcache::<bf16, _>([QT, 1]));
-            let (l, rs, lb) = (vcache::<f32, _>([QT, 1]), vcache::<f32, _>([QT, 1]), vcache::<bf16, _>([QT, 1]));
-            // 收尾：4 个累加器各取出来拼成一整块 [64, D]，再整块除以 l（不按 16 行切 l：见下面 @out 前的注释）
-            let (out, oall, ob) = (vcache::<f32, _>([16, D]), vcache::<f32, _>([QT, D]), vcache::<bf16, _>([QT, D]));
-            // 头 × q 块合成一层循环，两核各一半；key 块在里面（docc 展开）
-            const HALF: usize = $crate::calblas::Halves(H * NQ).half();
-            let mine = core_rank() * HALF;
-            for i in 0..HALF {
-                let j = mine + i;
-                let (h, qt) = (j / NQ, j % NQ);
-                lq.load(gq.sub([qt * QT * H + h, 0, 0], [1, QT, D]));
-                // 第一遍：行最大
-                m.fill(NEG);
-                for kb in 0..NJ {
-                    rk.load(gk.sub([h, 0, kb * KB], [1, D, KB]));
-                    sacc.fill(0.0f32);
-                    sacc.mma(lq, rk);
-                    sf.from_m(sacc);
-                    sb.cvt(sf, Cvt::default());
-                    $crate::flash_attn!(@scale $pre, sb);
-                    $crate::flash_attn!(@madd $mk, gm, mk, sb, kb);
-                    tf.cvt(sb, Cvt::default());
-                    top.reduce(Combine::Max, tf, 1);
-                    m.max(m, top);
-                }
-                // 第二遍：p = exp(s − m)、行和、4 个 16 行的累加器各接各的串（docc 要一块累加器的用处都在它填 0 的那个块里）
-                mb.cvt(m, Cvt::default());
-                l.fill(0.0f32);
-                let (a0, a1) = (mcache::<f32, _>([16, D]), mcache::<f32, _>([16, D]));
-                let (a2, a3) = (mcache::<f32, _>([16, D]), mcache::<f32, _>([16, D]));
-                a0.fill(0.0f32);
-                a1.fill(0.0f32);
-                a2.fill(0.0f32);
-                a3.fill(0.0f32);
-                for kb in 0..NJ {
-                    rk.load(gk.sub([h, 0, kb * KB], [1, D, KB]));
-                    rv.load(gv.sub([kb * KB, h * D], [KB, D]));
-                    sacc.fill(0.0f32);
-                    sacc.mma(lq, rk);
-                    sf.from_m(sacc);
-                    sb.cvt(sf, Cvt::default());
-                    $crate::flash_attn!(@scale $pre, sb);
-                    $crate::flash_attn!(@madd $mk, gm, mk, sb, kb);
-                    sb.sub(sb, bcast(mb, &[0, 1]));
-                    sb.exp_approx(sb);
-                    tf.cvt(sb, Cvt::default());
-                    rs.reduce(Combine::Sum, tf, 1);
-                    l.add(l, rs);
-                    l0.load_v(sb.rows(0, 16));
-                    a0.mma(l0, rv);
-                    l1.load_v(sb.rows(16, 16));
-                    a1.mma(l1, rv);
-                    l2.load_v(sb.rows(32, 16));
-                    a2.mma(l2, rv);
-                    l3.load_v(sb.rows(48, 16));
-                    a3.mma(l3, rv);
-                }
-                // o = bf16(acc) / bf16(l)：4 个累加器拼成 [64, D] 再整块除、整块写回。
-                // ⛔ 不能 `bcast(lb.rows(r, 16))`：docc 0.4.1 收、但真卡上算错（2026-11-14 单 kernel 上板二分，DESIGN F28）
-                out.from_m(a0);
-                oall.rows(0, 16).copy(out);
-                out.from_m(a1);
-                oall.rows(16, 16).copy(out);
-                out.from_m(a2);
-                oall.rows(32, 16).copy(out);
-                out.from_m(a3);
-                oall.rows(48, 16).copy(out);
-                ob.cvt(oall, Cvt::default());
-                lb.cvt(l, Cvt::default());
-                ob.div(ob, bcast(lb, &[0, 1]));
-                ob.store(go.sub([qt * QT * H + h, 0, 0], [1, QT, D]));
+    (@body $qt:tt, [$(($acc:ident, $lhs:ident, $r:expr))*] $mk:tt $pre:tt $q:ident, $k:ident, $v:ident, $o:ident, $t:expr, $tk:expr, $h:expr, $d:expr, $sd:expr) => {{
+        use npu::prelude::*;
+        let (q, k, v, o) = ($q, $k, $v, $o);
+        const T: usize = $t;
+        const TK: usize = $tk;
+        const H: usize = $h;
+        const D: usize = $d;
+        const QT: usize = $qt;
+        const KB: usize = 128;
+        const NJ: usize = TK / KB;
+        const NQ: usize = T / QT;
+        const NEG: f32 = -3.0e38;
+        const SCALE: f32 = $crate::calblas::HeadDim($sd).inv_sqrt();
+        const _: () = assert!(T % QT == 0 && TK % KB == 0 && D % 32 == 0,
+            "flash_attn：q 行数是 QT 的倍数、key 行数是 128 的倍数、头维补到 32 的倍数");
+        // q、o：[T · H, QT, D]（行距 [D, H · D, 1]）的第 qt · QT · H + h 块 = 第 qt 块 QT 行、第 h 头（同 calblas attention! 的 @at，16 换成 QT）
+        let gq = q.bind_strided::<npu::Read, 3>([T * H, QT, D], [D, H * D, 1]);
+        let go = o.bind_strided::<npu::Write, 3>([T * H, QT, D], [D, H * D, 1]);
+        // Kᵀ：[头, d, key]（d 行距 1、key 行距 H · D）⇒ rhs [D, 128 key]（同 calblas attention! 的缺省）
+        let gk = k.bind_strided::<npu::Read, 3>([H, D, TK], [D, 1, H * D]);
+        let gv = $crate::calblas::rd!(v, [TK, H * D]);
+        // 掩码每块一行，每块从 DDR 读一行（同 calblas attention! 的 mask = keys）
+        $crate::flash_attn!(@mdecl $mk, gm, mk);
+        let (lq, rk, sacc) = (mcache::<bf16, _>([QT, D]), mcache::<bf16, _>([D, KB]), mcache::<f32, _>([QT, KB]));
+        let rv = mcache::<bf16, _>([KB, D]);
+        $(let $lhs = mcache::<bf16, _>([16, KB]);)*
+        let (sf, sb, tf) = (vcache::<f32, _>([QT, KB]), vcache::<bf16, _>([QT, KB]), vcache::<f32, _>([QT, KB]));
+        let (m, top, mb) = (vcache::<f32, _>([QT, 1]), vcache::<f32, _>([QT, 1]), vcache::<bf16, _>([QT, 1]));
+        let (l, rs, lb) = (vcache::<f32, _>([QT, 1]), vcache::<f32, _>([QT, 1]), vcache::<bf16, _>([QT, 1]));
+        // 收尾：各累加器取出来拼成一整块 [QT, D]，再整块除以 l（⛔ 不对 [N, 1] 的向量按行切了再 bcast：DESIGN F28）
+        let (out, oall, ob) = (vcache::<f32, _>([16, D]), vcache::<f32, _>([QT, D]), vcache::<bf16, _>([QT, D]));
+        // 头 × q 块合成一层循环，两核各一半；key 块在里面（docc 展开）
+        const HALF: usize = $crate::calblas::Halves(H * NQ).half();
+        let mine = core_rank() * HALF;
+        for i in 0..HALF {
+            let j = mine + i;
+            let (h, qt) = (j / NQ, j % NQ);
+            lq.load(gq.sub([qt * QT * H + h, 0, 0], [1, QT, D]));
+            // 第一遍：行最大
+            m.fill(NEG);
+            for kb in 0..NJ {
+                rk.load(gk.sub([h, 0, kb * KB], [1, D, KB]));
+                sacc.fill(0.0f32);
+                sacc.mma(lq, rk);
+                sf.from_m(sacc);
+                $crate::flash_attn!(@pass1 $mk $pre, [sf, sb, tf, top, m], gm, mk, kb);
             }
+            // 第二遍：p = exp(s − m)、行和、每 16 行一个累加器各接各的串（docc 要一块累加器的用处都在它填 0 的那个块里）
+            mb.cvt(m, Cvt::default());
+            l.fill(0.0f32);
+            $(let $acc = mcache::<f32, _>([16, D]);)*
+            $($acc.fill(0.0f32);)*
+            for kb in 0..NJ {
+                rk.load(gk.sub([h, 0, kb * KB], [1, D, KB]));
+                rv.load(gv.sub([kb * KB, h * D], [KB, D]));
+                sacc.fill(0.0f32);
+                sacc.mma(lq, rk);
+                sf.from_m(sacc);
+                sb.cvt(sf, Cvt::default());
+                $crate::flash_attn!(@scale $pre, sb);
+                $crate::flash_attn!(@madd $mk, gm, mk, sb, kb);
+                sb.sub(sb, bcast(mb, &[0, 1]));
+                sb.exp_approx(sb);
+                tf.cvt(sb, Cvt::default());
+                rs.reduce(Combine::Sum, tf, 1);
+                l.add(l, rs);
+                $(
+                    $lhs.load_v(sb.rows($r, 16));
+                    $acc.mma($lhs, rv);
+                )*
+            }
+            // o = bf16(acc) / bf16(l)：拼成 [QT, D] 再整块除、整块写回
+            $(
+                out.from_m($acc);
+                oall.rows($r, 16).copy(out);
+            )*
+            ob.cvt(oall, Cvt::default());
+            lb.cvt(l, Cvt::default());
+            ob.div(ob, bcast(lb, &[0, 1]));
+            ob.store(go.sub([qt * QT * H + h, 0, 0], [1, QT, D]));
+        }
     }};
 }

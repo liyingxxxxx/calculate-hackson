@@ -125,8 +125,11 @@ class Kernels:
         tk = CTX_ROWS if cross else t
         name = f"un_at_{h}_{'x' if cross else 's'}"
         mask = ", mask = none" if dense else ""
-        return self.add(name, "flash_attn", {"h": h, "c": c, "cross": cross, "dense": dense},
-                        f"sd_kernels::flash_attn!(pub {name}: rows = {t}, keys = {tk}, heads = {HEADS}, head = {d}, scale = {c // HEADS}{mask}, q = prescaled);")
+        # 自注意力一次取 128 行 q（qt = 128）：每块 K / V 读一次给 128 行用，64² 170 ⇒ 84 ms、32² 12 ⇒ 7.3 ms（真机，D24）；256 行 VB 放不下。
+        # 交叉注意力 128 行时 docc 排不下 VB（2026-11-14 探针），它本来就便宜（64² 一次 8 ms），留 64 行
+        qt = 64 if cross else 128
+        return self.add(name, "flash_attn", {"h": h, "c": c, "cross": cross, "dense": dense, "qt": qt},
+                        f"sd_kernels::flash_attn!(pub {name}: rows = {t}, keys = {tk}, heads = {HEADS}, head = {d}, scale = {c // HEADS}{mask}, q = prescaled, qt = {qt});")
 
     def pack(self, h, c, unpack=False):
         name = f"un_{'un' if unpack else ''}pk_{h}_{c}"

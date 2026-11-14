@@ -8,7 +8,7 @@
 | A1 | 新写的算子（quick_gelu、erf-GELU / GEGLU、时间步嵌入、NHWC GroupNorm+SiLU……），各配独立参照与边界测试 | 进行中：时间步嵌入**真机实测**过了（2026-11-14 npu3；cos_approx 分辨率 1/128，DESIGN F19）；quick_gelu、NHWC GroupNorm 未写 |
 | B1 | VAE 解码上 NPU（先 TAESD，再正式 VAE），接进 ComfyUI | ✅ 2026-11-14：TAESD 与正式 VAE 都**真机跑通**、ComfyUI 解码走 npu；正式 VAE 优化后 0.98 s，比 CPU 快约 1.75 倍（V7） |
 | B2 | CLIP 文本编码器上 NPU | |
-| B3 | UNet 一次前向对 diffusers | 进行中：**真机跑通**（2026-11-14 npu3：CFG 两路一次调用，对 bf16 参照约 50 dB，2 遍逐字节一致）；一步 12.35 ⇒ 8.19（注意力）⇒ 5.16（宽通道卷积走 linear!）⇒ **4.18 s**（自注意力压成稠密 token），10 段；还比 CPU（约 2 s）慢，正在优化；还没接进 ComfyUI |
+| B3 | UNet 一次前向对 diffusers | 进行中：**真机跑通**（2026-11-14 npu3：CFG 两路一次调用，对 bf16 参照约 50 dB，2 遍逐字节一致）；一步 12.35 ⇒ 8.19（注意力）⇒ 5.16（宽通道卷积走 linear!）⇒ 4.18（自注意力压成稠密 token）⇒ **3.12 s**（自注意力一次 128 行 q），5 段；还比 CPU（约 2.4 s）慢一点；还没接进 ComfyUI |
 | B4 | ComfyUI 原生工作流 512² 出图（去噪循环在设备上，见 DESIGN D2） | |
 | B5 | 性能、多尺寸档位、一键拉起、文档 | |
 
@@ -190,7 +190,11 @@ UNet（B3）几乎全要用 ⇒ 先在一个「只跑一次前向、好对 diffu
 - [x] 2026-11-14 U6c 自注意力压成稠密的 token、1/√d 乘进 q 的投影权重（DESIGN D23）：新写 `pack_int!` / `unpack_int!`，`flash_attn!` 加 `mask = none`、`q = prescaled`。
       64² 自注意力 259 ⇒ 173 ms、32² 26 ⇒ 12 ms；整条（真机实测）**一步 4.18 s**，对 bf16 参照 49.7 / 50.0 dB、2 遍逐字节一致；模拟 53.2 / 52.8 dB。
       逐 kernel 计时：注意力 1.99 s（64² 自注意力 1.73 s）、linear 0.80 s、卷积 0.51 s、其余约 0.3 s，合计 3.59 s；结果在 `test/results/npu3-20261114/unet-dense/`。
-- [ ] U6e 64² 自注意力（一步 1.73 s，0.20 TFLOPS）：VU 每个分数还有十来条指令（f32 ⇔ bf16 转换、两遍各算一次分数）。
+- [x] 2026-11-14 U6e 64² 自注意力（DESIGN D24）：第一遍去掉两次转换只快 2%（170 ms），一次取 128 行 q 就减半（84 ms，0.41 TFLOPS）⇒ 慢在每块 K / V 的搬运；
+      `flash_attn!` 加 `qt = 128`（8 个累加器），自注意力都用 128 行，交叉注意力 VB 放不下、留 64 行。单 kernel 上板对 numpy 0.7%。
+      整条（真机实测）**一步 3.12 s**（5 段，只部署 0.50 s），对 bf16 参照 49.7 / 50.0 dB、2 遍逐字节一致；模拟 53.2 / 52.8 dB。
+      逐 kernel 计时合计 2.57 s：注意力 1.04 s（64² 自注意力 0.84 s）、linear 0.79 s、卷积 0.49 s、其余约 0.25 s；结果在 `test/results/npu3-20261114/unet-qt128/`。
+- [ ] U6f 剩下的：kernel 之外约 0.55 s（主要是部署 1.62 GiB 参数 0.50 s——dort 0.4.1 没有常驻）；64² 自注意力 0.84 s；linear 0.79 s（1.0–1.5 TFLOPS）。
 - [ ] U6d 段间与固定开销：整次 5.16 s 里 kernel 合计约 4.1 s，其余是部署（0.52 s）、清零、段间经主机转手的读写。
 - [ ] U7 ComfyUI：自定义 MODEL（把 `diffusion_model` 换成调 NPU 的，每步一次、CFG 两路同一次调用）⇒ 原生 KSampler 照用；再看要不要把去噪循环放进设备（D2 / D19）。
 

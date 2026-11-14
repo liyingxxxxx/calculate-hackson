@@ -1698,7 +1698,7 @@ mod prog {
     }
 }
 
-/// un_at_64_s：flash_attn {'rows': 4096, 'keys': 4096, 'heads': 8, 'head': 64, 'scale': 40, 'mask': 'none', 'q': 'prescaled'}
+/// un_at_64_s：flash_attn {'rows': 4096, 'keys': 4096, 'heads': 8, 'head': 64, 'scale': 40, 'mask': 'none', 'q': 'prescaled', 'qt': 128}
 #[cfg(feature = "un_at_64_s")]
 mod prog {
     use npu::prelude::*;
@@ -1724,7 +1724,7 @@ mod prog {
     }
 }
 
-/// un_at_64_x：flash_attn {'rows': 4736, 'keys': 128, 'heads': 8, 'head': 64, 'scale': 40, 'q': 'prescaled'}
+/// un_at_64_x：flash_attn {'rows': 4736, 'keys': 128, 'heads': 8, 'head': 64, 'scale': 40, 'q': 'prescaled', 'qt': 64}
 #[cfg(feature = "un_at_64_x")]
 mod prog {
     use npu::prelude::*;
@@ -1752,7 +1752,7 @@ mod prog {
     }
 }
 
-/// un_at_32_s：flash_attn {'rows': 1024, 'keys': 1024, 'heads': 8, 'head': 96, 'scale': 80, 'mask': 'none', 'q': 'prescaled'}
+/// un_at_32_s：flash_attn {'rows': 1024, 'keys': 1024, 'heads': 8, 'head': 96, 'scale': 80, 'mask': 'none', 'q': 'prescaled', 'qt': 128}
 #[cfg(feature = "un_at_32_s")]
 mod prog {
     use npu::prelude::*;
@@ -1778,7 +1778,7 @@ mod prog {
     }
 }
 
-/// un_at_32_x：flash_attn {'rows': 1408, 'keys': 128, 'heads': 8, 'head': 96, 'scale': 80, 'q': 'prescaled'}
+/// un_at_32_x：flash_attn {'rows': 1408, 'keys': 128, 'heads': 8, 'head': 96, 'scale': 80, 'q': 'prescaled', 'qt': 64}
 #[cfg(feature = "un_at_32_x")]
 mod prog {
     use npu::prelude::*;
@@ -1806,7 +1806,7 @@ mod prog {
     }
 }
 
-/// un_at_16_s：flash_attn {'rows': 256, 'keys': 256, 'heads': 8, 'head': 160, 'scale': 160, 'mask': 'none', 'q': 'prescaled'}
+/// un_at_16_s：flash_attn {'rows': 256, 'keys': 256, 'heads': 8, 'head': 160, 'scale': 160, 'mask': 'none', 'q': 'prescaled', 'qt': 128}
 #[cfg(feature = "un_at_16_s")]
 mod prog {
     use npu::prelude::*;
@@ -1832,7 +1832,7 @@ mod prog {
     }
 }
 
-/// un_at_16_x：flash_attn {'rows': 512, 'keys': 128, 'heads': 8, 'head': 160, 'scale': 160, 'q': 'prescaled'}
+/// un_at_16_x：flash_attn {'rows': 512, 'keys': 128, 'heads': 8, 'head': 160, 'scale': 160, 'q': 'prescaled', 'qt': 64}
 #[cfg(feature = "un_at_16_x")]
 mod prog {
     use npu::prelude::*;
@@ -1860,7 +1860,7 @@ mod prog {
     }
 }
 
-/// un_at_8_s：flash_attn {'rows': 256, 'keys': 256, 'heads': 8, 'head': 160, 'scale': 160, 'q': 'prescaled'}
+/// un_at_8_s：flash_attn {'rows': 256, 'keys': 256, 'heads': 8, 'head': 160, 'scale': 160, 'q': 'prescaled', 'qt': 128}
 #[cfg(feature = "un_at_8_s")]
 mod prog {
     use npu::prelude::*;
@@ -1888,7 +1888,7 @@ mod prog {
     }
 }
 
-/// un_at_8_x：flash_attn {'rows': 256, 'keys': 128, 'heads': 8, 'head': 160, 'scale': 160, 'q': 'prescaled'}
+/// un_at_8_x：flash_attn {'rows': 256, 'keys': 128, 'heads': 8, 'head': 160, 'scale': 160, 'q': 'prescaled', 'qt': 64}
 #[cfg(feature = "un_at_8_x")]
 mod prog {
     use npu::prelude::*;
