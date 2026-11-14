@@ -134,12 +134,44 @@ macro_rules! attn_wide {
 /// 排布：q、o、k、v 都是 `[T, H · D]`（带边框的图当 token；交叉注意力的 k、v 是 `[TK, H · D]`），
 /// mask 是 bf16 `[TK]`（0 或 −MAX，主机给：边框、补齐的 key 去掉）。D 是 32 的倍数（头维补零，`scale` 给真头维），T 是 64 的倍数。
 /// 守着它的：模拟器 `cvxsim.py` 的 `_k_flash_attn`、UNet 整条对参照（`tools/unet.py sim / board`）。
+///
+/// 选项（DESIGN D23）：`mask = none` ⇒ 不带掩码（token 是稠密的、没有补齐的 key 时；签名里没有 mask 参数）；
+/// `q = prescaled` ⇒ 1/√scale 已经乘进 q 的投影权重（主机打包时），kernel 里不再乘。两样各省每块一条 VU 指令。
 #[macro_export]
 macro_rules! flash_attn {
-    ($vis:vis $name:ident: rows = $t:expr, keys = $tk:expr, heads = $h:expr, head = $d:expr, scale = $sd:expr) => {
+    ($vis:vis $name:ident: rows = $t:expr, keys = $tk:expr, heads = $h:expr, head = $d:expr, scale = $sd:expr $(, mask = $mk:ident)? $(, q = $pre:ident)?) => {
+        $crate::flash_attn!(@fn [$($mk)? keys] [$($pre)? scaled] $vis $name, $t, $tk, $h, $d, $sd);
+    };
+    (@fn [keys $($_m:ident)?] $pre:tt $vis:vis $name:ident, $($a:tt)*) => {
         #[npu::kernel(cores = 2, numerics = "ks1")]
         $vis fn $name(q: npu::Ptr<npu::Ddr, npu::bf16>, k: npu::Ptr<npu::Ddr, npu::bf16>, v: npu::Ptr<npu::Ddr, npu::bf16>, mask: npu::Ptr<npu::Ddr, npu::bf16>, o: npu::Ptr<npu::Ddr, npu::bf16>) {
+            $crate::flash_attn!(@body [keys mask] $pre q, k, v, o, $($a)*);
+        }
+    };
+    (@fn [none $($_m:ident)?] $pre:tt $vis:vis $name:ident, $($a:tt)*) => {
+        #[npu::kernel(cores = 2, numerics = "ks1")]
+        $vis fn $name(q: npu::Ptr<npu::Ddr, npu::bf16>, k: npu::Ptr<npu::Ddr, npu::bf16>, v: npu::Ptr<npu::Ddr, npu::bf16>, o: npu::Ptr<npu::Ddr, npu::bf16>) {
+            $crate::flash_attn!(@body [none _nomask] $pre q, k, v, o, $($a)*);
+        }
+    };
+    // 掩码：keys ⇒ 每块从 DDR 读一行、加上；none ⇒ 什么都不做
+    // （局部变量名从调用处传进来：macro_rules 的卫生规则下，一个展开里 let 的名字另一个展开看不见）
+    (@mdecl [keys $mask:ident], $gm:ident, $mk:ident) => {
+        let $gm = $crate::calblas::rd!($mask, [NJ, KB]);
+        let $mk = vcache::<bf16, _>([1, KB]);
+    };
+    (@mdecl [none $mask:ident], $gm:ident, $mk:ident) => {};
+    (@madd [keys $mask:ident], $gm:ident, $mk:ident, $sb:ident, $kb:ident) => {
+        $mk.load($gm.sub([$kb, 0], [1, KB]));
+        $sb.add($sb, bcast($mk, &[0, 1]));
+    };
+    (@madd [none $mask:ident], $gm:ident, $mk:ident, $sb:ident, $kb:ident) => {};
+    // 缩放：scaled ⇒ 乘 1/√scale；prescaled ⇒ 已经乘进 q
+    (@scale [scaled $($_p:ident)?], $sb:ident) => { $sb.mul($sb, SCALE); };
+    (@scale [prescaled $($_p:ident)?], $sb:ident) => {};
+    (@body $mk:tt $pre:tt $q:ident, $k:ident, $v:ident, $o:ident, $t:expr, $tk:expr, $h:expr, $d:expr, $sd:expr) => {{
             use npu::prelude::*;
+            let (q, k, v, o) = ($q, $k, $v, $o);
             const T: usize = $t;
             const TK: usize = $tk;
             const H: usize = $h;
@@ -159,8 +191,7 @@ macro_rules! flash_attn {
             let gk = k.bind_strided::<npu::Read, 3>([H, D, TK], [D, 1, H * D]);
             let gv = $crate::calblas::rd!(v, [TK, H * D]);
             // 掩码每块一行，每块从 DDR 读一行（同 calblas attention! 的 mask = keys）
-            let gm = $crate::calblas::rd!(mask, [NJ, KB]);
-            let mk = vcache::<bf16, _>([1, KB]);
+            $crate::flash_attn!(@mdecl $mk, gm, mk);
             let (lq, rk, sacc) = (mcache::<bf16, _>([QT, D]), mcache::<bf16, _>([D, KB]), mcache::<f32, _>([QT, KB]));
             let rv = mcache::<bf16, _>([KB, D]);
             let (l0, l1, l2, l3) = (mcache::<bf16, _>([16, KB]), mcache::<bf16, _>([16, KB]), mcache::<bf16, _>([16, KB]), mcache::<bf16, _>([16, KB]));
@@ -180,13 +211,12 @@ macro_rules! flash_attn {
                 m.fill(NEG);
                 for kb in 0..NJ {
                     rk.load(gk.sub([h, 0, kb * KB], [1, D, KB]));
-                    mk.load(gm.sub([kb, 0], [1, KB]));
                     sacc.fill(0.0f32);
                     sacc.mma(lq, rk);
                     sf.from_m(sacc);
                     sb.cvt(sf, Cvt::default());
-                    sb.mul(sb, SCALE);
-                    sb.add(sb, bcast(mk, &[0, 1]));
+                    $crate::flash_attn!(@scale $pre, sb);
+                    $crate::flash_attn!(@madd $mk, gm, mk, sb, kb);
                     tf.cvt(sb, Cvt::default());
                     top.reduce(Combine::Max, tf, 1);
                     m.max(m, top);
@@ -202,14 +232,13 @@ macro_rules! flash_attn {
                 a3.fill(0.0f32);
                 for kb in 0..NJ {
                     rk.load(gk.sub([h, 0, kb * KB], [1, D, KB]));
-                    mk.load(gm.sub([kb, 0], [1, KB]));
                     rv.load(gv.sub([kb * KB, h * D], [KB, D]));
                     sacc.fill(0.0f32);
                     sacc.mma(lq, rk);
                     sf.from_m(sacc);
                     sb.cvt(sf, Cvt::default());
-                    sb.mul(sb, SCALE);
-                    sb.add(sb, bcast(mk, &[0, 1]));
+                    $crate::flash_attn!(@scale $pre, sb);
+                    $crate::flash_attn!(@madd $mk, gm, mk, sb, kb);
                     sb.sub(sb, bcast(mb, &[0, 1]));
                     sb.exp_approx(sb);
                     tf.cvt(sb, Cvt::default());
@@ -239,6 +268,5 @@ macro_rules! flash_attn {
                 ob.div(ob, bcast(lb, &[0, 1]));
                 ob.store(go.sub([qt * QT * H + h, 0, 0], [1, QT, D]));
             }
-        }
-    };
+    }};
 }

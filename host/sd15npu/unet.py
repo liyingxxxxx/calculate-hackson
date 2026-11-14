@@ -112,6 +112,8 @@ class Packer:
                 kn = w.T
             full = np.zeros((meta["cin"], meta.get("n", meta["cout"])), np.float32)  # 补的输入通道（行）、补的输出通道（列）是 0
             full[:kn.shape[0], :kn.shape[1]] = kn
+            if meta.get("scale"):  # 注意力的 1/√d 乘进 q 的投影权重（DESIGN D23）：f32 里乘、再舍 bf16
+                full *= np.float32(meta["scale"])
             # 1×1 卷积要 [K][N]；calblas linear! 的 `w = hf` 要 HF 原样 [N][K]
             return _bf(full.T if meta.get("hf") else full)
         if kind == "zero_b":

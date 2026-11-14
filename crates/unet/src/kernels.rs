@@ -74,14 +74,24 @@ sd_kernels::ln_nhwc!(pub un_ln_16_1280: h = 16, w = 16, c = 1280, p = 1280, eps 
 sd_kernels::ln_nhwc!(pub un_ln_8_1280: h = 8, w = 8, c = 1280, p = 1280, eps = 1e-05f32);
 
 // ── flash_attn（8 个）──
-sd_kernels::flash_attn!(pub un_at_64_s: rows = 4736, keys = 4736, heads = 8, head = 64, scale = 40);
-sd_kernels::flash_attn!(pub un_at_64_x: rows = 4736, keys = 128, heads = 8, head = 64, scale = 40);
-sd_kernels::flash_attn!(pub un_at_32_s: rows = 1408, keys = 1408, heads = 8, head = 96, scale = 80);
-sd_kernels::flash_attn!(pub un_at_32_x: rows = 1408, keys = 128, heads = 8, head = 96, scale = 80);
-sd_kernels::flash_attn!(pub un_at_16_s: rows = 512, keys = 512, heads = 8, head = 160, scale = 160);
-sd_kernels::flash_attn!(pub un_at_16_x: rows = 512, keys = 128, heads = 8, head = 160, scale = 160);
-sd_kernels::flash_attn!(pub un_at_8_s: rows = 256, keys = 256, heads = 8, head = 160, scale = 160);
-sd_kernels::flash_attn!(pub un_at_8_x: rows = 256, keys = 128, heads = 8, head = 160, scale = 160);
+sd_kernels::flash_attn!(pub un_at_64_s: rows = 4096, keys = 4096, heads = 8, head = 64, scale = 40, mask = none, q = prescaled);
+sd_kernels::flash_attn!(pub un_at_64_x: rows = 4736, keys = 128, heads = 8, head = 64, scale = 40, q = prescaled);
+sd_kernels::flash_attn!(pub un_at_32_s: rows = 1024, keys = 1024, heads = 8, head = 96, scale = 80, mask = none, q = prescaled);
+sd_kernels::flash_attn!(pub un_at_32_x: rows = 1408, keys = 128, heads = 8, head = 96, scale = 80, q = prescaled);
+sd_kernels::flash_attn!(pub un_at_16_s: rows = 256, keys = 256, heads = 8, head = 160, scale = 160, mask = none, q = prescaled);
+sd_kernels::flash_attn!(pub un_at_16_x: rows = 512, keys = 128, heads = 8, head = 160, scale = 160, q = prescaled);
+sd_kernels::flash_attn!(pub un_at_8_s: rows = 256, keys = 256, heads = 8, head = 160, scale = 160, q = prescaled);
+sd_kernels::flash_attn!(pub un_at_8_x: rows = 256, keys = 128, heads = 8, head = 160, scale = 160, q = prescaled);
+
+// ── pack_int（3 个）──
+sd_kernels::pack_int!(pub un_pk_64_512: h = 64, w = 64, c = 512, p = 512);
+sd_kernels::pack_int!(pub un_pk_32_768: h = 32, w = 32, c = 768, p = 768);
+sd_kernels::pack_int!(pub un_pk_16_1280: h = 16, w = 16, c = 1280, p = 1280);
+
+// ── unpack_int（3 个）──
+sd_kernels::unpack_int!(pub un_unpk_64_512: h = 64, w = 64, c = 512, p = 512);
+sd_kernels::unpack_int!(pub un_unpk_32_768: h = 32, w = 32, c = 768, p = 768);
+sd_kernels::unpack_int!(pub un_unpk_16_1280: h = 16, w = 16, c = 1280, p = 1280);
 
 // ── linear（48 个）──
 calblas::linear!(pub un_l16_384_1280: rows = 16, k = 384, n = 1280, w = hf, cores = 2, bias = f32);

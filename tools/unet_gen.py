@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import re
 import struct
 import subprocess
@@ -115,14 +116,22 @@ class Kernels:
         return self.add(f"un_ln_{h}_{c}", "ln_nhwc", {"h": h, "c": c},
                         f"sd_kernels::ln_nhwc!(pub un_ln_{h}_{c}: h = {h}, w = {h}, c = {c}, p = {c}, eps = {EPS_LN:g}f32);")
 
-    def attn(self, h, c, cross):
+    def attn(self, h, c, cross, dense=False):
         """本仓 flash_attn!（DESIGN D21）：一块 K / V 给 64 行 q 用（两遍法，数值同 calblas attention!；K 按原样 [key, 头 · d] 读）。
-        calblas attention! 每 16 行 q 把每块 key 走一串指令，64² 的自注意力一次 625 ms（0.07 TFLOPS，DESIGN F27）。"""
-        t, d = tpad(h), DP[c]
+        calblas attention! 每 16 行 q 把每块 key 走一串指令，64² 的自注意力一次 625 ms（0.07 TFLOPS，DESIGN F27）。
+        1/√d 已经乘进 q 的投影权重（`q = prescaled`，D23）。dense：自注意力的 q / k / v 先压成稠密的 token（h · h 个），不要掩码。"""
+        d = DP[c]
+        t = h * h if dense else tpad(h)
         tk = CTX_ROWS if cross else t
         name = f"un_at_{h}_{'x' if cross else 's'}"
-        return self.add(name, "flash_attn", {"h": h, "c": c, "cross": cross},
-                        f"sd_kernels::flash_attn!(pub {name}: rows = {t}, keys = {tk}, heads = {HEADS}, head = {d}, scale = {c // HEADS});")
+        mask = ", mask = none" if dense else ""
+        return self.add(name, "flash_attn", {"h": h, "c": c, "cross": cross, "dense": dense},
+                        f"sd_kernels::flash_attn!(pub {name}: rows = {t}, keys = {tk}, heads = {HEADS}, head = {d}, scale = {c // HEADS}{mask}, q = prescaled);")
+
+    def pack(self, h, c, unpack=False):
+        name = f"un_{'un' if unpack else ''}pk_{h}_{c}"
+        mac = "unpack_int" if unpack else "pack_int"
+        return self.add(name, mac, {"h": h, "c": c}, f"sd_kernels::{mac}!(pub {name}: h = {h}, w = {h}, c = {c}, p = {c});")
 
     def tr(self, rows, cols):
         name = f"un_tr_{rows}_{cols}"
@@ -303,18 +312,18 @@ def build(unet):
             args.append(b(res))
         g.op(K, name, args + [b(y)])
 
-    def lin(m, x, y, mode, res=None):
+    def lin(m, x, y, mode, res=None, prescale=None):
         """Linear（或 1×1 的 Conv2d）当 1×1 卷积。mode：plain / qkv（输出按头补零，无 bias）/ out（输入按头补零）/ ff_h、ff_g（GEGLU 投影的两半）。
         32² × 640 通道输入、不带残差的走 calblas linear!（整张带边框的图当稠密行，DESIGN F26）：输出的边框行是 bias（qkv 无 bias ⇒ 还是 0），
         这几张图（proj_in 的输出、q / k / v、前馈的两半）只有 LayerNorm、注意力、geglu、1×1 卷积读，边框不碍事。
         输入超过 1024 通道的也走 linear!（`wide`，DESIGN D22）。"""
         cx = pp(x)
         hy, cy = hw(y)
-        meta = {"cin": cx, "cout": cy, "mode": mode, "hf": False}
+        meta = {"cin": cx, "cout": cy, "mode": mode, "hf": False, **({"scale": prescale} if prescale else {})}
         if cx > 1024 or (hy == 32 and cx == 640 and res is None):
             n = -(-cy // 128) * 128
             bias = None if mode == "qkv" else g.w(f"lin_b|{m._sdk}|{mode}", n * 4, mode=mode, n=n)
-            wide(x, y, res, 1, f"lin_w|{m._sdk}|{mode}|hf", {"mode": mode}, bias)
+            wide(x, y, res, 1, f"lin_w|{m._sdk}|{mode}|hf", {"mode": mode, **({"scale": prescale} if prescale else {})}, bias)
             return
         name = K.conv(hy, cx, cy, 1, res=res is not None, pout=pp(y), pres=pp(res) if res else None)
         bias = g.w(f"zero_b|{cy}", cy * 4) if mode == "qkv" else g.w(f"lin_b|{m._sdk}|{mode}", cy * 4, mode=mode)
@@ -354,7 +363,7 @@ def build(unet):
         h, c = hw(x)
         hd = HEADS * DP[c]
         q = g.map(h, hd)
-        lin(a.to_q, x, q, "qkv")
+        lin(a.to_q, x, q, "qkv", prescale=1 / math.sqrt(c // HEADS))  # 1/√d 乘进 q 的投影权重（D23）
         if cross:
             k, v = g.dense(CTX_ROWS * hd * 2, "k"), g.dense(CTX_ROWS * hd * 2, "v")
             for m, buf in ((a.to_k, k), (a.to_v, v)):
@@ -364,6 +373,14 @@ def build(unet):
             lin(a.to_k, x, k, "qkv")
             lin(a.to_v, x, v, "qkv")
         o = g.map(h, hd)
+        if not cross and (h * h) % 128 == 0:
+            # 自注意力（64²、32²、16²）：q / k / v 先压成稠密的 h · h 个 token，算完再铺回 o 的内部（D23）：少算带边框的 token、不要掩码
+            qd, kd, vd, od = (g.dense(h * h * hd * 2, n) for n in ("qd", "kd", "vd", "od"))
+            for src, dst in ((q, qd), (k, kd), (v, vd)):
+                g.op(K, K.pack(h, hd), [b(src), b(dst)])
+            g.op(K, K.attn(h, c, False, dense=True), [b(qd), b(kd), b(vd), b(od)])
+            g.op(K, K.pack(h, hd, unpack=True), [b(od), b(o)])
+            return o
         mk = g.w("amask|x", CTX_ROWS * 2) if cross else g.w(f"amask|{h}", tpad(h) * 2)
         g.op(K, K.attn(h, c, cross), [b(q), b(k), b(v), mk, b(o)])
         return o
@@ -492,7 +509,7 @@ def load_unet():
 
 # ───────────────────────── kernels.rs ─────────────────────────
 
-KIND_ORDER = ["conv2d", "gn_stats", "gn_apply", "ln_nhwc", "flash_attn", "transpose2d", "linear", "res_add", "geglu", "upsample2", "copy_win",
+KIND_ORDER = ["conv2d", "gn_stats", "gn_apply", "ln_nhwc", "flash_attn", "pack_int", "unpack_int", "transpose2d", "linear", "res_add", "geglu", "upsample2", "copy_win",
               "timestep_embed", "unary", "bias_fold", "fill16k"]
 
 
@@ -581,7 +598,7 @@ def kernel_code(syms: dict, entry: str = "step") -> dict:
 
 
 GUESS = {"conv2d": 120_000, "flash_attn": 120_000, "gn_stats": 30_000, "gn_apply": 30_000, "ln_nhwc": 40_000}
-NARGS = {"gn_stats": 2, "gn_apply": 6, "ln_nhwc": 4, "flash_attn": 5, "transpose2d": 2, "res_add": 3, "geglu": 3, "upsample2": 2, "copy_win": 2,
+NARGS = {"gn_stats": 2, "gn_apply": 6, "ln_nhwc": 4, "pack_int": 2, "unpack_int": 2, "transpose2d": 2, "res_add": 3, "geglu": 3, "upsample2": 2, "copy_win": 2,
          "timestep_embed": 3, "unary": 2, "bias_fold": 3}
 
 
@@ -607,6 +624,8 @@ def probe_program(feature: str, kernels: list[str], K: Kernels) -> str:
         kind, sp = K.k[n]["kind"], K.k[n]["spec"]
         if kind == "conv2d":
             na = 5 if sp["res"] else 4
+        elif kind == "flash_attn":
+            na = 4 if sp.get("dense") else 5
         elif kind == "linear":
             st = sp.get("stage")
             na = {None: 4 if sp["bias"] else 3, "first": 3, "mid": 3, "last": 5 if sp["bias"] else 4}[st]

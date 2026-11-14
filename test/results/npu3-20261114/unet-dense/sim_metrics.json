@@ -1,0 +1,78 @@
+{
+ "t": 500.0,
+ "sim_s": 16.4,
+ "stages": {
+  "s1": "63 个作业（fill16k 4 次、timestep_embed 1 次、linear 7 次、unary 2 次、bias_fold 1 次、conv2d 20 次、gn_stats 6 次、gn_apply 6 次、ln_nhwc 4 次、pack_int 6 次、flash_attn 4 次、unpack_int 2 次），60 条屏障；接线检查全过；numpy 用时 1.5 s",
+  "s2": "56 个作业（fill16k 4 次、ln_nhwc 4 次、conv2d 20 次、geglu 2 次、linear 2 次、res_add 2 次、gn_stats 6 次、gn_apply 6 次、pack_int 6 次、flash_attn 2 次、unpack_int 2 次），53 条屏障；接线检查全过；numpy 用时 1.7 s",
+  "s3": "84 个作业（fill16k 4 次、ln_nhwc 8 次、conv2d 22 次、linear 20 次、flash_attn 6 次、geglu 2 次、res_add 2 次、gn_stats 6 次、gn_apply 6 次、pack_int 6 次、unpack_int 2 次），81 条屏障；接线检查全过；numpy 用时 0.9 s",
+  "s4": "280 个作业（fill16k 4 次、ln_nhwc 20 次、linear 132 次、geglu 8 次、res_add 24 次、conv2d 20 次、gn_stats 18 次、gn_apply 18 次、pack_int 18 次、flash_attn 12 次、unpack_int 6 次），277 条屏障；接线检查全过；numpy 用时 1.5 s",
+  "s5": "840 个作业（fill16k 4 次、gn_stats 54 次、gn_apply 54 次、linear 540 次、res_add 52 次、ln_nhwc 26 次、flash_attn 18 次、geglu 8 次、copy_win 28 次、upsample2 20 次、pack_int 24 次、unpack_int 8 次、conv2d 4 次），837 条屏障；接线检查全过；numpy 用时 2.0 s",
+  "s6": "212 个作业（fill16k 4 次、ln_nhwc 16 次、linear 72 次、flash_attn 10 次、conv2d 32 次、geglu 6 次、res_add 6 次、copy_win 12 次、gn_stats 16 次、gn_apply 16 次、pack_int 12 次、unpack_int 4 次、upsample2 6 次），209 条屏障；接线检查全过；numpy 用时 1.7 s",
+  "s7": "56 个作业（fill16k 4 次、gn_stats 2 次、gn_apply 2 次、conv2d 20 次、ln_nhwc 6 次、pack_int 6 次、flash_attn 4 次、unpack_int 2 次、linear 6 次、geglu 2 次、res_add 2 次），53 条屏障；接线检查全过；numpy 用时 1.7 s",
+  "s8": "60 个作业（fill16k 4 次、copy_win 4 次、gn_stats 6 次、gn_apply 6 次、conv2d 20 次、ln_nhwc 4 次、pack_int 6 次、flash_attn 4 次、unpack_int 2 次、linear 4 次），57 条屏障；接线检查全过；numpy 用时 1.5 s",
+  "s9": "62 个作业（fill16k 4 次、ln_nhwc 4 次、conv2d 22 次、geglu 2 次、linear 2 次、res_add 2 次、copy_win 4 次、gn_stats 6 次、gn_apply 6 次、pack_int 6 次、flash_attn 2 次、unpack_int 2 次），59 条屏障；接线检查全过；numpy 用时 1.9 s",
+  "s10": "36 个作业（fill16k 4 次、ln_nhwc 4 次、conv2d 12 次、linear 6 次、flash_attn 2 次、geglu 2 次、res_add 2 次、gn_stats 2 次、gn_apply 2 次），33 条屏障；接线检查全过；numpy 用时 0.7 s"
+ },
+ "cond": {
+  "vs_bf16": {
+   "max_abs": 0.015625,
+   "rms": 0.0020183585535261833,
+   "cos": 0.9999976291255604,
+   "snr_db": 53.238216530889446,
+   "finite": true
+  },
+  "vs_fp32": {
+   "max_abs": 0.016937732696533203,
+   "rms": 0.0024980657555840015,
+   "cos": 0.9999964420459704,
+   "snr_db": 51.38899993818257,
+   "finite": true
+  },
+  "ref_bf16_vs_fp32": {
+   "max_abs": 0.016937732696533203,
+   "rms": 0.0025353211739067316,
+   "cos": 0.9999963137842792,
+   "snr_db": 51.260417587545646,
+   "finite": true
+  }
+ },
+ "uncond": {
+  "vs_bf16": {
+   "max_abs": 0.015625,
+   "rms": 0.002128571010813109,
+   "cos": 0.9999974093434373,
+   "snr_db": 52.8313881545954,
+   "finite": true
+  },
+  "vs_fp32": {
+   "max_abs": 0.018128633499145508,
+   "rms": 0.002687537406948823,
+   "cos": 0.9999960027265391,
+   "snr_db": 50.812306645727375,
+   "finite": true
+  },
+  "ref_bf16_vs_fp32": {
+   "max_abs": 0.018128633499145508,
+   "rms": 0.0029191970225052,
+   "cos": 0.9999953622333361,
+   "snr_db": 50.094128853296425,
+   "finite": true
+  }
+ },
+ "cfg": {
+  "vs_bf16": {
+   "max_abs": 0.1171875,
+   "rms": 0.02033531503229611,
+   "cos": 0.9997473723975862,
+   "snr_db": 32.957699434715664,
+   "finite": true
+  },
+  "vs_fp32": {
+   "max_abs": 0.12957143783569336,
+   "rms": 0.018394358804647494,
+   "cos": 0.9997924937390033,
+   "snr_db": 33.81375907005936,
+   "finite": true
+  }
+ }
+}

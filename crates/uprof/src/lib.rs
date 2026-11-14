@@ -6,7 +6,7 @@
 #[path = "../../unet/src/kernels.rs"]
 mod vae_kernels;
 
-const N_FEATURES: usize = cfg!(feature = "base") as usize + cfg!(feature = "un_c3_64_32_320") as usize + cfg!(feature = "un_c3_64_320_320") as usize + cfg!(feature = "un_c3_64_320_320_r") as usize + cfg!(feature = "un_c1_64_320_320") as usize + cfg!(feature = "un_c1_64_320_512") as usize + cfg!(feature = "un_c1_64_512_320_r") as usize + cfg!(feature = "un_c1_64_320_1280") as usize + cfg!(feature = "un_c1_64_320_320_r") as usize + cfg!(feature = "un_c3_32_320_320_s2") as usize + cfg!(feature = "un_c3_32_320_640") as usize + cfg!(feature = "un_c1_32_320_640") as usize + cfg!(feature = "un_c3_32_640_640_r") as usize + cfg!(feature = "un_c1_32_768_640_r") as usize + cfg!(feature = "un_c3_32_640_640") as usize + cfg!(feature = "un_c3_16_640_640_s2") as usize + cfg!(feature = "un_c3_16_640_1280") as usize + cfg!(feature = "un_c1_16_640_1280") as usize + cfg!(feature = "un_c3_8_1280_1280_s2") as usize + cfg!(feature = "un_c3_32_960_640") as usize + cfg!(feature = "un_c1_32_960_640") as usize + cfg!(feature = "un_c3_64_640_640") as usize + cfg!(feature = "un_c3_64_960_320") as usize + cfg!(feature = "un_c1_64_960_320") as usize + cfg!(feature = "un_c3_64_640_320") as usize + cfg!(feature = "un_c1_64_640_320") as usize + cfg!(feature = "un_c3_64_320_32") as usize + cfg!(feature = "un_gs_64_320") as usize + cfg!(feature = "un_gs_32_320") as usize + cfg!(feature = "un_gs_32_640") as usize + cfg!(feature = "un_gs_16_640") as usize + cfg!(feature = "un_gs_16_1280") as usize + cfg!(feature = "un_gs_8_1280") as usize + cfg!(feature = "un_gs_8_2560") as usize + cfg!(feature = "un_gs_16_2560") as usize + cfg!(feature = "un_gs_16_1920") as usize + cfg!(feature = "un_gs_32_1920") as usize + cfg!(feature = "un_gs_32_1280") as usize + cfg!(feature = "un_gs_32_960") as usize + cfg!(feature = "un_gs_64_960") as usize + cfg!(feature = "un_gs_64_640") as usize + cfg!(feature = "un_ga_64_320_silu") as usize + cfg!(feature = "un_ga_64_320_none") as usize + cfg!(feature = "un_ga_32_320_silu") as usize + cfg!(feature = "un_ga_32_640_silu") as usize + cfg!(feature = "un_ga_32_640_none") as usize + cfg!(feature = "un_ga_16_640_silu") as usize + cfg!(feature = "un_ga_16_1280_silu") as usize + cfg!(feature = "un_ga_16_1280_none") as usize + cfg!(feature = "un_ga_8_1280_silu") as usize + cfg!(feature = "un_ga_8_1280_none") as usize + cfg!(feature = "un_ga_8_2560_silu") as usize + cfg!(feature = "un_ga_16_2560_silu") as usize + cfg!(feature = "un_ga_16_1920_silu") as usize + cfg!(feature = "un_ga_32_1920_silu") as usize + cfg!(feature = "un_ga_32_1280_silu") as usize + cfg!(feature = "un_ga_32_960_silu") as usize + cfg!(feature = "un_ga_64_960_silu") as usize + cfg!(feature = "un_ga_64_640_silu") as usize + cfg!(feature = "un_ln_64_320") as usize + cfg!(feature = "un_ln_32_640") as usize + cfg!(feature = "un_ln_16_1280") as usize + cfg!(feature = "un_ln_8_1280") as usize + cfg!(feature = "un_at_64_s") as usize + cfg!(feature = "un_at_64_x") as usize + cfg!(feature = "un_at_32_s") as usize + cfg!(feature = "un_at_32_x") as usize + cfg!(feature = "un_at_16_s") as usize + cfg!(feature = "un_at_16_x") as usize + cfg!(feature = "un_at_8_s") as usize + cfg!(feature = "un_at_8_x") as usize + cfg!(feature = "un_l16_384_1280") as usize + cfg!(feature = "un_l16_1280_1280") as usize + cfg!(feature = "un_l16_1280_20224") as usize + cfg!(feature = "un_kv_512") as usize + cfg!(feature = "un_lr_64_1280_384_b") as usize + cfg!(feature = "un_lr_32_640_640_b") as usize + cfg!(feature = "un_lr_32_640_768") as usize + cfg!(feature = "un_kv_768") as usize + cfg!(feature = "un_lr_32_640_2560_b") as usize + cfg!(feature = "un_lr_32_2560_640_b") as usize + cfg!(feature = "un_lr_16_1280_1280_first") as usize + cfg!(feature = "un_lr_16_1280_1280_mid") as usize + cfg!(feature = "un_lr_16_1280_1280_b_last") as usize + cfg!(feature = "un_lr_16_1280_1280_b") as usize + cfg!(feature = "un_lr_16_1280_1280") as usize + cfg!(feature = "un_kv_1280") as usize + cfg!(feature = "un_lr_16_1280_5120_b") as usize + cfg!(feature = "un_lr_16_5120_1280_b") as usize + cfg!(feature = "un_lr_8_1280_1280_first") as usize + cfg!(feature = "un_lr_8_1280_1280_mid") as usize + cfg!(feature = "un_lr_8_1280_1280_b_last") as usize + cfg!(feature = "un_lr_8_1280_1280_b") as usize + cfg!(feature = "un_lr_8_1280_1280") as usize + cfg!(feature = "un_lr_8_1280_5120_b") as usize + cfg!(feature = "un_lr_8_5120_1280_b") as usize + cfg!(feature = "un_lr_8_2560_1280_first") as usize + cfg!(feature = "un_lr_8_2560_1280_mid") as usize + cfg!(feature = "un_lr_8_2560_1280_b_last") as usize + cfg!(feature = "un_lr_8_2560_1280_b") as usize + cfg!(feature = "un_lr_16_2560_1280_first") as usize + cfg!(feature = "un_lr_16_2560_1280_mid") as usize + cfg!(feature = "un_lr_16_2560_1280_b_last") as usize + cfg!(feature = "un_lr_16_2560_1280_b") as usize + cfg!(feature = "un_lr_16_1920_1280_first") as usize + cfg!(feature = "un_lr_16_1920_1280_mid") as usize + cfg!(feature = "un_lr_16_1920_1280_b_last") as usize + cfg!(feature = "un_lr_16_1920_1280_b") as usize + cfg!(feature = "un_lr_32_1280_1280_first") as usize + cfg!(feature = "un_lr_32_1280_1280_mid") as usize + cfg!(feature = "un_lr_32_1280_1280_b_last") as usize + cfg!(feature = "un_lr_32_1920_640_first") as usize + cfg!(feature = "un_lr_32_1920_640_mid") as usize + cfg!(feature = "un_lr_32_1920_640_b_last") as usize + cfg!(feature = "un_lr_32_1920_640_b") as usize + cfg!(feature = "un_lr_32_1280_640_first") as usize + cfg!(feature = "un_lr_32_1280_640_mid") as usize + cfg!(feature = "un_lr_32_1280_640_b_last") as usize + cfg!(feature = "un_lr_32_1280_640_b") as usize + cfg!(feature = "un_ra_64_320_384_320_320") as usize + cfg!(feature = "un_ra_32_640_640_640_768") as usize + cfg!(feature = "un_ra_16_1280_1280_1280_1280") as usize + cfg!(feature = "un_ra_8_1280_1280_1280_1280") as usize + cfg!(feature = "un_gg_64") as usize + cfg!(feature = "un_gg_32") as usize + cfg!(feature = "un_gg_16") as usize + cfg!(feature = "un_gg_8") as usize + cfg!(feature = "un_up_8_1280_256") as usize + cfg!(feature = "un_up_16_1280_256") as usize + cfg!(feature = "un_up_32_640_256") as usize + cfg!(feature = "un_up_32_640_128") as usize + cfg!(feature = "un_cp_8_1280_2560") as usize + cfg!(feature = "un_cp_16_1280_2560") as usize + cfg!(feature = "un_cp_16_1280_1920") as usize + cfg!(feature = "un_cp_16_640_1920") as usize + cfg!(feature = "un_cp_32_1280_1920") as usize + cfg!(feature = "un_cp_32_640_1920") as usize + cfg!(feature = "un_cp_32_640_1280") as usize + cfg!(feature = "un_cp_32_640_960") as usize + cfg!(feature = "un_cp_32_320_960") as usize + cfg!(feature = "un_cp_64_640_960") as usize + cfg!(feature = "un_cp_64_320_960") as usize + cfg!(feature = "un_cp_64_320_640") as usize + cfg!(feature = "un_temb") as usize + cfg!(feature = "un_silu") as usize + cfg!(feature = "un_bf") as usize;
+const N_FEATURES: usize = cfg!(feature = "base") as usize + cfg!(feature = "un_c3_64_32_320") as usize + cfg!(feature = "un_c3_64_320_320") as usize + cfg!(feature = "un_c3_64_320_320_r") as usize + cfg!(feature = "un_c1_64_320_320") as usize + cfg!(feature = "un_c1_64_320_512") as usize + cfg!(feature = "un_c1_64_512_320_r") as usize + cfg!(feature = "un_c1_64_320_1280") as usize + cfg!(feature = "un_c1_64_320_320_r") as usize + cfg!(feature = "un_c3_32_320_320_s2") as usize + cfg!(feature = "un_c3_32_320_640") as usize + cfg!(feature = "un_c1_32_320_640") as usize + cfg!(feature = "un_c3_32_640_640_r") as usize + cfg!(feature = "un_c1_32_768_640_r") as usize + cfg!(feature = "un_c3_32_640_640") as usize + cfg!(feature = "un_c3_16_640_640_s2") as usize + cfg!(feature = "un_c3_16_640_1280") as usize + cfg!(feature = "un_c1_16_640_1280") as usize + cfg!(feature = "un_c3_8_1280_1280_s2") as usize + cfg!(feature = "un_c3_32_960_640") as usize + cfg!(feature = "un_c1_32_960_640") as usize + cfg!(feature = "un_c3_64_640_640") as usize + cfg!(feature = "un_c3_64_960_320") as usize + cfg!(feature = "un_c1_64_960_320") as usize + cfg!(feature = "un_c3_64_640_320") as usize + cfg!(feature = "un_c1_64_640_320") as usize + cfg!(feature = "un_c3_64_320_32") as usize + cfg!(feature = "un_gs_64_320") as usize + cfg!(feature = "un_gs_32_320") as usize + cfg!(feature = "un_gs_32_640") as usize + cfg!(feature = "un_gs_16_640") as usize + cfg!(feature = "un_gs_16_1280") as usize + cfg!(feature = "un_gs_8_1280") as usize + cfg!(feature = "un_gs_8_2560") as usize + cfg!(feature = "un_gs_16_2560") as usize + cfg!(feature = "un_gs_16_1920") as usize + cfg!(feature = "un_gs_32_1920") as usize + cfg!(feature = "un_gs_32_1280") as usize + cfg!(feature = "un_gs_32_960") as usize + cfg!(feature = "un_gs_64_960") as usize + cfg!(feature = "un_gs_64_640") as usize + cfg!(feature = "un_ga_64_320_silu") as usize + cfg!(feature = "un_ga_64_320_none") as usize + cfg!(feature = "un_ga_32_320_silu") as usize + cfg!(feature = "un_ga_32_640_silu") as usize + cfg!(feature = "un_ga_32_640_none") as usize + cfg!(feature = "un_ga_16_640_silu") as usize + cfg!(feature = "un_ga_16_1280_silu") as usize + cfg!(feature = "un_ga_16_1280_none") as usize + cfg!(feature = "un_ga_8_1280_silu") as usize + cfg!(feature = "un_ga_8_1280_none") as usize + cfg!(feature = "un_ga_8_2560_silu") as usize + cfg!(feature = "un_ga_16_2560_silu") as usize + cfg!(feature = "un_ga_16_1920_silu") as usize + cfg!(feature = "un_ga_32_1920_silu") as usize + cfg!(feature = "un_ga_32_1280_silu") as usize + cfg!(feature = "un_ga_32_960_silu") as usize + cfg!(feature = "un_ga_64_960_silu") as usize + cfg!(feature = "un_ga_64_640_silu") as usize + cfg!(feature = "un_ln_64_320") as usize + cfg!(feature = "un_ln_32_640") as usize + cfg!(feature = "un_ln_16_1280") as usize + cfg!(feature = "un_ln_8_1280") as usize + cfg!(feature = "un_at_64_s") as usize + cfg!(feature = "un_at_64_x") as usize + cfg!(feature = "un_at_32_s") as usize + cfg!(feature = "un_at_32_x") as usize + cfg!(feature = "un_at_16_s") as usize + cfg!(feature = "un_at_16_x") as usize + cfg!(feature = "un_at_8_s") as usize + cfg!(feature = "un_at_8_x") as usize + cfg!(feature = "un_pk_64_512") as usize + cfg!(feature = "un_pk_32_768") as usize + cfg!(feature = "un_pk_16_1280") as usize + cfg!(feature = "un_unpk_64_512") as usize + cfg!(feature = "un_unpk_32_768") as usize + cfg!(feature = "un_unpk_16_1280") as usize + cfg!(feature = "un_l16_384_1280") as usize + cfg!(feature = "un_l16_1280_1280") as usize + cfg!(feature = "un_l16_1280_20224") as usize + cfg!(feature = "un_kv_512") as usize + cfg!(feature = "un_lr_64_1280_384_b") as usize + cfg!(feature = "un_lr_32_640_640_b") as usize + cfg!(feature = "un_lr_32_640_768") as usize + cfg!(feature = "un_kv_768") as usize + cfg!(feature = "un_lr_32_640_2560_b") as usize + cfg!(feature = "un_lr_32_2560_640_b") as usize + cfg!(feature = "un_lr_16_1280_1280_first") as usize + cfg!(feature = "un_lr_16_1280_1280_mid") as usize + cfg!(feature = "un_lr_16_1280_1280_b_last") as usize + cfg!(feature = "un_lr_16_1280_1280_b") as usize + cfg!(feature = "un_lr_16_1280_1280") as usize + cfg!(feature = "un_kv_1280") as usize + cfg!(feature = "un_lr_16_1280_5120_b") as usize + cfg!(feature = "un_lr_16_5120_1280_b") as usize + cfg!(feature = "un_lr_8_1280_1280_first") as usize + cfg!(feature = "un_lr_8_1280_1280_mid") as usize + cfg!(feature = "un_lr_8_1280_1280_b_last") as usize + cfg!(feature = "un_lr_8_1280_1280_b") as usize + cfg!(feature = "un_lr_8_1280_1280") as usize + cfg!(feature = "un_lr_8_1280_5120_b") as usize + cfg!(feature = "un_lr_8_5120_1280_b") as usize + cfg!(feature = "un_lr_8_2560_1280_first") as usize + cfg!(feature = "un_lr_8_2560_1280_mid") as usize + cfg!(feature = "un_lr_8_2560_1280_b_last") as usize + cfg!(feature = "un_lr_8_2560_1280_b") as usize + cfg!(feature = "un_lr_16_2560_1280_first") as usize + cfg!(feature = "un_lr_16_2560_1280_mid") as usize + cfg!(feature = "un_lr_16_2560_1280_b_last") as usize + cfg!(feature = "un_lr_16_2560_1280_b") as usize + cfg!(feature = "un_lr_16_1920_1280_first") as usize + cfg!(feature = "un_lr_16_1920_1280_mid") as usize + cfg!(feature = "un_lr_16_1920_1280_b_last") as usize + cfg!(feature = "un_lr_16_1920_1280_b") as usize + cfg!(feature = "un_lr_32_1280_1280_first") as usize + cfg!(feature = "un_lr_32_1280_1280_mid") as usize + cfg!(feature = "un_lr_32_1280_1280_b_last") as usize + cfg!(feature = "un_lr_32_1920_640_first") as usize + cfg!(feature = "un_lr_32_1920_640_mid") as usize + cfg!(feature = "un_lr_32_1920_640_b_last") as usize + cfg!(feature = "un_lr_32_1920_640_b") as usize + cfg!(feature = "un_lr_32_1280_640_first") as usize + cfg!(feature = "un_lr_32_1280_640_mid") as usize + cfg!(feature = "un_lr_32_1280_640_b_last") as usize + cfg!(feature = "un_lr_32_1280_640_b") as usize + cfg!(feature = "un_ra_64_320_384_320_320") as usize + cfg!(feature = "un_ra_32_640_640_640_768") as usize + cfg!(feature = "un_ra_16_1280_1280_1280_1280") as usize + cfg!(feature = "un_ra_8_1280_1280_1280_1280") as usize + cfg!(feature = "un_gg_64") as usize + cfg!(feature = "un_gg_32") as usize + cfg!(feature = "un_gg_16") as usize + cfg!(feature = "un_gg_8") as usize + cfg!(feature = "un_up_8_1280_256") as usize + cfg!(feature = "un_up_16_1280_256") as usize + cfg!(feature = "un_up_32_640_256") as usize + cfg!(feature = "un_up_32_640_128") as usize + cfg!(feature = "un_cp_8_1280_2560") as usize + cfg!(feature = "un_cp_16_1280_2560") as usize + cfg!(feature = "un_cp_16_1280_1920") as usize + cfg!(feature = "un_cp_16_640_1920") as usize + cfg!(feature = "un_cp_32_1280_1920") as usize + cfg!(feature = "un_cp_32_640_1920") as usize + cfg!(feature = "un_cp_32_640_1280") as usize + cfg!(feature = "un_cp_32_640_960") as usize + cfg!(feature = "un_cp_32_320_960") as usize + cfg!(feature = "un_cp_64_640_960") as usize + cfg!(feature = "un_cp_64_320_960") as usize + cfg!(feature = "un_cp_64_320_640") as usize + cfg!(feature = "un_temb") as usize + cfg!(feature = "un_silu") as usize + cfg!(feature = "un_bf") as usize;
 const _: () = assert!(N_FEATURES <= 1, "prof：一次只开一个 feature");
 
 #[cfg(feature = "base")]
@@ -1698,35 +1698,33 @@ mod prog {
     }
 }
 
-/// un_at_64_s：flash_attn {'rows': 4736, 'keys': 4736, 'heads': 8, 'head': 64, 'scale': 40}
+/// un_at_64_s：flash_attn {'rows': 4096, 'keys': 4096, 'heads': 8, 'head': 64, 'scale': 40, 'mask': 'none', 'q': 'prescaled'}
 #[cfg(feature = "un_at_64_s")]
 mod prog {
     use npu::prelude::*;
     npu::decls! {
         in_x: input, bytes = 64;
         out_y: output, bytes = 64;
-        w: weights, bytes = 12288;
-        act: workspace, bytes = 19398656;
+        act: workspace, bytes = 16777216;
     }
     const A_Q: u64 = 0;
-    const A_K: u64 = 4849664;
-    const A_V: u64 = 9699328;
-    const A_O: u64 = 14548992;
-    const W_M: u64 = 0;
+    const A_K: u64 = 4194304;
+    const A_V: u64 = 8388608;
+    const A_O: u64 = 12582912;
     #[npu::program(chiplets = 1, cores = 2)]
     pub fn step() {
-        crate::vae_kernels::un_at_64_s(act().at(A_Q).cast(), act().at(A_K).cast(), act().at(A_V).cast(), w().at(W_M).cast(), act().at(A_O).cast());
+        crate::vae_kernels::un_at_64_s(act().at(A_Q).cast(), act().at(A_K).cast(), act().at(A_V).cast(), act().at(A_O).cast());
         sync_cores();
-        crate::vae_kernels::un_at_64_s(act().at(A_Q).cast(), act().at(A_K).cast(), act().at(A_V).cast(), w().at(W_M).cast(), act().at(A_O).cast());
+        crate::vae_kernels::un_at_64_s(act().at(A_Q).cast(), act().at(A_K).cast(), act().at(A_V).cast(), act().at(A_O).cast());
         sync_cores();
-        crate::vae_kernels::un_at_64_s(act().at(A_Q).cast(), act().at(A_K).cast(), act().at(A_V).cast(), w().at(W_M).cast(), act().at(A_O).cast());
+        crate::vae_kernels::un_at_64_s(act().at(A_Q).cast(), act().at(A_K).cast(), act().at(A_V).cast(), act().at(A_O).cast());
         sync_cores();
-        crate::vae_kernels::un_at_64_s(act().at(A_Q).cast(), act().at(A_K).cast(), act().at(A_V).cast(), w().at(W_M).cast(), act().at(A_O).cast());
+        crate::vae_kernels::un_at_64_s(act().at(A_Q).cast(), act().at(A_K).cast(), act().at(A_V).cast(), act().at(A_O).cast());
         sync_cores();
     }
 }
 
-/// un_at_64_x：flash_attn {'rows': 4736, 'keys': 128, 'heads': 8, 'head': 64, 'scale': 40}
+/// un_at_64_x：flash_attn {'rows': 4736, 'keys': 128, 'heads': 8, 'head': 64, 'scale': 40, 'q': 'prescaled'}
 #[cfg(feature = "un_at_64_x")]
 mod prog {
     use npu::prelude::*;
@@ -1754,35 +1752,33 @@ mod prog {
     }
 }
 
-/// un_at_32_s：flash_attn {'rows': 1408, 'keys': 1408, 'heads': 8, 'head': 96, 'scale': 80}
+/// un_at_32_s：flash_attn {'rows': 1024, 'keys': 1024, 'heads': 8, 'head': 96, 'scale': 80, 'mask': 'none', 'q': 'prescaled'}
 #[cfg(feature = "un_at_32_s")]
 mod prog {
     use npu::prelude::*;
     npu::decls! {
         in_x: input, bytes = 64;
         out_y: output, bytes = 64;
-        w: weights, bytes = 4096;
-        act: workspace, bytes = 8650752;
+        act: workspace, bytes = 6291456;
     }
     const A_Q: u64 = 0;
-    const A_K: u64 = 2162688;
-    const A_V: u64 = 4325376;
-    const A_O: u64 = 6488064;
-    const W_M: u64 = 0;
+    const A_K: u64 = 1572864;
+    const A_V: u64 = 3145728;
+    const A_O: u64 = 4718592;
     #[npu::program(chiplets = 1, cores = 2)]
     pub fn step() {
-        crate::vae_kernels::un_at_32_s(act().at(A_Q).cast(), act().at(A_K).cast(), act().at(A_V).cast(), w().at(W_M).cast(), act().at(A_O).cast());
+        crate::vae_kernels::un_at_32_s(act().at(A_Q).cast(), act().at(A_K).cast(), act().at(A_V).cast(), act().at(A_O).cast());
         sync_cores();
-        crate::vae_kernels::un_at_32_s(act().at(A_Q).cast(), act().at(A_K).cast(), act().at(A_V).cast(), w().at(W_M).cast(), act().at(A_O).cast());
+        crate::vae_kernels::un_at_32_s(act().at(A_Q).cast(), act().at(A_K).cast(), act().at(A_V).cast(), act().at(A_O).cast());
         sync_cores();
-        crate::vae_kernels::un_at_32_s(act().at(A_Q).cast(), act().at(A_K).cast(), act().at(A_V).cast(), w().at(W_M).cast(), act().at(A_O).cast());
+        crate::vae_kernels::un_at_32_s(act().at(A_Q).cast(), act().at(A_K).cast(), act().at(A_V).cast(), act().at(A_O).cast());
         sync_cores();
-        crate::vae_kernels::un_at_32_s(act().at(A_Q).cast(), act().at(A_K).cast(), act().at(A_V).cast(), w().at(W_M).cast(), act().at(A_O).cast());
+        crate::vae_kernels::un_at_32_s(act().at(A_Q).cast(), act().at(A_K).cast(), act().at(A_V).cast(), act().at(A_O).cast());
         sync_cores();
     }
 }
 
-/// un_at_32_x：flash_attn {'rows': 1408, 'keys': 128, 'heads': 8, 'head': 96, 'scale': 80}
+/// un_at_32_x：flash_attn {'rows': 1408, 'keys': 128, 'heads': 8, 'head': 96, 'scale': 80, 'q': 'prescaled'}
 #[cfg(feature = "un_at_32_x")]
 mod prog {
     use npu::prelude::*;
@@ -1810,35 +1806,33 @@ mod prog {
     }
 }
 
-/// un_at_16_s：flash_attn {'rows': 512, 'keys': 512, 'heads': 8, 'head': 160, 'scale': 160}
+/// un_at_16_s：flash_attn {'rows': 256, 'keys': 256, 'heads': 8, 'head': 160, 'scale': 160, 'mask': 'none', 'q': 'prescaled'}
 #[cfg(feature = "un_at_16_s")]
 mod prog {
     use npu::prelude::*;
     npu::decls! {
         in_x: input, bytes = 64;
         out_y: output, bytes = 64;
-        w: weights, bytes = 4096;
-        act: workspace, bytes = 5242880;
+        act: workspace, bytes = 2621440;
     }
     const A_Q: u64 = 0;
-    const A_K: u64 = 1310720;
-    const A_V: u64 = 2621440;
-    const A_O: u64 = 3932160;
-    const W_M: u64 = 0;
+    const A_K: u64 = 655360;
+    const A_V: u64 = 1310720;
+    const A_O: u64 = 1966080;
     #[npu::program(chiplets = 1, cores = 2)]
     pub fn step() {
-        crate::vae_kernels::un_at_16_s(act().at(A_Q).cast(), act().at(A_K).cast(), act().at(A_V).cast(), w().at(W_M).cast(), act().at(A_O).cast());
+        crate::vae_kernels::un_at_16_s(act().at(A_Q).cast(), act().at(A_K).cast(), act().at(A_V).cast(), act().at(A_O).cast());
         sync_cores();
-        crate::vae_kernels::un_at_16_s(act().at(A_Q).cast(), act().at(A_K).cast(), act().at(A_V).cast(), w().at(W_M).cast(), act().at(A_O).cast());
+        crate::vae_kernels::un_at_16_s(act().at(A_Q).cast(), act().at(A_K).cast(), act().at(A_V).cast(), act().at(A_O).cast());
         sync_cores();
-        crate::vae_kernels::un_at_16_s(act().at(A_Q).cast(), act().at(A_K).cast(), act().at(A_V).cast(), w().at(W_M).cast(), act().at(A_O).cast());
+        crate::vae_kernels::un_at_16_s(act().at(A_Q).cast(), act().at(A_K).cast(), act().at(A_V).cast(), act().at(A_O).cast());
         sync_cores();
-        crate::vae_kernels::un_at_16_s(act().at(A_Q).cast(), act().at(A_K).cast(), act().at(A_V).cast(), w().at(W_M).cast(), act().at(A_O).cast());
+        crate::vae_kernels::un_at_16_s(act().at(A_Q).cast(), act().at(A_K).cast(), act().at(A_V).cast(), act().at(A_O).cast());
         sync_cores();
     }
 }
 
-/// un_at_16_x：flash_attn {'rows': 512, 'keys': 128, 'heads': 8, 'head': 160, 'scale': 160}
+/// un_at_16_x：flash_attn {'rows': 512, 'keys': 128, 'heads': 8, 'head': 160, 'scale': 160, 'q': 'prescaled'}
 #[cfg(feature = "un_at_16_x")]
 mod prog {
     use npu::prelude::*;
@@ -1866,7 +1860,7 @@ mod prog {
     }
 }
 
-/// un_at_8_s：flash_attn {'rows': 256, 'keys': 256, 'heads': 8, 'head': 160, 'scale': 160}
+/// un_at_8_s：flash_attn {'rows': 256, 'keys': 256, 'heads': 8, 'head': 160, 'scale': 160, 'q': 'prescaled'}
 #[cfg(feature = "un_at_8_s")]
 mod prog {
     use npu::prelude::*;
@@ -1894,7 +1888,7 @@ mod prog {
     }
 }
 
-/// un_at_8_x：flash_attn {'rows': 256, 'keys': 128, 'heads': 8, 'head': 160, 'scale': 160}
+/// un_at_8_x：flash_attn {'rows': 256, 'keys': 128, 'heads': 8, 'head': 160, 'scale': 160, 'q': 'prescaled'}
 #[cfg(feature = "un_at_8_x")]
 mod prog {
     use npu::prelude::*;
@@ -1918,6 +1912,150 @@ mod prog {
         crate::vae_kernels::un_at_8_x(act().at(A_Q).cast(), act().at(A_K).cast(), act().at(A_V).cast(), w().at(W_M).cast(), act().at(A_O).cast());
         sync_cores();
         crate::vae_kernels::un_at_8_x(act().at(A_Q).cast(), act().at(A_K).cast(), act().at(A_V).cast(), w().at(W_M).cast(), act().at(A_O).cast());
+        sync_cores();
+    }
+}
+
+/// un_pk_64_512：pack_int {'h': 64, 'w': 64, 'c': 512, 'p': 512}
+#[cfg(feature = "un_pk_64_512")]
+mod prog {
+    use npu::prelude::*;
+    npu::decls! {
+        in_x: input, bytes = 64;
+        out_y: output, bytes = 64;
+        act: workspace, bytes = 8929280;
+    }
+    const A_X: u64 = 0;
+    const A_Y: u64 = 4734976;
+    #[npu::program(chiplets = 1, cores = 2)]
+    pub fn step() {
+        crate::vae_kernels::un_pk_64_512(act().at(A_X).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_pk_64_512(act().at(A_X).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_pk_64_512(act().at(A_X).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_pk_64_512(act().at(A_X).cast(), act().at(A_Y).cast());
+        sync_cores();
+    }
+}
+
+/// un_pk_32_768：pack_int {'h': 32, 'w': 32, 'c': 768, 'p': 768}
+#[cfg(feature = "un_pk_32_768")]
+mod prog {
+    use npu::prelude::*;
+    npu::decls! {
+        in_x: input, bytes = 64;
+        out_y: output, bytes = 64;
+        act: workspace, bytes = 3563520;
+    }
+    const A_X: u64 = 0;
+    const A_Y: u64 = 1990656;
+    #[npu::program(chiplets = 1, cores = 2)]
+    pub fn step() {
+        crate::vae_kernels::un_pk_32_768(act().at(A_X).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_pk_32_768(act().at(A_X).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_pk_32_768(act().at(A_X).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_pk_32_768(act().at(A_X).cast(), act().at(A_Y).cast());
+        sync_cores();
+    }
+}
+
+/// un_pk_16_1280：pack_int {'h': 16, 'w': 16, 'c': 1280, 'p': 1280}
+#[cfg(feature = "un_pk_16_1280")]
+mod prog {
+    use npu::prelude::*;
+    npu::decls! {
+        in_x: input, bytes = 64;
+        out_y: output, bytes = 64;
+        act: workspace, bytes = 1679360;
+    }
+    const A_X: u64 = 0;
+    const A_Y: u64 = 1024000;
+    #[npu::program(chiplets = 1, cores = 2)]
+    pub fn step() {
+        crate::vae_kernels::un_pk_16_1280(act().at(A_X).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_pk_16_1280(act().at(A_X).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_pk_16_1280(act().at(A_X).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_pk_16_1280(act().at(A_X).cast(), act().at(A_Y).cast());
+        sync_cores();
+    }
+}
+
+/// un_unpk_64_512：unpack_int {'h': 64, 'w': 64, 'c': 512, 'p': 512}
+#[cfg(feature = "un_unpk_64_512")]
+mod prog {
+    use npu::prelude::*;
+    npu::decls! {
+        in_x: input, bytes = 64;
+        out_y: output, bytes = 64;
+        act: workspace, bytes = 8929280;
+    }
+    const A_X: u64 = 0;
+    const A_Y: u64 = 4194304;
+    #[npu::program(chiplets = 1, cores = 2)]
+    pub fn step() {
+        crate::vae_kernels::un_unpk_64_512(act().at(A_X).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_unpk_64_512(act().at(A_X).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_unpk_64_512(act().at(A_X).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_unpk_64_512(act().at(A_X).cast(), act().at(A_Y).cast());
+        sync_cores();
+    }
+}
+
+/// un_unpk_32_768：unpack_int {'h': 32, 'w': 32, 'c': 768, 'p': 768}
+#[cfg(feature = "un_unpk_32_768")]
+mod prog {
+    use npu::prelude::*;
+    npu::decls! {
+        in_x: input, bytes = 64;
+        out_y: output, bytes = 64;
+        act: workspace, bytes = 3563520;
+    }
+    const A_X: u64 = 0;
+    const A_Y: u64 = 1572864;
+    #[npu::program(chiplets = 1, cores = 2)]
+    pub fn step() {
+        crate::vae_kernels::un_unpk_32_768(act().at(A_X).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_unpk_32_768(act().at(A_X).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_unpk_32_768(act().at(A_X).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_unpk_32_768(act().at(A_X).cast(), act().at(A_Y).cast());
+        sync_cores();
+    }
+}
+
+/// un_unpk_16_1280：unpack_int {'h': 16, 'w': 16, 'c': 1280, 'p': 1280}
+#[cfg(feature = "un_unpk_16_1280")]
+mod prog {
+    use npu::prelude::*;
+    npu::decls! {
+        in_x: input, bytes = 64;
+        out_y: output, bytes = 64;
+        act: workspace, bytes = 1679360;
+    }
+    const A_X: u64 = 0;
+    const A_Y: u64 = 655360;
+    #[npu::program(chiplets = 1, cores = 2)]
+    pub fn step() {
+        crate::vae_kernels::un_unpk_16_1280(act().at(A_X).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_unpk_16_1280(act().at(A_X).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_unpk_16_1280(act().at(A_X).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_unpk_16_1280(act().at(A_X).cast(), act().at(A_Y).cast());
         sync_cores();
     }
 }

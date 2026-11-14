@@ -11,6 +11,7 @@
 //! | [`ln_nhwc!`] | NHWC 原生的 LayerNorm（每像素沿通道），直接在带边框的图上算、只写内部 | 新写（DESIGN D18） |
 //! | [`geglu!`] | GEGLU 的后半 `y = h · gelu(g)`（torch 精确 GELU，A&S 7.1.26），逐元素 | 算式抄 calblas `act!(gelu_erf)`（VENDORED.md） |
 //! | [`copy_win!`] | 带边框图的内部拷进另一张图的通道窗口（UNet 跳连拼接） | 新写 |
+//! | [`pack_int!`] / [`unpack_int!`] | 带边框的图的内部 ⇔ 稠密的 token（UNet 自注意力先压成稠密的再算，DESIGN D23） | 新写 |
 //! | [`res_add!`] | 残差加到带边框图的内部（y = a + r，只写内部；宽通道卷积改走 `linear!` 之后用，DESIGN D22） | 新写 |
 //! | [`bias_fold!`] | f32 bias + bf16 时间步投影 ⇒ f32（UNet 各 conv1 的 bias） | 新写 |
 //! | [`attn_wide!`] | 头维宽（> 256）的自注意力，头维按 128 一段切（正式 VAE 中间块：单头 512 维） | 抄 calblas `attention!` / `spatial_attn!` 改（VENDORED.md，DESIGN D14） |

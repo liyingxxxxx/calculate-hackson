@@ -188,3 +188,58 @@ macro_rules! res_add {
         }
     };
 }
+
+/// 带边框的图 ⇔ 稠密的 token：`pack_int!` 把 x `[H + 4][W + 4][P]` 内部的前 c 个通道拷成稠密的 y `[H · W][c]`；
+/// `unpack_int!` 反过来，把稠密的 x `[H · W][c]` 拷进 y 的内部（边框不动）。UNet 的自注意力（DESIGN D23）：
+/// 带边框的图当 token 时 64² 有 4736 个（内部只有 4096 个），多算的分数约 34%，还要掩码；先压成稠密的再算，算完再铺回去。
+/// 每颗核拷自己那一半的行（单核 kernel、按 num_cores() 分行 ⇒ 两核都调）；不能原地。
+#[macro_export]
+macro_rules! pack_int {
+    ($vis:vis $name:ident: h = $h:expr, w = $w:expr, c = $c:expr, p = $p:expr) => {
+        $crate::pack_int!(@body $vis $name, $h, $w, $c, $p, pack);
+    };
+    (@body $vis:vis $name:ident, $h:expr, $w:expr, $c:expr, $p:expr, $dir:ident) => {
+        #[npu::kernel]
+        $vis fn $name(x: npu::Ptr<npu::Ddr, npu::bf16>, y: npu::Ptr<npu::Ddr, npu::bf16>) {
+            use npu::prelude::*;
+            const B: usize = $crate::calblas::kernels::BORDER;
+            const H: usize = $h;
+            const W: usize = $w;
+            const C: usize = $c;
+            const P: usize = $p;
+            const WI: usize = W + 2 * B;
+            const _: () = assert!(C % 32 == 0 && C <= P && W * C * 2 <= 256 * 1024, "pack_int / unpack_int：通道数是 32 的倍数、一行放得进 VB");
+            let v = vcache::<bf16, _>([W, C]);
+            let (h0, hn) = $crate::calblas::halves!(H);
+            $crate::pack_int!(@views $dir x, y, gx, gy);
+            for i in 0..hn {
+                let oy = h0 + i;
+                $crate::pack_int!(@copy $dir v, gx, gy, oy);
+            }
+        }
+    };
+    (@views pack $x:ident, $y:ident, $gx:ident, $gy:ident) => {
+        let $gx = $x.add((B * WI + B) * P * 2).bind_strided::<npu::Read, 2>([H * WI, C], [P, 1]);
+        let $gy = $y.bind_strided::<npu::Write, 2>([H * W, C], [C, 1]);
+    };
+    (@views unpack $x:ident, $y:ident, $gx:ident, $gy:ident) => {
+        let $gx = $x.bind_strided::<npu::Read, 2>([H * W, C], [C, 1]);
+        let $gy = $y.add((B * WI + B) * P * 2).bind_strided::<npu::Write, 2>([H * WI, C], [P, 1]);
+    };
+    (@copy pack $v:ident, $gx:ident, $gy:ident, $oy:ident) => {
+        $v.load($gx.sub([$oy * WI, 0], [W, C]));
+        $v.store($gy.sub([$oy * W, 0], [W, C]));
+    };
+    (@copy unpack $v:ident, $gx:ident, $gy:ident, $oy:ident) => {
+        $v.load($gx.sub([$oy * W, 0], [W, C]));
+        $v.store($gy.sub([$oy * WI, 0], [W, C]));
+    };
+}
+
+/// 见 [`pack_int!`]：稠密的 x `[H · W][c]` ⇒ y `[H + 4][W + 4][P]` 的内部。
+#[macro_export]
+macro_rules! unpack_int {
+    ($vis:vis $name:ident: h = $h:expr, w = $w:expr, c = $c:expr, p = $p:expr) => {
+        $crate::pack_int!(@body $vis $name, $h, $w, $c, $p, unpack);
+    };
+}

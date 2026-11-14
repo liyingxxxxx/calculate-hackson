@@ -111,8 +111,14 @@ def plan(kind: str, c: dict) -> dict:
     if kind in ("attention", "flash_attn"):
         t, hh, d = c["rows"], c["heads"], c["head"]
         tk = c.get("keys", t)
-        return {"act": {"q": t * hh * d * 2, "k": tk * hh * d * 2, "v": tk * hh * d * 2, "o": t * hh * d * 2}, "w": {"m": tk * 2},
-                "args": ["act:q", "act:k", "act:v", "w:m", "act:o"], "flop": 4 * t * tk * d * hh, "bytes": None}
+        nomask = c.get("mask") == "none"
+        return {"act": {"q": t * hh * d * 2, "k": tk * hh * d * 2, "v": tk * hh * d * 2, "o": t * hh * d * 2}, "w": {} if nomask else {"m": tk * 2},
+                "args": ["act:q", "act:k", "act:v"] + ([] if nomask else ["w:m"]) + ["act:o"], "flop": 4 * t * tk * d * hh, "bytes": None}
+    if kind in ("pack_int", "unpack_int"):
+        h, ch, p = c["h"], c["c"], c["p"]
+        dense, bord = h * c["w"] * ch * 2, img(h, p)
+        act = {"x": bord, "y": dense} if kind == "pack_int" else {"x": dense, "y": bord}
+        return {"act": act, "w": {}, "args": ["act:x", "act:y"], "flop": None, "bytes": 2 * dense}
     if kind == "ln_nhwc":
         h, ch, p = c["h"], c["c"], c["p"]
         return {"act": {"x": img(h, p), "y": img(h, p)}, "w": {"w": ch * 4, "b": ch * 4}, "args": ["act:x", "w:w", "w:b", "act:y"],

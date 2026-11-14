@@ -564,7 +564,7 @@ class Sim:
     def _k_attention(self, job, c, args):
         """calblas attention!（`mask = keys`）：q / o [T, H·D]、k / v [TK, H·D]、mask bf16 [TK]（0 或 −MAX）；分数 · 1/√scale + 掩码 ⇒ softmax ⇒ · v。
         板上分数与 p 舍 bf16、exp 是近似指令；这里在 f32 里算（模拟器不是金标准，见模块文档）。"""
-        if c.get("mask") != "keys" or "kv_heads" in c or c.get("k", "transposed") != "transposed":
+        if c.get("mask") not in ("keys", None) or "kv_heads" in c or c.get("k", "transposed") != "transposed":
             raise SimError(f"{job.kernel}：模拟器只写了 attention! 的 mask = keys（不分组；K 可以是 `k = transposed`）")
         t, hh, d = c["rows"], c["heads"], c["head"]
         tk, sc = c.get("keys", t), c.get("scale", d)
@@ -572,14 +572,15 @@ class Sim:
         job.reads.append(self._check(job.kernel, "q", q, t * hh * d * 2))
         job.reads.append(self._check(job.kernel, "k", k, tk * hh * d * 2))
         job.reads.append(self._check(job.kernel, "v", v, tk * hh * d * 2))
-        job.reads.append(self._check(job.kernel, "mask", mk, tk * 2))
+        if mk is not None:
+            job.reads.append(self._check(job.kernel, "mask", mk, tk * 2))
         job.writes.append(self._check(job.kernel, "o", o, t * hh * d * 2))
         qv = bf16.from_bits(self._u16(q, t * hh * d)).reshape(t, hh, d)
         kv = bf16.from_bits(self._u16(k, tk * hh * d))
         # `k = transposed`：K 是 [头, d, key]（transpose2d! 转好的）
         kv = kv.reshape(hh, d, tk).transpose(2, 0, 1) if c.get("k") == "transposed" else kv.reshape(tk, hh, d)
         vv = bf16.from_bits(self._u16(v, tk * hh * d)).reshape(tk, hh, d)
-        m = bf16.from_bits(self._u16(mk, tk)).astype(np.float32)
+        m = bf16.from_bits(self._u16(mk, tk)).astype(np.float32) if mk is not None else np.zeros(tk, np.float32)
         out = np.empty((t, hh, d), np.float32)
         for h in range(hh):
             s_ = (qv[:, h] @ kv[:, h].T) * np.float32(1 / np.sqrt(sc)) + m[None, :]
@@ -588,8 +589,15 @@ class Sim:
         self._u16(o, t * hh * d)[:] = bf16.bits(out.ravel())
 
     def _k_flash_attn(self, job, c, args):
-        """本仓 flash_attn!：语义同 attention!（mask = keys，K 按原样 [key, 头 · d]）；板上分数与 p 舍 bf16、exp 近似，这里在 f32 里算。"""
-        self._k_attention(job, {**c, "mask": "keys"}, args)
+        """本仓 flash_attn!：语义同 attention!（mask = keys，K 按原样 [key, 头 · d]）；板上分数与 p 舍 bf16、exp 近似，这里在 f32 里算。
+        `mask = none`：没有 mask 参数；`q = prescaled`：1/√scale 已经乘进 q，kernel 不再乘。"""
+        c2 = {**c, "mask": "keys"}
+        if c.get("q") == "prescaled":
+            c2["scale"] = 1
+        if c.get("mask") == "none":
+            q, k, v, o = args
+            args = [q, k, v, None, o]
+        self._k_attention(job, c2, args)
 
     def _k_ln_nhwc(self, job, c, args):
         """本仓 ln_nhwc!：每个内部像素沿前 C 个通道归一（两遍法）⇒ · w + b ⇒ 舍 bf16，只写内部。"""
@@ -654,6 +662,26 @@ class Sim:
         yr = self._check(job.kernel, "y", y, ny)
         job.writes.append((yr[0], yr[1] + (B * wo + B) * c["py"] * 2, yr[2]))
         vy[:] = bf16.bits(bf16.from_bits(va) + bf16.from_bits(vr))
+
+    def _k_pack_int(self, job, c, args):
+        """本仓 pack_int!：x 的内部（前 c 个通道）⇒ 稠密的 y [h · w][c]。"""
+        h, w, ch, p = c["h"], c["w"], c["c"], c["p"]
+        x, y = args
+        src, nx = self._win(x, h, w, ch, p)
+        job.reads.append(self._check(job.kernel, "x", x, nx))
+        job.writes.append(self._check(job.kernel, "y", y, h * w * ch * 2))
+        self._u16(y, h * w * ch)[:] = np.ascontiguousarray(src).ravel()
+
+    def _k_unpack_int(self, job, c, args):
+        """本仓 unpack_int!：稠密的 x [h · w][c] ⇒ y 的内部（边框不动）。"""
+        h, w, ch, p = c["h"], c["w"], c["c"], c["p"]
+        x, y = args
+        wo = w + 2 * B
+        dst, ny = self._win(y, h, w, ch, p)
+        job.reads.append(self._check(job.kernel, "x", x, h * w * ch * 2))
+        yr = self._check(job.kernel, "y", y, ny)
+        job.writes.append((yr[0], yr[1] + (B * wo + B) * p * 2, yr[2]))
+        dst[:] = self._u16(x, h * w * ch).reshape(h, w, ch)
 
     def _k_unary(self, job, c, args):
         if c.get("f") != "silu":
