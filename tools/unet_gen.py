@@ -96,9 +96,11 @@ class Kernels:
         f32 的部分和在 p 里接着加（calblas 的 `ks`）。"""
         r = h * (h + 2 * B)
         name = f"un_lr_{h}_{k}_{n}" + ("_b" if bias else "") + (f"_{stage}" if stage else "")
-        ks = f", ks = [0, {k}], {stage}" if stage else ""
-        return self.add(name, "linear", {"rows": r, "k": k, "n": n, "bias": bias, "stage": stage},
-                        f"calblas::linear!(pub {name}: rows = {r}, k = {k}, n = {n}, w = hf, cores = 2{', bias = f32' if bias else ''}{ks});")
+        # 本仓 gemm_rows!（D25）：数值同 calblas linear!(w = hf)，一块权重读一次给 MG 块 16 行用
+        mg = next(g for g in (4, 6, 3, 2) if (r // 16) % g == 0 and ((n // 128) * (r // 16 // g)) % 2 == 0)
+        st = f", stage = {stage}" if stage else ""
+        return self.add(name, "gemm_rows", {"rows": r, "k": k, "n": n, "bias": bias, "stage": stage, "mg": mg},
+                        f"sd_kernels::gemm_rows!(pub {name}: rows = {r}, k = {k}, n = {n}, mg = {mg}{', bias = f32' if bias else ''}{st});")
 
     def res_add(self, h, c, pa, pr, py):
         name = f"un_ra_{h}_{c}_{pa}_{pr}_{py}"
@@ -512,7 +514,7 @@ def load_unet():
 
 # ───────────────────────── kernels.rs ─────────────────────────
 
-KIND_ORDER = ["conv2d", "gn_stats", "gn_apply", "ln_nhwc", "flash_attn", "pack_int", "unpack_int", "transpose2d", "linear", "res_add", "geglu", "upsample2", "copy_win",
+KIND_ORDER = ["conv2d", "gn_stats", "gn_apply", "ln_nhwc", "flash_attn", "pack_int", "unpack_int", "transpose2d", "gemm_rows", "linear", "res_add", "geglu", "upsample2", "copy_win",
               "timestep_embed", "unary", "bias_fold", "fill16k"]
 
 
@@ -629,7 +631,7 @@ def probe_program(feature: str, kernels: list[str], K: Kernels) -> str:
             na = 5 if sp["res"] else 4
         elif kind == "flash_attn":
             na = 4 if sp.get("dense") else 5
-        elif kind == "linear":
+        elif kind in ("linear", "gemm_rows"):
             st = sp.get("stage")
             na = {None: 4 if sp["bias"] else 3, "first": 3, "mid": 3, "last": 5 if sp["bias"] else 4}[st]
         else:

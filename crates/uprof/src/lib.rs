@@ -6,7 +6,7 @@
 #[path = "../../unet/src/kernels.rs"]
 mod vae_kernels;
 
-const N_FEATURES: usize = cfg!(feature = "base") as usize + cfg!(feature = "un_c3_64_32_320") as usize + cfg!(feature = "un_c3_64_320_320") as usize + cfg!(feature = "un_c3_64_320_320_r") as usize + cfg!(feature = "un_c1_64_320_320") as usize + cfg!(feature = "un_c1_64_320_512") as usize + cfg!(feature = "un_c1_64_512_320_r") as usize + cfg!(feature = "un_c1_64_320_1280") as usize + cfg!(feature = "un_c1_64_320_320_r") as usize + cfg!(feature = "un_c3_32_320_320_s2") as usize + cfg!(feature = "un_c3_32_320_640") as usize + cfg!(feature = "un_c1_32_320_640") as usize + cfg!(feature = "un_c3_32_640_640_r") as usize + cfg!(feature = "un_c1_32_768_640_r") as usize + cfg!(feature = "un_c3_32_640_640") as usize + cfg!(feature = "un_c3_16_640_640_s2") as usize + cfg!(feature = "un_c3_16_640_1280") as usize + cfg!(feature = "un_c1_16_640_1280") as usize + cfg!(feature = "un_c3_8_1280_1280_s2") as usize + cfg!(feature = "un_c3_32_960_640") as usize + cfg!(feature = "un_c1_32_960_640") as usize + cfg!(feature = "un_c3_64_640_640") as usize + cfg!(feature = "un_c3_64_960_320") as usize + cfg!(feature = "un_c1_64_960_320") as usize + cfg!(feature = "un_c3_64_640_320") as usize + cfg!(feature = "un_c1_64_640_320") as usize + cfg!(feature = "un_c3_64_320_32") as usize + cfg!(feature = "un_gs_64_320") as usize + cfg!(feature = "un_gs_32_320") as usize + cfg!(feature = "un_gs_32_640") as usize + cfg!(feature = "un_gs_16_640") as usize + cfg!(feature = "un_gs_16_1280") as usize + cfg!(feature = "un_gs_8_1280") as usize + cfg!(feature = "un_gs_8_2560") as usize + cfg!(feature = "un_gs_16_2560") as usize + cfg!(feature = "un_gs_16_1920") as usize + cfg!(feature = "un_gs_32_1920") as usize + cfg!(feature = "un_gs_32_1280") as usize + cfg!(feature = "un_gs_32_960") as usize + cfg!(feature = "un_gs_64_960") as usize + cfg!(feature = "un_gs_64_640") as usize + cfg!(feature = "un_ga_64_320_silu") as usize + cfg!(feature = "un_ga_64_320_none") as usize + cfg!(feature = "un_ga_32_320_silu") as usize + cfg!(feature = "un_ga_32_640_silu") as usize + cfg!(feature = "un_ga_32_640_none") as usize + cfg!(feature = "un_ga_16_640_silu") as usize + cfg!(feature = "un_ga_16_1280_silu") as usize + cfg!(feature = "un_ga_16_1280_none") as usize + cfg!(feature = "un_ga_8_1280_silu") as usize + cfg!(feature = "un_ga_8_1280_none") as usize + cfg!(feature = "un_ga_8_2560_silu") as usize + cfg!(feature = "un_ga_16_2560_silu") as usize + cfg!(feature = "un_ga_16_1920_silu") as usize + cfg!(feature = "un_ga_32_1920_silu") as usize + cfg!(feature = "un_ga_32_1280_silu") as usize + cfg!(feature = "un_ga_32_960_silu") as usize + cfg!(feature = "un_ga_64_960_silu") as usize + cfg!(feature = "un_ga_64_640_silu") as usize + cfg!(feature = "un_ln_64_320") as usize + cfg!(feature = "un_ln_32_640") as usize + cfg!(feature = "un_ln_16_1280") as usize + cfg!(feature = "un_ln_8_1280") as usize + cfg!(feature = "un_at_64_s") as usize + cfg!(feature = "un_at_64_x") as usize + cfg!(feature = "un_at_32_s") as usize + cfg!(feature = "un_at_32_x") as usize + cfg!(feature = "un_at_16_s") as usize + cfg!(feature = "un_at_16_x") as usize + cfg!(feature = "un_at_8_s") as usize + cfg!(feature = "un_at_8_x") as usize + cfg!(feature = "un_pk_64_512") as usize + cfg!(feature = "un_pk_32_768") as usize + cfg!(feature = "un_pk_16_1280") as usize + cfg!(feature = "un_unpk_64_512") as usize + cfg!(feature = "un_unpk_32_768") as usize + cfg!(feature = "un_unpk_16_1280") as usize + cfg!(feature = "un_l16_384_1280") as usize + cfg!(feature = "un_l16_1280_1280") as usize + cfg!(feature = "un_l16_1280_20224") as usize + cfg!(feature = "un_kv_512") as usize + cfg!(feature = "un_lr_64_1280_384_b") as usize + cfg!(feature = "un_lr_32_640_640_b") as usize + cfg!(feature = "un_lr_32_640_768") as usize + cfg!(feature = "un_kv_768") as usize + cfg!(feature = "un_lr_32_640_2560_b") as usize + cfg!(feature = "un_lr_32_2560_640_b") as usize + cfg!(feature = "un_lr_16_1280_1280_first") as usize + cfg!(feature = "un_lr_16_1280_1280_mid") as usize + cfg!(feature = "un_lr_16_1280_1280_b_last") as usize + cfg!(feature = "un_lr_16_1280_1280_b") as usize + cfg!(feature = "un_lr_16_1280_1280") as usize + cfg!(feature = "un_kv_1280") as usize + cfg!(feature = "un_lr_16_1280_5120_b") as usize + cfg!(feature = "un_lr_16_5120_1280_b") as usize + cfg!(feature = "un_lr_8_1280_1280_first") as usize + cfg!(feature = "un_lr_8_1280_1280_mid") as usize + cfg!(feature = "un_lr_8_1280_1280_b_last") as usize + cfg!(feature = "un_lr_8_1280_1280_b") as usize + cfg!(feature = "un_lr_8_1280_1280") as usize + cfg!(feature = "un_lr_8_1280_5120_b") as usize + cfg!(feature = "un_lr_8_5120_1280_b") as usize + cfg!(feature = "un_lr_8_2560_1280_first") as usize + cfg!(feature = "un_lr_8_2560_1280_mid") as usize + cfg!(feature = "un_lr_8_2560_1280_b_last") as usize + cfg!(feature = "un_lr_8_2560_1280_b") as usize + cfg!(feature = "un_lr_16_2560_1280_first") as usize + cfg!(feature = "un_lr_16_2560_1280_mid") as usize + cfg!(feature = "un_lr_16_2560_1280_b_last") as usize + cfg!(feature = "un_lr_16_2560_1280_b") as usize + cfg!(feature = "un_lr_16_1920_1280_first") as usize + cfg!(feature = "un_lr_16_1920_1280_mid") as usize + cfg!(feature = "un_lr_16_1920_1280_b_last") as usize + cfg!(feature = "un_lr_16_1920_1280_b") as usize + cfg!(feature = "un_lr_32_1280_1280_first") as usize + cfg!(feature = "un_lr_32_1280_1280_mid") as usize + cfg!(feature = "un_lr_32_1280_1280_b_last") as usize + cfg!(feature = "un_lr_32_1920_640_first") as usize + cfg!(feature = "un_lr_32_1920_640_mid") as usize + cfg!(feature = "un_lr_32_1920_640_b_last") as usize + cfg!(feature = "un_lr_32_1920_640_b") as usize + cfg!(feature = "un_lr_32_1280_640_first") as usize + cfg!(feature = "un_lr_32_1280_640_mid") as usize + cfg!(feature = "un_lr_32_1280_640_b_last") as usize + cfg!(feature = "un_lr_32_1280_640_b") as usize + cfg!(feature = "un_ra_64_320_384_320_320") as usize + cfg!(feature = "un_ra_32_640_640_640_768") as usize + cfg!(feature = "un_ra_16_1280_1280_1280_1280") as usize + cfg!(feature = "un_ra_8_1280_1280_1280_1280") as usize + cfg!(feature = "un_gg_64") as usize + cfg!(feature = "un_gg_32") as usize + cfg!(feature = "un_gg_16") as usize + cfg!(feature = "un_gg_8") as usize + cfg!(feature = "un_up_8_1280_256") as usize + cfg!(feature = "un_up_16_1280_256") as usize + cfg!(feature = "un_up_32_640_256") as usize + cfg!(feature = "un_up_32_640_128") as usize + cfg!(feature = "un_cp_8_1280_2560") as usize + cfg!(feature = "un_cp_16_1280_2560") as usize + cfg!(feature = "un_cp_16_1280_1920") as usize + cfg!(feature = "un_cp_16_640_1920") as usize + cfg!(feature = "un_cp_32_1280_1920") as usize + cfg!(feature = "un_cp_32_640_1920") as usize + cfg!(feature = "un_cp_32_640_1280") as usize + cfg!(feature = "un_cp_32_640_960") as usize + cfg!(feature = "un_cp_32_320_960") as usize + cfg!(feature = "un_cp_64_640_960") as usize + cfg!(feature = "un_cp_64_320_960") as usize + cfg!(feature = "un_cp_64_320_640") as usize + cfg!(feature = "un_temb") as usize + cfg!(feature = "un_silu") as usize + cfg!(feature = "un_bf") as usize;
+const N_FEATURES: usize = cfg!(feature = "base") as usize + cfg!(feature = "un_c3_64_32_320") as usize + cfg!(feature = "un_c3_64_320_320") as usize + cfg!(feature = "un_c3_64_320_320_r") as usize + cfg!(feature = "un_c1_64_320_320") as usize + cfg!(feature = "un_c1_64_320_512") as usize + cfg!(feature = "un_c1_64_512_320_r") as usize + cfg!(feature = "un_c1_64_320_1280") as usize + cfg!(feature = "un_c1_64_320_320_r") as usize + cfg!(feature = "un_c3_32_320_320_s2") as usize + cfg!(feature = "un_c3_32_320_640") as usize + cfg!(feature = "un_c1_32_320_640") as usize + cfg!(feature = "un_c3_32_640_640_r") as usize + cfg!(feature = "un_c1_32_768_640_r") as usize + cfg!(feature = "un_c3_32_640_640") as usize + cfg!(feature = "un_c3_16_640_640_s2") as usize + cfg!(feature = "un_c3_16_640_1280") as usize + cfg!(feature = "un_c1_16_640_1280") as usize + cfg!(feature = "un_c3_8_1280_1280_s2") as usize + cfg!(feature = "un_c3_32_960_640") as usize + cfg!(feature = "un_c1_32_960_640") as usize + cfg!(feature = "un_c3_64_640_640") as usize + cfg!(feature = "un_c3_64_960_320") as usize + cfg!(feature = "un_c1_64_960_320") as usize + cfg!(feature = "un_c3_64_640_320") as usize + cfg!(feature = "un_c1_64_640_320") as usize + cfg!(feature = "un_c3_64_320_32") as usize + cfg!(feature = "un_gs_64_320") as usize + cfg!(feature = "un_gs_32_320") as usize + cfg!(feature = "un_gs_32_640") as usize + cfg!(feature = "un_gs_16_640") as usize + cfg!(feature = "un_gs_16_1280") as usize + cfg!(feature = "un_gs_8_1280") as usize + cfg!(feature = "un_gs_8_2560") as usize + cfg!(feature = "un_gs_16_2560") as usize + cfg!(feature = "un_gs_16_1920") as usize + cfg!(feature = "un_gs_32_1920") as usize + cfg!(feature = "un_gs_32_1280") as usize + cfg!(feature = "un_gs_32_960") as usize + cfg!(feature = "un_gs_64_960") as usize + cfg!(feature = "un_gs_64_640") as usize + cfg!(feature = "un_ga_64_320_silu") as usize + cfg!(feature = "un_ga_64_320_none") as usize + cfg!(feature = "un_ga_32_320_silu") as usize + cfg!(feature = "un_ga_32_640_silu") as usize + cfg!(feature = "un_ga_32_640_none") as usize + cfg!(feature = "un_ga_16_640_silu") as usize + cfg!(feature = "un_ga_16_1280_silu") as usize + cfg!(feature = "un_ga_16_1280_none") as usize + cfg!(feature = "un_ga_8_1280_silu") as usize + cfg!(feature = "un_ga_8_1280_none") as usize + cfg!(feature = "un_ga_8_2560_silu") as usize + cfg!(feature = "un_ga_16_2560_silu") as usize + cfg!(feature = "un_ga_16_1920_silu") as usize + cfg!(feature = "un_ga_32_1920_silu") as usize + cfg!(feature = "un_ga_32_1280_silu") as usize + cfg!(feature = "un_ga_32_960_silu") as usize + cfg!(feature = "un_ga_64_960_silu") as usize + cfg!(feature = "un_ga_64_640_silu") as usize + cfg!(feature = "un_ln_64_320") as usize + cfg!(feature = "un_ln_32_640") as usize + cfg!(feature = "un_ln_16_1280") as usize + cfg!(feature = "un_ln_8_1280") as usize + cfg!(feature = "un_at_64_s") as usize + cfg!(feature = "un_at_64_x") as usize + cfg!(feature = "un_at_32_s") as usize + cfg!(feature = "un_at_32_x") as usize + cfg!(feature = "un_at_16_s") as usize + cfg!(feature = "un_at_16_x") as usize + cfg!(feature = "un_at_8_s") as usize + cfg!(feature = "un_at_8_x") as usize + cfg!(feature = "un_pk_64_512") as usize + cfg!(feature = "un_pk_32_768") as usize + cfg!(feature = "un_pk_16_1280") as usize + cfg!(feature = "un_unpk_64_512") as usize + cfg!(feature = "un_unpk_32_768") as usize + cfg!(feature = "un_unpk_16_1280") as usize + cfg!(feature = "un_lr_64_1280_384_b") as usize + cfg!(feature = "un_lr_32_640_640_b") as usize + cfg!(feature = "un_lr_32_640_768") as usize + cfg!(feature = "un_lr_32_640_2560_b") as usize + cfg!(feature = "un_lr_32_2560_640_b") as usize + cfg!(feature = "un_lr_16_1280_1280_first") as usize + cfg!(feature = "un_lr_16_1280_1280_mid") as usize + cfg!(feature = "un_lr_16_1280_1280_b_last") as usize + cfg!(feature = "un_lr_16_1280_1280_b") as usize + cfg!(feature = "un_lr_16_1280_1280") as usize + cfg!(feature = "un_lr_16_1280_5120_b") as usize + cfg!(feature = "un_lr_16_5120_1280_b") as usize + cfg!(feature = "un_lr_8_1280_1280_first") as usize + cfg!(feature = "un_lr_8_1280_1280_mid") as usize + cfg!(feature = "un_lr_8_1280_1280_b_last") as usize + cfg!(feature = "un_lr_8_1280_1280_b") as usize + cfg!(feature = "un_lr_8_1280_1280") as usize + cfg!(feature = "un_lr_8_1280_5120_b") as usize + cfg!(feature = "un_lr_8_5120_1280_b") as usize + cfg!(feature = "un_lr_8_2560_1280_first") as usize + cfg!(feature = "un_lr_8_2560_1280_mid") as usize + cfg!(feature = "un_lr_8_2560_1280_b_last") as usize + cfg!(feature = "un_lr_8_2560_1280_b") as usize + cfg!(feature = "un_lr_16_2560_1280_first") as usize + cfg!(feature = "un_lr_16_2560_1280_mid") as usize + cfg!(feature = "un_lr_16_2560_1280_b_last") as usize + cfg!(feature = "un_lr_16_2560_1280_b") as usize + cfg!(feature = "un_lr_16_1920_1280_first") as usize + cfg!(feature = "un_lr_16_1920_1280_mid") as usize + cfg!(feature = "un_lr_16_1920_1280_b_last") as usize + cfg!(feature = "un_lr_16_1920_1280_b") as usize + cfg!(feature = "un_lr_32_1280_1280_first") as usize + cfg!(feature = "un_lr_32_1280_1280_mid") as usize + cfg!(feature = "un_lr_32_1280_1280_b_last") as usize + cfg!(feature = "un_lr_32_1920_640_first") as usize + cfg!(feature = "un_lr_32_1920_640_mid") as usize + cfg!(feature = "un_lr_32_1920_640_b_last") as usize + cfg!(feature = "un_lr_32_1920_640_b") as usize + cfg!(feature = "un_lr_32_1280_640_first") as usize + cfg!(feature = "un_lr_32_1280_640_mid") as usize + cfg!(feature = "un_lr_32_1280_640_b_last") as usize + cfg!(feature = "un_lr_32_1280_640_b") as usize + cfg!(feature = "un_l16_384_1280") as usize + cfg!(feature = "un_l16_1280_1280") as usize + cfg!(feature = "un_l16_1280_20224") as usize + cfg!(feature = "un_kv_512") as usize + cfg!(feature = "un_kv_768") as usize + cfg!(feature = "un_kv_1280") as usize + cfg!(feature = "un_ra_64_320_384_320_320") as usize + cfg!(feature = "un_ra_32_640_640_640_768") as usize + cfg!(feature = "un_ra_16_1280_1280_1280_1280") as usize + cfg!(feature = "un_ra_8_1280_1280_1280_1280") as usize + cfg!(feature = "un_gg_64") as usize + cfg!(feature = "un_gg_32") as usize + cfg!(feature = "un_gg_16") as usize + cfg!(feature = "un_gg_8") as usize + cfg!(feature = "un_up_8_1280_256") as usize + cfg!(feature = "un_up_16_1280_256") as usize + cfg!(feature = "un_up_32_640_256") as usize + cfg!(feature = "un_up_32_640_128") as usize + cfg!(feature = "un_cp_8_1280_2560") as usize + cfg!(feature = "un_cp_16_1280_2560") as usize + cfg!(feature = "un_cp_16_1280_1920") as usize + cfg!(feature = "un_cp_16_640_1920") as usize + cfg!(feature = "un_cp_32_1280_1920") as usize + cfg!(feature = "un_cp_32_640_1920") as usize + cfg!(feature = "un_cp_32_640_1280") as usize + cfg!(feature = "un_cp_32_640_960") as usize + cfg!(feature = "un_cp_32_320_960") as usize + cfg!(feature = "un_cp_64_640_960") as usize + cfg!(feature = "un_cp_64_320_960") as usize + cfg!(feature = "un_cp_64_320_640") as usize + cfg!(feature = "un_temb") as usize + cfg!(feature = "un_silu") as usize + cfg!(feature = "un_bf") as usize;
 const _: () = assert!(N_FEATURES <= 1, "prof：一次只开一个 feature");
 
 #[cfg(feature = "base")]
@@ -2060,6 +2060,1163 @@ mod prog {
     }
 }
 
+/// un_lr_64_1280_384_b：gemm_rows {'rows': 4352, 'k': 1280, 'n': 384, 'mg': 4, 'bias': 'f32'}
+#[cfg(feature = "un_lr_64_1280_384_b")]
+mod prog {
+    use npu::prelude::*;
+    npu::decls! {
+        in_x: input, bytes = 64;
+        out_y: output, bytes = 64;
+        w: weights, bytes = 987136;
+        act: workspace, bytes = 21168128;
+    }
+    const A_X: u64 = 0;
+    const A_Y: u64 = 11141120;
+    const A_P: u64 = 14483456;
+    const W_W: u64 = 0;
+    const W_B: u64 = 983040;
+    #[npu::program(chiplets = 1, cores = 2)]
+    pub fn step() {
+        crate::vae_kernels::un_lr_64_1280_384_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_64_1280_384_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_64_1280_384_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_64_1280_384_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
+        sync_cores();
+    }
+}
+
+/// un_lr_32_640_640_b：gemm_rows {'rows': 1152, 'k': 640, 'n': 640, 'mg': 4, 'bias': 'f32'}
+#[cfg(feature = "un_lr_32_640_640_b")]
+mod prog {
+    use npu::prelude::*;
+    npu::decls! {
+        in_x: input, bytes = 64;
+        out_y: output, bytes = 64;
+        w: weights, bytes = 823296;
+        act: workspace, bytes = 5898240;
+    }
+    const A_X: u64 = 0;
+    const A_Y: u64 = 1474560;
+    const A_P: u64 = 2949120;
+    const W_W: u64 = 0;
+    const W_B: u64 = 819200;
+    #[npu::program(chiplets = 1, cores = 2)]
+    pub fn step() {
+        crate::vae_kernels::un_lr_32_640_640_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_32_640_640_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_32_640_640_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_32_640_640_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
+        sync_cores();
+    }
+}
+
+/// un_lr_32_640_768：gemm_rows {'rows': 1152, 'k': 640, 'n': 768, 'mg': 4}
+#[cfg(feature = "un_lr_32_640_768")]
+mod prog {
+    use npu::prelude::*;
+    npu::decls! {
+        in_x: input, bytes = 64;
+        out_y: output, bytes = 64;
+        w: weights, bytes = 983040;
+        act: workspace, bytes = 6782976;
+    }
+    const A_X: u64 = 0;
+    const A_Y: u64 = 1474560;
+    const A_P: u64 = 3244032;
+    const W_W: u64 = 0;
+    #[npu::program(chiplets = 1, cores = 2)]
+    pub fn step() {
+        crate::vae_kernels::un_lr_32_640_768(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_32_640_768(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_32_640_768(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_32_640_768(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_Y).cast());
+        sync_cores();
+    }
+}
+
+/// un_lr_32_640_2560_b：gemm_rows {'rows': 1152, 'k': 640, 'n': 2560, 'mg': 4, 'bias': 'f32'}
+#[cfg(feature = "un_lr_32_640_2560_b")]
+mod prog {
+    use npu::prelude::*;
+    npu::decls! {
+        in_x: input, bytes = 64;
+        out_y: output, bytes = 64;
+        w: weights, bytes = 3289088;
+        act: workspace, bytes = 19169280;
+    }
+    const A_X: u64 = 0;
+    const A_Y: u64 = 1474560;
+    const A_P: u64 = 7372800;
+    const W_W: u64 = 0;
+    const W_B: u64 = 3276800;
+    #[npu::program(chiplets = 1, cores = 2)]
+    pub fn step() {
+        crate::vae_kernels::un_lr_32_640_2560_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_32_640_2560_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_32_640_2560_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_32_640_2560_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
+        sync_cores();
+    }
+}
+
+/// un_lr_32_2560_640_b：gemm_rows {'rows': 1152, 'k': 2560, 'n': 640, 'mg': 4, 'bias': 'f32'}
+#[cfg(feature = "un_lr_32_2560_640_b")]
+mod prog {
+    use npu::prelude::*;
+    npu::decls! {
+        in_x: input, bytes = 64;
+        out_y: output, bytes = 64;
+        w: weights, bytes = 3280896;
+        act: workspace, bytes = 10321920;
+    }
+    const A_X: u64 = 0;
+    const A_Y: u64 = 5898240;
+    const A_P: u64 = 7372800;
+    const W_W: u64 = 0;
+    const W_B: u64 = 3276800;
+    #[npu::program(chiplets = 1, cores = 2)]
+    pub fn step() {
+        crate::vae_kernels::un_lr_32_2560_640_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_32_2560_640_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_32_2560_640_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_32_2560_640_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
+        sync_cores();
+    }
+}
+
+/// un_lr_16_1280_1280_first：gemm_rows {'rows': 320, 'k': 1280, 'n': 1280, 'mg': 4, 'stage': 'first'}
+#[cfg(feature = "un_lr_16_1280_1280_first")]
+mod prog {
+    use npu::prelude::*;
+    npu::decls! {
+        in_x: input, bytes = 64;
+        out_y: output, bytes = 64;
+        w: weights, bytes = 3276800;
+        act: workspace, bytes = 3276800;
+    }
+    const A_X: u64 = 0;
+    const A_Y: u64 = 819200;
+    const A_P: u64 = 1638400;
+    const W_W: u64 = 0;
+    #[npu::program(chiplets = 1, cores = 2)]
+    pub fn step() {
+        crate::vae_kernels::un_lr_16_1280_1280_first(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_16_1280_1280_first(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_16_1280_1280_first(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_16_1280_1280_first(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
+        sync_cores();
+    }
+}
+
+/// un_lr_16_1280_1280_mid：gemm_rows {'rows': 320, 'k': 1280, 'n': 1280, 'mg': 4, 'stage': 'mid'}
+#[cfg(feature = "un_lr_16_1280_1280_mid")]
+mod prog {
+    use npu::prelude::*;
+    npu::decls! {
+        in_x: input, bytes = 64;
+        out_y: output, bytes = 64;
+        w: weights, bytes = 3276800;
+        act: workspace, bytes = 3276800;
+    }
+    const A_X: u64 = 0;
+    const A_Y: u64 = 819200;
+    const A_P: u64 = 1638400;
+    const W_W: u64 = 0;
+    #[npu::program(chiplets = 1, cores = 2)]
+    pub fn step() {
+        crate::vae_kernels::un_lr_16_1280_1280_mid(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_16_1280_1280_mid(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_16_1280_1280_mid(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_16_1280_1280_mid(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
+        sync_cores();
+    }
+}
+
+/// un_lr_16_1280_1280_b_last：gemm_rows {'rows': 320, 'k': 1280, 'n': 1280, 'mg': 4, 'bias': 'f32', 'stage': 'last'}
+#[cfg(feature = "un_lr_16_1280_1280_b_last")]
+mod prog {
+    use npu::prelude::*;
+    npu::decls! {
+        in_x: input, bytes = 64;
+        out_y: output, bytes = 64;
+        w: weights, bytes = 3284992;
+        act: workspace, bytes = 3276800;
+    }
+    const A_X: u64 = 0;
+    const A_Y: u64 = 819200;
+    const A_P: u64 = 1638400;
+    const W_W: u64 = 0;
+    const W_B: u64 = 3276800;
+    #[npu::program(chiplets = 1, cores = 2)]
+    pub fn step() {
+        crate::vae_kernels::un_lr_16_1280_1280_b_last(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_P).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_16_1280_1280_b_last(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_P).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_16_1280_1280_b_last(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_P).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_16_1280_1280_b_last(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_P).cast(), act().at(A_Y).cast());
+        sync_cores();
+    }
+}
+
+/// un_lr_16_1280_1280_b：gemm_rows {'rows': 320, 'k': 1280, 'n': 1280, 'mg': 4, 'bias': 'f32'}
+#[cfg(feature = "un_lr_16_1280_1280_b")]
+mod prog {
+    use npu::prelude::*;
+    npu::decls! {
+        in_x: input, bytes = 64;
+        out_y: output, bytes = 64;
+        w: weights, bytes = 3284992;
+        act: workspace, bytes = 3276800;
+    }
+    const A_X: u64 = 0;
+    const A_Y: u64 = 819200;
+    const A_P: u64 = 1638400;
+    const W_W: u64 = 0;
+    const W_B: u64 = 3276800;
+    #[npu::program(chiplets = 1, cores = 2)]
+    pub fn step() {
+        crate::vae_kernels::un_lr_16_1280_1280_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_16_1280_1280_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_16_1280_1280_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_16_1280_1280_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
+        sync_cores();
+    }
+}
+
+/// un_lr_16_1280_1280：gemm_rows {'rows': 320, 'k': 1280, 'n': 1280, 'mg': 4}
+#[cfg(feature = "un_lr_16_1280_1280")]
+mod prog {
+    use npu::prelude::*;
+    npu::decls! {
+        in_x: input, bytes = 64;
+        out_y: output, bytes = 64;
+        w: weights, bytes = 3276800;
+        act: workspace, bytes = 3276800;
+    }
+    const A_X: u64 = 0;
+    const A_Y: u64 = 819200;
+    const A_P: u64 = 1638400;
+    const W_W: u64 = 0;
+    #[npu::program(chiplets = 1, cores = 2)]
+    pub fn step() {
+        crate::vae_kernels::un_lr_16_1280_1280(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_16_1280_1280(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_16_1280_1280(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_16_1280_1280(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_Y).cast());
+        sync_cores();
+    }
+}
+
+/// un_lr_16_1280_5120_b：gemm_rows {'rows': 320, 'k': 1280, 'n': 5120, 'mg': 4, 'bias': 'f32'}
+#[cfg(feature = "un_lr_16_1280_5120_b")]
+mod prog {
+    use npu::prelude::*;
+    npu::decls! {
+        in_x: input, bytes = 64;
+        out_y: output, bytes = 64;
+        w: weights, bytes = 13127680;
+        act: workspace, bytes = 10649600;
+    }
+    const A_X: u64 = 0;
+    const A_Y: u64 = 819200;
+    const A_P: u64 = 4096000;
+    const W_W: u64 = 0;
+    const W_B: u64 = 13107200;
+    #[npu::program(chiplets = 1, cores = 2)]
+    pub fn step() {
+        crate::vae_kernels::un_lr_16_1280_5120_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_16_1280_5120_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_16_1280_5120_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_16_1280_5120_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
+        sync_cores();
+    }
+}
+
+/// un_lr_16_5120_1280_b：gemm_rows {'rows': 320, 'k': 5120, 'n': 1280, 'mg': 4, 'bias': 'f32'}
+#[cfg(feature = "un_lr_16_5120_1280_b")]
+mod prog {
+    use npu::prelude::*;
+    npu::decls! {
+        in_x: input, bytes = 64;
+        out_y: output, bytes = 64;
+        w: weights, bytes = 13115392;
+        act: workspace, bytes = 5734400;
+    }
+    const A_X: u64 = 0;
+    const A_Y: u64 = 3276800;
+    const A_P: u64 = 4096000;
+    const W_W: u64 = 0;
+    const W_B: u64 = 13107200;
+    #[npu::program(chiplets = 1, cores = 2)]
+    pub fn step() {
+        crate::vae_kernels::un_lr_16_5120_1280_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_16_5120_1280_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_16_5120_1280_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_16_5120_1280_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
+        sync_cores();
+    }
+}
+
+/// un_lr_8_1280_1280_first：gemm_rows {'rows': 96, 'k': 1280, 'n': 1280, 'mg': 6, 'stage': 'first'}
+#[cfg(feature = "un_lr_8_1280_1280_first")]
+mod prog {
+    use npu::prelude::*;
+    npu::decls! {
+        in_x: input, bytes = 64;
+        out_y: output, bytes = 64;
+        w: weights, bytes = 3276800;
+        act: workspace, bytes = 983040;
+    }
+    const A_X: u64 = 0;
+    const A_Y: u64 = 245760;
+    const A_P: u64 = 491520;
+    const W_W: u64 = 0;
+    #[npu::program(chiplets = 1, cores = 2)]
+    pub fn step() {
+        crate::vae_kernels::un_lr_8_1280_1280_first(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_8_1280_1280_first(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_8_1280_1280_first(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_8_1280_1280_first(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
+        sync_cores();
+    }
+}
+
+/// un_lr_8_1280_1280_mid：gemm_rows {'rows': 96, 'k': 1280, 'n': 1280, 'mg': 6, 'stage': 'mid'}
+#[cfg(feature = "un_lr_8_1280_1280_mid")]
+mod prog {
+    use npu::prelude::*;
+    npu::decls! {
+        in_x: input, bytes = 64;
+        out_y: output, bytes = 64;
+        w: weights, bytes = 3276800;
+        act: workspace, bytes = 983040;
+    }
+    const A_X: u64 = 0;
+    const A_Y: u64 = 245760;
+    const A_P: u64 = 491520;
+    const W_W: u64 = 0;
+    #[npu::program(chiplets = 1, cores = 2)]
+    pub fn step() {
+        crate::vae_kernels::un_lr_8_1280_1280_mid(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_8_1280_1280_mid(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_8_1280_1280_mid(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_8_1280_1280_mid(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
+        sync_cores();
+    }
+}
+
+/// un_lr_8_1280_1280_b_last：gemm_rows {'rows': 96, 'k': 1280, 'n': 1280, 'mg': 6, 'bias': 'f32', 'stage': 'last'}
+#[cfg(feature = "un_lr_8_1280_1280_b_last")]
+mod prog {
+    use npu::prelude::*;
+    npu::decls! {
+        in_x: input, bytes = 64;
+        out_y: output, bytes = 64;
+        w: weights, bytes = 3284992;
+        act: workspace, bytes = 983040;
+    }
+    const A_X: u64 = 0;
+    const A_Y: u64 = 245760;
+    const A_P: u64 = 491520;
+    const W_W: u64 = 0;
+    const W_B: u64 = 3276800;
+    #[npu::program(chiplets = 1, cores = 2)]
+    pub fn step() {
+        crate::vae_kernels::un_lr_8_1280_1280_b_last(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_P).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_8_1280_1280_b_last(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_P).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_8_1280_1280_b_last(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_P).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_8_1280_1280_b_last(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_P).cast(), act().at(A_Y).cast());
+        sync_cores();
+    }
+}
+
+/// un_lr_8_1280_1280_b：gemm_rows {'rows': 96, 'k': 1280, 'n': 1280, 'mg': 6, 'bias': 'f32'}
+#[cfg(feature = "un_lr_8_1280_1280_b")]
+mod prog {
+    use npu::prelude::*;
+    npu::decls! {
+        in_x: input, bytes = 64;
+        out_y: output, bytes = 64;
+        w: weights, bytes = 3284992;
+        act: workspace, bytes = 983040;
+    }
+    const A_X: u64 = 0;
+    const A_Y: u64 = 245760;
+    const A_P: u64 = 491520;
+    const W_W: u64 = 0;
+    const W_B: u64 = 3276800;
+    #[npu::program(chiplets = 1, cores = 2)]
+    pub fn step() {
+        crate::vae_kernels::un_lr_8_1280_1280_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_8_1280_1280_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_8_1280_1280_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_8_1280_1280_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
+        sync_cores();
+    }
+}
+
+/// un_lr_8_1280_1280：gemm_rows {'rows': 96, 'k': 1280, 'n': 1280, 'mg': 6}
+#[cfg(feature = "un_lr_8_1280_1280")]
+mod prog {
+    use npu::prelude::*;
+    npu::decls! {
+        in_x: input, bytes = 64;
+        out_y: output, bytes = 64;
+        w: weights, bytes = 3276800;
+        act: workspace, bytes = 983040;
+    }
+    const A_X: u64 = 0;
+    const A_Y: u64 = 245760;
+    const A_P: u64 = 491520;
+    const W_W: u64 = 0;
+    #[npu::program(chiplets = 1, cores = 2)]
+    pub fn step() {
+        crate::vae_kernels::un_lr_8_1280_1280(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_8_1280_1280(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_8_1280_1280(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_8_1280_1280(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_Y).cast());
+        sync_cores();
+    }
+}
+
+/// un_lr_8_1280_5120_b：gemm_rows {'rows': 96, 'k': 1280, 'n': 5120, 'mg': 6, 'bias': 'f32'}
+#[cfg(feature = "un_lr_8_1280_5120_b")]
+mod prog {
+    use npu::prelude::*;
+    npu::decls! {
+        in_x: input, bytes = 64;
+        out_y: output, bytes = 64;
+        w: weights, bytes = 13127680;
+        act: workspace, bytes = 3194880;
+    }
+    const A_X: u64 = 0;
+    const A_Y: u64 = 245760;
+    const A_P: u64 = 1228800;
+    const W_W: u64 = 0;
+    const W_B: u64 = 13107200;
+    #[npu::program(chiplets = 1, cores = 2)]
+    pub fn step() {
+        crate::vae_kernels::un_lr_8_1280_5120_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_8_1280_5120_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_8_1280_5120_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_8_1280_5120_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
+        sync_cores();
+    }
+}
+
+/// un_lr_8_5120_1280_b：gemm_rows {'rows': 96, 'k': 5120, 'n': 1280, 'mg': 6, 'bias': 'f32'}
+#[cfg(feature = "un_lr_8_5120_1280_b")]
+mod prog {
+    use npu::prelude::*;
+    npu::decls! {
+        in_x: input, bytes = 64;
+        out_y: output, bytes = 64;
+        w: weights, bytes = 13115392;
+        act: workspace, bytes = 1720320;
+    }
+    const A_X: u64 = 0;
+    const A_Y: u64 = 983040;
+    const A_P: u64 = 1228800;
+    const W_W: u64 = 0;
+    const W_B: u64 = 13107200;
+    #[npu::program(chiplets = 1, cores = 2)]
+    pub fn step() {
+        crate::vae_kernels::un_lr_8_5120_1280_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_8_5120_1280_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_8_5120_1280_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_8_5120_1280_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
+        sync_cores();
+    }
+}
+
+/// un_lr_8_2560_1280_first：gemm_rows {'rows': 96, 'k': 2560, 'n': 1280, 'mg': 6, 'stage': 'first'}
+#[cfg(feature = "un_lr_8_2560_1280_first")]
+mod prog {
+    use npu::prelude::*;
+    npu::decls! {
+        in_x: input, bytes = 64;
+        out_y: output, bytes = 64;
+        w: weights, bytes = 6553600;
+        act: workspace, bytes = 1228800;
+    }
+    const A_X: u64 = 0;
+    const A_Y: u64 = 491520;
+    const A_P: u64 = 737280;
+    const W_W: u64 = 0;
+    #[npu::program(chiplets = 1, cores = 2)]
+    pub fn step() {
+        crate::vae_kernels::un_lr_8_2560_1280_first(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_8_2560_1280_first(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_8_2560_1280_first(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_8_2560_1280_first(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
+        sync_cores();
+    }
+}
+
+/// un_lr_8_2560_1280_mid：gemm_rows {'rows': 96, 'k': 2560, 'n': 1280, 'mg': 6, 'stage': 'mid'}
+#[cfg(feature = "un_lr_8_2560_1280_mid")]
+mod prog {
+    use npu::prelude::*;
+    npu::decls! {
+        in_x: input, bytes = 64;
+        out_y: output, bytes = 64;
+        w: weights, bytes = 6553600;
+        act: workspace, bytes = 1228800;
+    }
+    const A_X: u64 = 0;
+    const A_Y: u64 = 491520;
+    const A_P: u64 = 737280;
+    const W_W: u64 = 0;
+    #[npu::program(chiplets = 1, cores = 2)]
+    pub fn step() {
+        crate::vae_kernels::un_lr_8_2560_1280_mid(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_8_2560_1280_mid(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_8_2560_1280_mid(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_8_2560_1280_mid(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
+        sync_cores();
+    }
+}
+
+/// un_lr_8_2560_1280_b_last：gemm_rows {'rows': 96, 'k': 2560, 'n': 1280, 'mg': 6, 'bias': 'f32', 'stage': 'last'}
+#[cfg(feature = "un_lr_8_2560_1280_b_last")]
+mod prog {
+    use npu::prelude::*;
+    npu::decls! {
+        in_x: input, bytes = 64;
+        out_y: output, bytes = 64;
+        w: weights, bytes = 6561792;
+        act: workspace, bytes = 1228800;
+    }
+    const A_X: u64 = 0;
+    const A_Y: u64 = 491520;
+    const A_P: u64 = 737280;
+    const W_W: u64 = 0;
+    const W_B: u64 = 6553600;
+    #[npu::program(chiplets = 1, cores = 2)]
+    pub fn step() {
+        crate::vae_kernels::un_lr_8_2560_1280_b_last(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_P).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_8_2560_1280_b_last(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_P).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_8_2560_1280_b_last(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_P).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_8_2560_1280_b_last(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_P).cast(), act().at(A_Y).cast());
+        sync_cores();
+    }
+}
+
+/// un_lr_8_2560_1280_b：gemm_rows {'rows': 96, 'k': 2560, 'n': 1280, 'mg': 6, 'bias': 'f32'}
+#[cfg(feature = "un_lr_8_2560_1280_b")]
+mod prog {
+    use npu::prelude::*;
+    npu::decls! {
+        in_x: input, bytes = 64;
+        out_y: output, bytes = 64;
+        w: weights, bytes = 6561792;
+        act: workspace, bytes = 1228800;
+    }
+    const A_X: u64 = 0;
+    const A_Y: u64 = 491520;
+    const A_P: u64 = 737280;
+    const W_W: u64 = 0;
+    const W_B: u64 = 6553600;
+    #[npu::program(chiplets = 1, cores = 2)]
+    pub fn step() {
+        crate::vae_kernels::un_lr_8_2560_1280_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_8_2560_1280_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_8_2560_1280_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_8_2560_1280_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
+        sync_cores();
+    }
+}
+
+/// un_lr_16_2560_1280_first：gemm_rows {'rows': 320, 'k': 2560, 'n': 1280, 'mg': 4, 'stage': 'first'}
+#[cfg(feature = "un_lr_16_2560_1280_first")]
+mod prog {
+    use npu::prelude::*;
+    npu::decls! {
+        in_x: input, bytes = 64;
+        out_y: output, bytes = 64;
+        w: weights, bytes = 6553600;
+        act: workspace, bytes = 4096000;
+    }
+    const A_X: u64 = 0;
+    const A_Y: u64 = 1638400;
+    const A_P: u64 = 2457600;
+    const W_W: u64 = 0;
+    #[npu::program(chiplets = 1, cores = 2)]
+    pub fn step() {
+        crate::vae_kernels::un_lr_16_2560_1280_first(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_16_2560_1280_first(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_16_2560_1280_first(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_16_2560_1280_first(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
+        sync_cores();
+    }
+}
+
+/// un_lr_16_2560_1280_mid：gemm_rows {'rows': 320, 'k': 2560, 'n': 1280, 'mg': 4, 'stage': 'mid'}
+#[cfg(feature = "un_lr_16_2560_1280_mid")]
+mod prog {
+    use npu::prelude::*;
+    npu::decls! {
+        in_x: input, bytes = 64;
+        out_y: output, bytes = 64;
+        w: weights, bytes = 6553600;
+        act: workspace, bytes = 4096000;
+    }
+    const A_X: u64 = 0;
+    const A_Y: u64 = 1638400;
+    const A_P: u64 = 2457600;
+    const W_W: u64 = 0;
+    #[npu::program(chiplets = 1, cores = 2)]
+    pub fn step() {
+        crate::vae_kernels::un_lr_16_2560_1280_mid(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_16_2560_1280_mid(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_16_2560_1280_mid(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_16_2560_1280_mid(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
+        sync_cores();
+    }
+}
+
+/// un_lr_16_2560_1280_b_last：gemm_rows {'rows': 320, 'k': 2560, 'n': 1280, 'mg': 4, 'bias': 'f32', 'stage': 'last'}
+#[cfg(feature = "un_lr_16_2560_1280_b_last")]
+mod prog {
+    use npu::prelude::*;
+    npu::decls! {
+        in_x: input, bytes = 64;
+        out_y: output, bytes = 64;
+        w: weights, bytes = 6561792;
+        act: workspace, bytes = 4096000;
+    }
+    const A_X: u64 = 0;
+    const A_Y: u64 = 1638400;
+    const A_P: u64 = 2457600;
+    const W_W: u64 = 0;
+    const W_B: u64 = 6553600;
+    #[npu::program(chiplets = 1, cores = 2)]
+    pub fn step() {
+        crate::vae_kernels::un_lr_16_2560_1280_b_last(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_P).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_16_2560_1280_b_last(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_P).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_16_2560_1280_b_last(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_P).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_16_2560_1280_b_last(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_P).cast(), act().at(A_Y).cast());
+        sync_cores();
+    }
+}
+
+/// un_lr_16_2560_1280_b：gemm_rows {'rows': 320, 'k': 2560, 'n': 1280, 'mg': 4, 'bias': 'f32'}
+#[cfg(feature = "un_lr_16_2560_1280_b")]
+mod prog {
+    use npu::prelude::*;
+    npu::decls! {
+        in_x: input, bytes = 64;
+        out_y: output, bytes = 64;
+        w: weights, bytes = 6561792;
+        act: workspace, bytes = 4096000;
+    }
+    const A_X: u64 = 0;
+    const A_Y: u64 = 1638400;
+    const A_P: u64 = 2457600;
+    const W_W: u64 = 0;
+    const W_B: u64 = 6553600;
+    #[npu::program(chiplets = 1, cores = 2)]
+    pub fn step() {
+        crate::vae_kernels::un_lr_16_2560_1280_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_16_2560_1280_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_16_2560_1280_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_16_2560_1280_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
+        sync_cores();
+    }
+}
+
+/// un_lr_16_1920_1280_first：gemm_rows {'rows': 320, 'k': 1920, 'n': 1280, 'mg': 4, 'stage': 'first'}
+#[cfg(feature = "un_lr_16_1920_1280_first")]
+mod prog {
+    use npu::prelude::*;
+    npu::decls! {
+        in_x: input, bytes = 64;
+        out_y: output, bytes = 64;
+        w: weights, bytes = 4915200;
+        act: workspace, bytes = 3686400;
+    }
+    const A_X: u64 = 0;
+    const A_Y: u64 = 1228800;
+    const A_P: u64 = 2048000;
+    const W_W: u64 = 0;
+    #[npu::program(chiplets = 1, cores = 2)]
+    pub fn step() {
+        crate::vae_kernels::un_lr_16_1920_1280_first(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_16_1920_1280_first(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_16_1920_1280_first(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_16_1920_1280_first(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
+        sync_cores();
+    }
+}
+
+/// un_lr_16_1920_1280_mid：gemm_rows {'rows': 320, 'k': 1920, 'n': 1280, 'mg': 4, 'stage': 'mid'}
+#[cfg(feature = "un_lr_16_1920_1280_mid")]
+mod prog {
+    use npu::prelude::*;
+    npu::decls! {
+        in_x: input, bytes = 64;
+        out_y: output, bytes = 64;
+        w: weights, bytes = 4915200;
+        act: workspace, bytes = 3686400;
+    }
+    const A_X: u64 = 0;
+    const A_Y: u64 = 1228800;
+    const A_P: u64 = 2048000;
+    const W_W: u64 = 0;
+    #[npu::program(chiplets = 1, cores = 2)]
+    pub fn step() {
+        crate::vae_kernels::un_lr_16_1920_1280_mid(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_16_1920_1280_mid(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_16_1920_1280_mid(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_16_1920_1280_mid(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
+        sync_cores();
+    }
+}
+
+/// un_lr_16_1920_1280_b_last：gemm_rows {'rows': 320, 'k': 1920, 'n': 1280, 'mg': 4, 'bias': 'f32', 'stage': 'last'}
+#[cfg(feature = "un_lr_16_1920_1280_b_last")]
+mod prog {
+    use npu::prelude::*;
+    npu::decls! {
+        in_x: input, bytes = 64;
+        out_y: output, bytes = 64;
+        w: weights, bytes = 4923392;
+        act: workspace, bytes = 3686400;
+    }
+    const A_X: u64 = 0;
+    const A_Y: u64 = 1228800;
+    const A_P: u64 = 2048000;
+    const W_W: u64 = 0;
+    const W_B: u64 = 4915200;
+    #[npu::program(chiplets = 1, cores = 2)]
+    pub fn step() {
+        crate::vae_kernels::un_lr_16_1920_1280_b_last(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_P).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_16_1920_1280_b_last(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_P).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_16_1920_1280_b_last(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_P).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_16_1920_1280_b_last(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_P).cast(), act().at(A_Y).cast());
+        sync_cores();
+    }
+}
+
+/// un_lr_16_1920_1280_b：gemm_rows {'rows': 320, 'k': 1920, 'n': 1280, 'mg': 4, 'bias': 'f32'}
+#[cfg(feature = "un_lr_16_1920_1280_b")]
+mod prog {
+    use npu::prelude::*;
+    npu::decls! {
+        in_x: input, bytes = 64;
+        out_y: output, bytes = 64;
+        w: weights, bytes = 4923392;
+        act: workspace, bytes = 3686400;
+    }
+    const A_X: u64 = 0;
+    const A_Y: u64 = 1228800;
+    const A_P: u64 = 2048000;
+    const W_W: u64 = 0;
+    const W_B: u64 = 4915200;
+    #[npu::program(chiplets = 1, cores = 2)]
+    pub fn step() {
+        crate::vae_kernels::un_lr_16_1920_1280_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_16_1920_1280_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_16_1920_1280_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_16_1920_1280_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
+        sync_cores();
+    }
+}
+
+/// un_lr_32_1280_1280_first：gemm_rows {'rows': 1152, 'k': 1280, 'n': 1280, 'mg': 4, 'stage': 'first'}
+#[cfg(feature = "un_lr_32_1280_1280_first")]
+mod prog {
+    use npu::prelude::*;
+    npu::decls! {
+        in_x: input, bytes = 64;
+        out_y: output, bytes = 64;
+        w: weights, bytes = 3276800;
+        act: workspace, bytes = 11796480;
+    }
+    const A_X: u64 = 0;
+    const A_Y: u64 = 2949120;
+    const A_P: u64 = 5898240;
+    const W_W: u64 = 0;
+    #[npu::program(chiplets = 1, cores = 2)]
+    pub fn step() {
+        crate::vae_kernels::un_lr_32_1280_1280_first(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_32_1280_1280_first(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_32_1280_1280_first(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_32_1280_1280_first(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
+        sync_cores();
+    }
+}
+
+/// un_lr_32_1280_1280_mid：gemm_rows {'rows': 1152, 'k': 1280, 'n': 1280, 'mg': 4, 'stage': 'mid'}
+#[cfg(feature = "un_lr_32_1280_1280_mid")]
+mod prog {
+    use npu::prelude::*;
+    npu::decls! {
+        in_x: input, bytes = 64;
+        out_y: output, bytes = 64;
+        w: weights, bytes = 3276800;
+        act: workspace, bytes = 11796480;
+    }
+    const A_X: u64 = 0;
+    const A_Y: u64 = 2949120;
+    const A_P: u64 = 5898240;
+    const W_W: u64 = 0;
+    #[npu::program(chiplets = 1, cores = 2)]
+    pub fn step() {
+        crate::vae_kernels::un_lr_32_1280_1280_mid(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_32_1280_1280_mid(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_32_1280_1280_mid(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_32_1280_1280_mid(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
+        sync_cores();
+    }
+}
+
+/// un_lr_32_1280_1280_b_last：gemm_rows {'rows': 1152, 'k': 1280, 'n': 1280, 'mg': 4, 'bias': 'f32', 'stage': 'last'}
+#[cfg(feature = "un_lr_32_1280_1280_b_last")]
+mod prog {
+    use npu::prelude::*;
+    npu::decls! {
+        in_x: input, bytes = 64;
+        out_y: output, bytes = 64;
+        w: weights, bytes = 3284992;
+        act: workspace, bytes = 11796480;
+    }
+    const A_X: u64 = 0;
+    const A_Y: u64 = 2949120;
+    const A_P: u64 = 5898240;
+    const W_W: u64 = 0;
+    const W_B: u64 = 3276800;
+    #[npu::program(chiplets = 1, cores = 2)]
+    pub fn step() {
+        crate::vae_kernels::un_lr_32_1280_1280_b_last(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_P).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_32_1280_1280_b_last(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_P).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_32_1280_1280_b_last(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_P).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_32_1280_1280_b_last(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_P).cast(), act().at(A_Y).cast());
+        sync_cores();
+    }
+}
+
+/// un_lr_32_1920_640_first：gemm_rows {'rows': 1152, 'k': 1920, 'n': 640, 'mg': 4, 'stage': 'first'}
+#[cfg(feature = "un_lr_32_1920_640_first")]
+mod prog {
+    use npu::prelude::*;
+    npu::decls! {
+        in_x: input, bytes = 64;
+        out_y: output, bytes = 64;
+        w: weights, bytes = 2457600;
+        act: workspace, bytes = 8847360;
+    }
+    const A_X: u64 = 0;
+    const A_Y: u64 = 4423680;
+    const A_P: u64 = 5898240;
+    const W_W: u64 = 0;
+    #[npu::program(chiplets = 1, cores = 2)]
+    pub fn step() {
+        crate::vae_kernels::un_lr_32_1920_640_first(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_32_1920_640_first(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_32_1920_640_first(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_32_1920_640_first(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
+        sync_cores();
+    }
+}
+
+/// un_lr_32_1920_640_mid：gemm_rows {'rows': 1152, 'k': 1920, 'n': 640, 'mg': 4, 'stage': 'mid'}
+#[cfg(feature = "un_lr_32_1920_640_mid")]
+mod prog {
+    use npu::prelude::*;
+    npu::decls! {
+        in_x: input, bytes = 64;
+        out_y: output, bytes = 64;
+        w: weights, bytes = 2457600;
+        act: workspace, bytes = 8847360;
+    }
+    const A_X: u64 = 0;
+    const A_Y: u64 = 4423680;
+    const A_P: u64 = 5898240;
+    const W_W: u64 = 0;
+    #[npu::program(chiplets = 1, cores = 2)]
+    pub fn step() {
+        crate::vae_kernels::un_lr_32_1920_640_mid(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_32_1920_640_mid(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_32_1920_640_mid(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_32_1920_640_mid(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
+        sync_cores();
+    }
+}
+
+/// un_lr_32_1920_640_b_last：gemm_rows {'rows': 1152, 'k': 1920, 'n': 640, 'mg': 4, 'bias': 'f32', 'stage': 'last'}
+#[cfg(feature = "un_lr_32_1920_640_b_last")]
+mod prog {
+    use npu::prelude::*;
+    npu::decls! {
+        in_x: input, bytes = 64;
+        out_y: output, bytes = 64;
+        w: weights, bytes = 2461696;
+        act: workspace, bytes = 8847360;
+    }
+    const A_X: u64 = 0;
+    const A_Y: u64 = 4423680;
+    const A_P: u64 = 5898240;
+    const W_W: u64 = 0;
+    const W_B: u64 = 2457600;
+    #[npu::program(chiplets = 1, cores = 2)]
+    pub fn step() {
+        crate::vae_kernels::un_lr_32_1920_640_b_last(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_P).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_32_1920_640_b_last(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_P).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_32_1920_640_b_last(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_P).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_32_1920_640_b_last(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_P).cast(), act().at(A_Y).cast());
+        sync_cores();
+    }
+}
+
+/// un_lr_32_1920_640_b：gemm_rows {'rows': 1152, 'k': 1920, 'n': 640, 'mg': 4, 'bias': 'f32'}
+#[cfg(feature = "un_lr_32_1920_640_b")]
+mod prog {
+    use npu::prelude::*;
+    npu::decls! {
+        in_x: input, bytes = 64;
+        out_y: output, bytes = 64;
+        w: weights, bytes = 2461696;
+        act: workspace, bytes = 8847360;
+    }
+    const A_X: u64 = 0;
+    const A_Y: u64 = 4423680;
+    const A_P: u64 = 5898240;
+    const W_W: u64 = 0;
+    const W_B: u64 = 2457600;
+    #[npu::program(chiplets = 1, cores = 2)]
+    pub fn step() {
+        crate::vae_kernels::un_lr_32_1920_640_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_32_1920_640_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_32_1920_640_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_32_1920_640_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
+        sync_cores();
+    }
+}
+
+/// un_lr_32_1280_640_first：gemm_rows {'rows': 1152, 'k': 1280, 'n': 640, 'mg': 4, 'stage': 'first'}
+#[cfg(feature = "un_lr_32_1280_640_first")]
+mod prog {
+    use npu::prelude::*;
+    npu::decls! {
+        in_x: input, bytes = 64;
+        out_y: output, bytes = 64;
+        w: weights, bytes = 1638400;
+        act: workspace, bytes = 7372800;
+    }
+    const A_X: u64 = 0;
+    const A_Y: u64 = 2949120;
+    const A_P: u64 = 4423680;
+    const W_W: u64 = 0;
+    #[npu::program(chiplets = 1, cores = 2)]
+    pub fn step() {
+        crate::vae_kernels::un_lr_32_1280_640_first(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_32_1280_640_first(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_32_1280_640_first(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_32_1280_640_first(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
+        sync_cores();
+    }
+}
+
+/// un_lr_32_1280_640_mid：gemm_rows {'rows': 1152, 'k': 1280, 'n': 640, 'mg': 4, 'stage': 'mid'}
+#[cfg(feature = "un_lr_32_1280_640_mid")]
+mod prog {
+    use npu::prelude::*;
+    npu::decls! {
+        in_x: input, bytes = 64;
+        out_y: output, bytes = 64;
+        w: weights, bytes = 1638400;
+        act: workspace, bytes = 7372800;
+    }
+    const A_X: u64 = 0;
+    const A_Y: u64 = 2949120;
+    const A_P: u64 = 4423680;
+    const W_W: u64 = 0;
+    #[npu::program(chiplets = 1, cores = 2)]
+    pub fn step() {
+        crate::vae_kernels::un_lr_32_1280_640_mid(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_32_1280_640_mid(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_32_1280_640_mid(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_32_1280_640_mid(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
+        sync_cores();
+    }
+}
+
+/// un_lr_32_1280_640_b_last：gemm_rows {'rows': 1152, 'k': 1280, 'n': 640, 'mg': 4, 'bias': 'f32', 'stage': 'last'}
+#[cfg(feature = "un_lr_32_1280_640_b_last")]
+mod prog {
+    use npu::prelude::*;
+    npu::decls! {
+        in_x: input, bytes = 64;
+        out_y: output, bytes = 64;
+        w: weights, bytes = 1642496;
+        act: workspace, bytes = 7372800;
+    }
+    const A_X: u64 = 0;
+    const A_Y: u64 = 2949120;
+    const A_P: u64 = 4423680;
+    const W_W: u64 = 0;
+    const W_B: u64 = 1638400;
+    #[npu::program(chiplets = 1, cores = 2)]
+    pub fn step() {
+        crate::vae_kernels::un_lr_32_1280_640_b_last(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_P).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_32_1280_640_b_last(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_P).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_32_1280_640_b_last(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_P).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_32_1280_640_b_last(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_P).cast(), act().at(A_Y).cast());
+        sync_cores();
+    }
+}
+
+/// un_lr_32_1280_640_b：gemm_rows {'rows': 1152, 'k': 1280, 'n': 640, 'mg': 4, 'bias': 'f32'}
+#[cfg(feature = "un_lr_32_1280_640_b")]
+mod prog {
+    use npu::prelude::*;
+    npu::decls! {
+        in_x: input, bytes = 64;
+        out_y: output, bytes = 64;
+        w: weights, bytes = 1642496;
+        act: workspace, bytes = 7372800;
+    }
+    const A_X: u64 = 0;
+    const A_Y: u64 = 2949120;
+    const A_P: u64 = 4423680;
+    const W_W: u64 = 0;
+    const W_B: u64 = 1638400;
+    #[npu::program(chiplets = 1, cores = 2)]
+    pub fn step() {
+        crate::vae_kernels::un_lr_32_1280_640_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_32_1280_640_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_32_1280_640_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
+        sync_cores();
+        crate::vae_kernels::un_lr_32_1280_640_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
+        sync_cores();
+    }
+}
+
 /// un_l16_384_1280：linear {'rows': 16, 'k': 384, 'n': 1280, 'w': 'hf', 'cores': 2, 'bias': 'f32'}
 #[cfg(feature = "un_l16_384_1280")]
 mod prog {
@@ -2171,89 +3328,6 @@ mod prog {
     }
 }
 
-/// un_lr_64_1280_384_b：linear {'rows': 4352, 'k': 1280, 'n': 384, 'w': 'hf', 'cores': 2, 'bias': 'f32'}
-#[cfg(feature = "un_lr_64_1280_384_b")]
-mod prog {
-    use npu::prelude::*;
-    npu::decls! {
-        in_x: input, bytes = 64;
-        out_y: output, bytes = 64;
-        w: weights, bytes = 987136;
-        act: workspace, bytes = 21168128;
-    }
-    const A_X: u64 = 0;
-    const A_Y: u64 = 11141120;
-    const A_P: u64 = 14483456;
-    const W_W: u64 = 0;
-    const W_B: u64 = 983040;
-    #[npu::program(chiplets = 1, cores = 2)]
-    pub fn step() {
-        crate::vae_kernels::un_lr_64_1280_384_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_64_1280_384_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_64_1280_384_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_64_1280_384_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
-        sync_cores();
-    }
-}
-
-/// un_lr_32_640_640_b：linear {'rows': 1152, 'k': 640, 'n': 640, 'w': 'hf', 'cores': 2, 'bias': 'f32'}
-#[cfg(feature = "un_lr_32_640_640_b")]
-mod prog {
-    use npu::prelude::*;
-    npu::decls! {
-        in_x: input, bytes = 64;
-        out_y: output, bytes = 64;
-        w: weights, bytes = 823296;
-        act: workspace, bytes = 5898240;
-    }
-    const A_X: u64 = 0;
-    const A_Y: u64 = 1474560;
-    const A_P: u64 = 2949120;
-    const W_W: u64 = 0;
-    const W_B: u64 = 819200;
-    #[npu::program(chiplets = 1, cores = 2)]
-    pub fn step() {
-        crate::vae_kernels::un_lr_32_640_640_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_32_640_640_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_32_640_640_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_32_640_640_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
-        sync_cores();
-    }
-}
-
-/// un_lr_32_640_768：linear {'rows': 1152, 'k': 640, 'n': 768, 'w': 'hf', 'cores': 2}
-#[cfg(feature = "un_lr_32_640_768")]
-mod prog {
-    use npu::prelude::*;
-    npu::decls! {
-        in_x: input, bytes = 64;
-        out_y: output, bytes = 64;
-        w: weights, bytes = 983040;
-        act: workspace, bytes = 6782976;
-    }
-    const A_X: u64 = 0;
-    const A_Y: u64 = 1474560;
-    const A_P: u64 = 3244032;
-    const W_W: u64 = 0;
-    #[npu::program(chiplets = 1, cores = 2)]
-    pub fn step() {
-        crate::vae_kernels::un_lr_32_640_768(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_32_640_768(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_32_640_768(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_32_640_768(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_Y).cast());
-        sync_cores();
-    }
-}
-
 /// un_kv_768：linear {'rows': 128, 'k': 768, 'n': 768, 'w': 'hf', 'cores': 2}
 #[cfg(feature = "un_kv_768")]
 mod prog {
@@ -2281,199 +3355,6 @@ mod prog {
     }
 }
 
-/// un_lr_32_640_2560_b：linear {'rows': 1152, 'k': 640, 'n': 2560, 'w': 'hf', 'cores': 2, 'bias': 'f32'}
-#[cfg(feature = "un_lr_32_640_2560_b")]
-mod prog {
-    use npu::prelude::*;
-    npu::decls! {
-        in_x: input, bytes = 64;
-        out_y: output, bytes = 64;
-        w: weights, bytes = 3289088;
-        act: workspace, bytes = 19169280;
-    }
-    const A_X: u64 = 0;
-    const A_Y: u64 = 1474560;
-    const A_P: u64 = 7372800;
-    const W_W: u64 = 0;
-    const W_B: u64 = 3276800;
-    #[npu::program(chiplets = 1, cores = 2)]
-    pub fn step() {
-        crate::vae_kernels::un_lr_32_640_2560_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_32_640_2560_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_32_640_2560_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_32_640_2560_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
-        sync_cores();
-    }
-}
-
-/// un_lr_32_2560_640_b：linear {'rows': 1152, 'k': 2560, 'n': 640, 'w': 'hf', 'cores': 2, 'bias': 'f32'}
-#[cfg(feature = "un_lr_32_2560_640_b")]
-mod prog {
-    use npu::prelude::*;
-    npu::decls! {
-        in_x: input, bytes = 64;
-        out_y: output, bytes = 64;
-        w: weights, bytes = 3280896;
-        act: workspace, bytes = 10321920;
-    }
-    const A_X: u64 = 0;
-    const A_Y: u64 = 5898240;
-    const A_P: u64 = 7372800;
-    const W_W: u64 = 0;
-    const W_B: u64 = 3276800;
-    #[npu::program(chiplets = 1, cores = 2)]
-    pub fn step() {
-        crate::vae_kernels::un_lr_32_2560_640_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_32_2560_640_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_32_2560_640_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_32_2560_640_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
-        sync_cores();
-    }
-}
-
-/// un_lr_16_1280_1280_first：linear {'rows': 320, 'k': 1280, 'n': 1280, 'w': 'hf', 'cores': 2, 'ks': [0, 1280], 'stage_name': 'first'}
-#[cfg(feature = "un_lr_16_1280_1280_first")]
-mod prog {
-    use npu::prelude::*;
-    npu::decls! {
-        in_x: input, bytes = 64;
-        out_y: output, bytes = 64;
-        w: weights, bytes = 3276800;
-        act: workspace, bytes = 3276800;
-    }
-    const A_X: u64 = 0;
-    const A_Y: u64 = 819200;
-    const A_P: u64 = 1638400;
-    const W_W: u64 = 0;
-    #[npu::program(chiplets = 1, cores = 2)]
-    pub fn step() {
-        crate::vae_kernels::un_lr_16_1280_1280_first(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_16_1280_1280_first(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_16_1280_1280_first(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_16_1280_1280_first(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
-        sync_cores();
-    }
-}
-
-/// un_lr_16_1280_1280_mid：linear {'rows': 320, 'k': 1280, 'n': 1280, 'w': 'hf', 'cores': 2, 'ks': [0, 1280], 'stage_name': 'mid'}
-#[cfg(feature = "un_lr_16_1280_1280_mid")]
-mod prog {
-    use npu::prelude::*;
-    npu::decls! {
-        in_x: input, bytes = 64;
-        out_y: output, bytes = 64;
-        w: weights, bytes = 3276800;
-        act: workspace, bytes = 3276800;
-    }
-    const A_X: u64 = 0;
-    const A_Y: u64 = 819200;
-    const A_P: u64 = 1638400;
-    const W_W: u64 = 0;
-    #[npu::program(chiplets = 1, cores = 2)]
-    pub fn step() {
-        crate::vae_kernels::un_lr_16_1280_1280_mid(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_16_1280_1280_mid(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_16_1280_1280_mid(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_16_1280_1280_mid(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
-        sync_cores();
-    }
-}
-
-/// un_lr_16_1280_1280_b_last：linear {'rows': 320, 'k': 1280, 'n': 1280, 'w': 'hf', 'cores': 2, 'bias': 'f32', 'ks': [0, 1280], 'stage_name': 'last'}
-#[cfg(feature = "un_lr_16_1280_1280_b_last")]
-mod prog {
-    use npu::prelude::*;
-    npu::decls! {
-        in_x: input, bytes = 64;
-        out_y: output, bytes = 64;
-        w: weights, bytes = 3284992;
-        act: workspace, bytes = 3276800;
-    }
-    const A_X: u64 = 0;
-    const A_Y: u64 = 819200;
-    const A_P: u64 = 1638400;
-    const W_W: u64 = 0;
-    const W_B: u64 = 3276800;
-    #[npu::program(chiplets = 1, cores = 2)]
-    pub fn step() {
-        crate::vae_kernels::un_lr_16_1280_1280_b_last(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_P).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_16_1280_1280_b_last(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_P).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_16_1280_1280_b_last(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_P).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_16_1280_1280_b_last(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_P).cast(), act().at(A_Y).cast());
-        sync_cores();
-    }
-}
-
-/// un_lr_16_1280_1280_b：linear {'rows': 320, 'k': 1280, 'n': 1280, 'w': 'hf', 'cores': 2, 'bias': 'f32'}
-#[cfg(feature = "un_lr_16_1280_1280_b")]
-mod prog {
-    use npu::prelude::*;
-    npu::decls! {
-        in_x: input, bytes = 64;
-        out_y: output, bytes = 64;
-        w: weights, bytes = 3284992;
-        act: workspace, bytes = 3276800;
-    }
-    const A_X: u64 = 0;
-    const A_Y: u64 = 819200;
-    const A_P: u64 = 1638400;
-    const W_W: u64 = 0;
-    const W_B: u64 = 3276800;
-    #[npu::program(chiplets = 1, cores = 2)]
-    pub fn step() {
-        crate::vae_kernels::un_lr_16_1280_1280_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_16_1280_1280_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_16_1280_1280_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_16_1280_1280_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
-        sync_cores();
-    }
-}
-
-/// un_lr_16_1280_1280：linear {'rows': 320, 'k': 1280, 'n': 1280, 'w': 'hf', 'cores': 2}
-#[cfg(feature = "un_lr_16_1280_1280")]
-mod prog {
-    use npu::prelude::*;
-    npu::decls! {
-        in_x: input, bytes = 64;
-        out_y: output, bytes = 64;
-        w: weights, bytes = 3276800;
-        act: workspace, bytes = 3276800;
-    }
-    const A_X: u64 = 0;
-    const A_Y: u64 = 819200;
-    const A_P: u64 = 1638400;
-    const W_W: u64 = 0;
-    #[npu::program(chiplets = 1, cores = 2)]
-    pub fn step() {
-        crate::vae_kernels::un_lr_16_1280_1280(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_16_1280_1280(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_16_1280_1280(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_16_1280_1280(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_Y).cast());
-        sync_cores();
-    }
-}
-
 /// un_kv_1280：linear {'rows': 128, 'k': 768, 'n': 1280, 'w': 'hf', 'cores': 2}
 #[cfg(feature = "un_kv_1280")]
 mod prog {
@@ -2497,887 +3378,6 @@ mod prog {
         crate::vae_kernels::un_kv_1280(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_Y).cast());
         sync_cores();
         crate::vae_kernels::un_kv_1280(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_Y).cast());
-        sync_cores();
-    }
-}
-
-/// un_lr_16_1280_5120_b：linear {'rows': 320, 'k': 1280, 'n': 5120, 'w': 'hf', 'cores': 2, 'bias': 'f32'}
-#[cfg(feature = "un_lr_16_1280_5120_b")]
-mod prog {
-    use npu::prelude::*;
-    npu::decls! {
-        in_x: input, bytes = 64;
-        out_y: output, bytes = 64;
-        w: weights, bytes = 13127680;
-        act: workspace, bytes = 10649600;
-    }
-    const A_X: u64 = 0;
-    const A_Y: u64 = 819200;
-    const A_P: u64 = 4096000;
-    const W_W: u64 = 0;
-    const W_B: u64 = 13107200;
-    #[npu::program(chiplets = 1, cores = 2)]
-    pub fn step() {
-        crate::vae_kernels::un_lr_16_1280_5120_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_16_1280_5120_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_16_1280_5120_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_16_1280_5120_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
-        sync_cores();
-    }
-}
-
-/// un_lr_16_5120_1280_b：linear {'rows': 320, 'k': 5120, 'n': 1280, 'w': 'hf', 'cores': 2, 'bias': 'f32'}
-#[cfg(feature = "un_lr_16_5120_1280_b")]
-mod prog {
-    use npu::prelude::*;
-    npu::decls! {
-        in_x: input, bytes = 64;
-        out_y: output, bytes = 64;
-        w: weights, bytes = 13115392;
-        act: workspace, bytes = 5734400;
-    }
-    const A_X: u64 = 0;
-    const A_Y: u64 = 3276800;
-    const A_P: u64 = 4096000;
-    const W_W: u64 = 0;
-    const W_B: u64 = 13107200;
-    #[npu::program(chiplets = 1, cores = 2)]
-    pub fn step() {
-        crate::vae_kernels::un_lr_16_5120_1280_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_16_5120_1280_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_16_5120_1280_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_16_5120_1280_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
-        sync_cores();
-    }
-}
-
-/// un_lr_8_1280_1280_first：linear {'rows': 96, 'k': 1280, 'n': 1280, 'w': 'hf', 'cores': 2, 'ks': [0, 1280], 'stage_name': 'first'}
-#[cfg(feature = "un_lr_8_1280_1280_first")]
-mod prog {
-    use npu::prelude::*;
-    npu::decls! {
-        in_x: input, bytes = 64;
-        out_y: output, bytes = 64;
-        w: weights, bytes = 3276800;
-        act: workspace, bytes = 983040;
-    }
-    const A_X: u64 = 0;
-    const A_Y: u64 = 245760;
-    const A_P: u64 = 491520;
-    const W_W: u64 = 0;
-    #[npu::program(chiplets = 1, cores = 2)]
-    pub fn step() {
-        crate::vae_kernels::un_lr_8_1280_1280_first(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_8_1280_1280_first(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_8_1280_1280_first(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_8_1280_1280_first(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
-        sync_cores();
-    }
-}
-
-/// un_lr_8_1280_1280_mid：linear {'rows': 96, 'k': 1280, 'n': 1280, 'w': 'hf', 'cores': 2, 'ks': [0, 1280], 'stage_name': 'mid'}
-#[cfg(feature = "un_lr_8_1280_1280_mid")]
-mod prog {
-    use npu::prelude::*;
-    npu::decls! {
-        in_x: input, bytes = 64;
-        out_y: output, bytes = 64;
-        w: weights, bytes = 3276800;
-        act: workspace, bytes = 983040;
-    }
-    const A_X: u64 = 0;
-    const A_Y: u64 = 245760;
-    const A_P: u64 = 491520;
-    const W_W: u64 = 0;
-    #[npu::program(chiplets = 1, cores = 2)]
-    pub fn step() {
-        crate::vae_kernels::un_lr_8_1280_1280_mid(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_8_1280_1280_mid(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_8_1280_1280_mid(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_8_1280_1280_mid(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
-        sync_cores();
-    }
-}
-
-/// un_lr_8_1280_1280_b_last：linear {'rows': 96, 'k': 1280, 'n': 1280, 'w': 'hf', 'cores': 2, 'bias': 'f32', 'ks': [0, 1280], 'stage_name': 'last'}
-#[cfg(feature = "un_lr_8_1280_1280_b_last")]
-mod prog {
-    use npu::prelude::*;
-    npu::decls! {
-        in_x: input, bytes = 64;
-        out_y: output, bytes = 64;
-        w: weights, bytes = 3284992;
-        act: workspace, bytes = 983040;
-    }
-    const A_X: u64 = 0;
-    const A_Y: u64 = 245760;
-    const A_P: u64 = 491520;
-    const W_W: u64 = 0;
-    const W_B: u64 = 3276800;
-    #[npu::program(chiplets = 1, cores = 2)]
-    pub fn step() {
-        crate::vae_kernels::un_lr_8_1280_1280_b_last(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_P).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_8_1280_1280_b_last(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_P).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_8_1280_1280_b_last(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_P).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_8_1280_1280_b_last(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_P).cast(), act().at(A_Y).cast());
-        sync_cores();
-    }
-}
-
-/// un_lr_8_1280_1280_b：linear {'rows': 96, 'k': 1280, 'n': 1280, 'w': 'hf', 'cores': 2, 'bias': 'f32'}
-#[cfg(feature = "un_lr_8_1280_1280_b")]
-mod prog {
-    use npu::prelude::*;
-    npu::decls! {
-        in_x: input, bytes = 64;
-        out_y: output, bytes = 64;
-        w: weights, bytes = 3284992;
-        act: workspace, bytes = 983040;
-    }
-    const A_X: u64 = 0;
-    const A_Y: u64 = 245760;
-    const A_P: u64 = 491520;
-    const W_W: u64 = 0;
-    const W_B: u64 = 3276800;
-    #[npu::program(chiplets = 1, cores = 2)]
-    pub fn step() {
-        crate::vae_kernels::un_lr_8_1280_1280_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_8_1280_1280_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_8_1280_1280_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_8_1280_1280_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
-        sync_cores();
-    }
-}
-
-/// un_lr_8_1280_1280：linear {'rows': 96, 'k': 1280, 'n': 1280, 'w': 'hf', 'cores': 2}
-#[cfg(feature = "un_lr_8_1280_1280")]
-mod prog {
-    use npu::prelude::*;
-    npu::decls! {
-        in_x: input, bytes = 64;
-        out_y: output, bytes = 64;
-        w: weights, bytes = 3276800;
-        act: workspace, bytes = 983040;
-    }
-    const A_X: u64 = 0;
-    const A_Y: u64 = 245760;
-    const A_P: u64 = 491520;
-    const W_W: u64 = 0;
-    #[npu::program(chiplets = 1, cores = 2)]
-    pub fn step() {
-        crate::vae_kernels::un_lr_8_1280_1280(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_8_1280_1280(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_8_1280_1280(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_8_1280_1280(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_Y).cast());
-        sync_cores();
-    }
-}
-
-/// un_lr_8_1280_5120_b：linear {'rows': 96, 'k': 1280, 'n': 5120, 'w': 'hf', 'cores': 2, 'bias': 'f32'}
-#[cfg(feature = "un_lr_8_1280_5120_b")]
-mod prog {
-    use npu::prelude::*;
-    npu::decls! {
-        in_x: input, bytes = 64;
-        out_y: output, bytes = 64;
-        w: weights, bytes = 13127680;
-        act: workspace, bytes = 3194880;
-    }
-    const A_X: u64 = 0;
-    const A_Y: u64 = 245760;
-    const A_P: u64 = 1228800;
-    const W_W: u64 = 0;
-    const W_B: u64 = 13107200;
-    #[npu::program(chiplets = 1, cores = 2)]
-    pub fn step() {
-        crate::vae_kernels::un_lr_8_1280_5120_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_8_1280_5120_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_8_1280_5120_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_8_1280_5120_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
-        sync_cores();
-    }
-}
-
-/// un_lr_8_5120_1280_b：linear {'rows': 96, 'k': 5120, 'n': 1280, 'w': 'hf', 'cores': 2, 'bias': 'f32'}
-#[cfg(feature = "un_lr_8_5120_1280_b")]
-mod prog {
-    use npu::prelude::*;
-    npu::decls! {
-        in_x: input, bytes = 64;
-        out_y: output, bytes = 64;
-        w: weights, bytes = 13115392;
-        act: workspace, bytes = 1720320;
-    }
-    const A_X: u64 = 0;
-    const A_Y: u64 = 983040;
-    const A_P: u64 = 1228800;
-    const W_W: u64 = 0;
-    const W_B: u64 = 13107200;
-    #[npu::program(chiplets = 1, cores = 2)]
-    pub fn step() {
-        crate::vae_kernels::un_lr_8_5120_1280_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_8_5120_1280_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_8_5120_1280_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_8_5120_1280_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
-        sync_cores();
-    }
-}
-
-/// un_lr_8_2560_1280_first：linear {'rows': 96, 'k': 2560, 'n': 1280, 'w': 'hf', 'cores': 2, 'ks': [0, 2560], 'stage_name': 'first'}
-#[cfg(feature = "un_lr_8_2560_1280_first")]
-mod prog {
-    use npu::prelude::*;
-    npu::decls! {
-        in_x: input, bytes = 64;
-        out_y: output, bytes = 64;
-        w: weights, bytes = 6553600;
-        act: workspace, bytes = 1228800;
-    }
-    const A_X: u64 = 0;
-    const A_Y: u64 = 491520;
-    const A_P: u64 = 737280;
-    const W_W: u64 = 0;
-    #[npu::program(chiplets = 1, cores = 2)]
-    pub fn step() {
-        crate::vae_kernels::un_lr_8_2560_1280_first(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_8_2560_1280_first(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_8_2560_1280_first(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_8_2560_1280_first(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
-        sync_cores();
-    }
-}
-
-/// un_lr_8_2560_1280_mid：linear {'rows': 96, 'k': 2560, 'n': 1280, 'w': 'hf', 'cores': 2, 'ks': [0, 2560], 'stage_name': 'mid'}
-#[cfg(feature = "un_lr_8_2560_1280_mid")]
-mod prog {
-    use npu::prelude::*;
-    npu::decls! {
-        in_x: input, bytes = 64;
-        out_y: output, bytes = 64;
-        w: weights, bytes = 6553600;
-        act: workspace, bytes = 1228800;
-    }
-    const A_X: u64 = 0;
-    const A_Y: u64 = 491520;
-    const A_P: u64 = 737280;
-    const W_W: u64 = 0;
-    #[npu::program(chiplets = 1, cores = 2)]
-    pub fn step() {
-        crate::vae_kernels::un_lr_8_2560_1280_mid(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_8_2560_1280_mid(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_8_2560_1280_mid(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_8_2560_1280_mid(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
-        sync_cores();
-    }
-}
-
-/// un_lr_8_2560_1280_b_last：linear {'rows': 96, 'k': 2560, 'n': 1280, 'w': 'hf', 'cores': 2, 'bias': 'f32', 'ks': [0, 2560], 'stage_name': 'last'}
-#[cfg(feature = "un_lr_8_2560_1280_b_last")]
-mod prog {
-    use npu::prelude::*;
-    npu::decls! {
-        in_x: input, bytes = 64;
-        out_y: output, bytes = 64;
-        w: weights, bytes = 6561792;
-        act: workspace, bytes = 1228800;
-    }
-    const A_X: u64 = 0;
-    const A_Y: u64 = 491520;
-    const A_P: u64 = 737280;
-    const W_W: u64 = 0;
-    const W_B: u64 = 6553600;
-    #[npu::program(chiplets = 1, cores = 2)]
-    pub fn step() {
-        crate::vae_kernels::un_lr_8_2560_1280_b_last(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_P).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_8_2560_1280_b_last(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_P).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_8_2560_1280_b_last(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_P).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_8_2560_1280_b_last(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_P).cast(), act().at(A_Y).cast());
-        sync_cores();
-    }
-}
-
-/// un_lr_8_2560_1280_b：linear {'rows': 96, 'k': 2560, 'n': 1280, 'w': 'hf', 'cores': 2, 'bias': 'f32'}
-#[cfg(feature = "un_lr_8_2560_1280_b")]
-mod prog {
-    use npu::prelude::*;
-    npu::decls! {
-        in_x: input, bytes = 64;
-        out_y: output, bytes = 64;
-        w: weights, bytes = 6561792;
-        act: workspace, bytes = 1228800;
-    }
-    const A_X: u64 = 0;
-    const A_Y: u64 = 491520;
-    const A_P: u64 = 737280;
-    const W_W: u64 = 0;
-    const W_B: u64 = 6553600;
-    #[npu::program(chiplets = 1, cores = 2)]
-    pub fn step() {
-        crate::vae_kernels::un_lr_8_2560_1280_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_8_2560_1280_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_8_2560_1280_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_8_2560_1280_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
-        sync_cores();
-    }
-}
-
-/// un_lr_16_2560_1280_first：linear {'rows': 320, 'k': 2560, 'n': 1280, 'w': 'hf', 'cores': 2, 'ks': [0, 2560], 'stage_name': 'first'}
-#[cfg(feature = "un_lr_16_2560_1280_first")]
-mod prog {
-    use npu::prelude::*;
-    npu::decls! {
-        in_x: input, bytes = 64;
-        out_y: output, bytes = 64;
-        w: weights, bytes = 6553600;
-        act: workspace, bytes = 4096000;
-    }
-    const A_X: u64 = 0;
-    const A_Y: u64 = 1638400;
-    const A_P: u64 = 2457600;
-    const W_W: u64 = 0;
-    #[npu::program(chiplets = 1, cores = 2)]
-    pub fn step() {
-        crate::vae_kernels::un_lr_16_2560_1280_first(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_16_2560_1280_first(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_16_2560_1280_first(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_16_2560_1280_first(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
-        sync_cores();
-    }
-}
-
-/// un_lr_16_2560_1280_mid：linear {'rows': 320, 'k': 2560, 'n': 1280, 'w': 'hf', 'cores': 2, 'ks': [0, 2560], 'stage_name': 'mid'}
-#[cfg(feature = "un_lr_16_2560_1280_mid")]
-mod prog {
-    use npu::prelude::*;
-    npu::decls! {
-        in_x: input, bytes = 64;
-        out_y: output, bytes = 64;
-        w: weights, bytes = 6553600;
-        act: workspace, bytes = 4096000;
-    }
-    const A_X: u64 = 0;
-    const A_Y: u64 = 1638400;
-    const A_P: u64 = 2457600;
-    const W_W: u64 = 0;
-    #[npu::program(chiplets = 1, cores = 2)]
-    pub fn step() {
-        crate::vae_kernels::un_lr_16_2560_1280_mid(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_16_2560_1280_mid(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_16_2560_1280_mid(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_16_2560_1280_mid(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
-        sync_cores();
-    }
-}
-
-/// un_lr_16_2560_1280_b_last：linear {'rows': 320, 'k': 2560, 'n': 1280, 'w': 'hf', 'cores': 2, 'bias': 'f32', 'ks': [0, 2560], 'stage_name': 'last'}
-#[cfg(feature = "un_lr_16_2560_1280_b_last")]
-mod prog {
-    use npu::prelude::*;
-    npu::decls! {
-        in_x: input, bytes = 64;
-        out_y: output, bytes = 64;
-        w: weights, bytes = 6561792;
-        act: workspace, bytes = 4096000;
-    }
-    const A_X: u64 = 0;
-    const A_Y: u64 = 1638400;
-    const A_P: u64 = 2457600;
-    const W_W: u64 = 0;
-    const W_B: u64 = 6553600;
-    #[npu::program(chiplets = 1, cores = 2)]
-    pub fn step() {
-        crate::vae_kernels::un_lr_16_2560_1280_b_last(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_P).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_16_2560_1280_b_last(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_P).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_16_2560_1280_b_last(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_P).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_16_2560_1280_b_last(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_P).cast(), act().at(A_Y).cast());
-        sync_cores();
-    }
-}
-
-/// un_lr_16_2560_1280_b：linear {'rows': 320, 'k': 2560, 'n': 1280, 'w': 'hf', 'cores': 2, 'bias': 'f32'}
-#[cfg(feature = "un_lr_16_2560_1280_b")]
-mod prog {
-    use npu::prelude::*;
-    npu::decls! {
-        in_x: input, bytes = 64;
-        out_y: output, bytes = 64;
-        w: weights, bytes = 6561792;
-        act: workspace, bytes = 4096000;
-    }
-    const A_X: u64 = 0;
-    const A_Y: u64 = 1638400;
-    const A_P: u64 = 2457600;
-    const W_W: u64 = 0;
-    const W_B: u64 = 6553600;
-    #[npu::program(chiplets = 1, cores = 2)]
-    pub fn step() {
-        crate::vae_kernels::un_lr_16_2560_1280_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_16_2560_1280_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_16_2560_1280_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_16_2560_1280_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
-        sync_cores();
-    }
-}
-
-/// un_lr_16_1920_1280_first：linear {'rows': 320, 'k': 1920, 'n': 1280, 'w': 'hf', 'cores': 2, 'ks': [0, 1920], 'stage_name': 'first'}
-#[cfg(feature = "un_lr_16_1920_1280_first")]
-mod prog {
-    use npu::prelude::*;
-    npu::decls! {
-        in_x: input, bytes = 64;
-        out_y: output, bytes = 64;
-        w: weights, bytes = 4915200;
-        act: workspace, bytes = 3686400;
-    }
-    const A_X: u64 = 0;
-    const A_Y: u64 = 1228800;
-    const A_P: u64 = 2048000;
-    const W_W: u64 = 0;
-    #[npu::program(chiplets = 1, cores = 2)]
-    pub fn step() {
-        crate::vae_kernels::un_lr_16_1920_1280_first(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_16_1920_1280_first(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_16_1920_1280_first(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_16_1920_1280_first(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
-        sync_cores();
-    }
-}
-
-/// un_lr_16_1920_1280_mid：linear {'rows': 320, 'k': 1920, 'n': 1280, 'w': 'hf', 'cores': 2, 'ks': [0, 1920], 'stage_name': 'mid'}
-#[cfg(feature = "un_lr_16_1920_1280_mid")]
-mod prog {
-    use npu::prelude::*;
-    npu::decls! {
-        in_x: input, bytes = 64;
-        out_y: output, bytes = 64;
-        w: weights, bytes = 4915200;
-        act: workspace, bytes = 3686400;
-    }
-    const A_X: u64 = 0;
-    const A_Y: u64 = 1228800;
-    const A_P: u64 = 2048000;
-    const W_W: u64 = 0;
-    #[npu::program(chiplets = 1, cores = 2)]
-    pub fn step() {
-        crate::vae_kernels::un_lr_16_1920_1280_mid(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_16_1920_1280_mid(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_16_1920_1280_mid(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_16_1920_1280_mid(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
-        sync_cores();
-    }
-}
-
-/// un_lr_16_1920_1280_b_last：linear {'rows': 320, 'k': 1920, 'n': 1280, 'w': 'hf', 'cores': 2, 'bias': 'f32', 'ks': [0, 1920], 'stage_name': 'last'}
-#[cfg(feature = "un_lr_16_1920_1280_b_last")]
-mod prog {
-    use npu::prelude::*;
-    npu::decls! {
-        in_x: input, bytes = 64;
-        out_y: output, bytes = 64;
-        w: weights, bytes = 4923392;
-        act: workspace, bytes = 3686400;
-    }
-    const A_X: u64 = 0;
-    const A_Y: u64 = 1228800;
-    const A_P: u64 = 2048000;
-    const W_W: u64 = 0;
-    const W_B: u64 = 4915200;
-    #[npu::program(chiplets = 1, cores = 2)]
-    pub fn step() {
-        crate::vae_kernels::un_lr_16_1920_1280_b_last(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_P).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_16_1920_1280_b_last(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_P).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_16_1920_1280_b_last(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_P).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_16_1920_1280_b_last(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_P).cast(), act().at(A_Y).cast());
-        sync_cores();
-    }
-}
-
-/// un_lr_16_1920_1280_b：linear {'rows': 320, 'k': 1920, 'n': 1280, 'w': 'hf', 'cores': 2, 'bias': 'f32'}
-#[cfg(feature = "un_lr_16_1920_1280_b")]
-mod prog {
-    use npu::prelude::*;
-    npu::decls! {
-        in_x: input, bytes = 64;
-        out_y: output, bytes = 64;
-        w: weights, bytes = 4923392;
-        act: workspace, bytes = 3686400;
-    }
-    const A_X: u64 = 0;
-    const A_Y: u64 = 1228800;
-    const A_P: u64 = 2048000;
-    const W_W: u64 = 0;
-    const W_B: u64 = 4915200;
-    #[npu::program(chiplets = 1, cores = 2)]
-    pub fn step() {
-        crate::vae_kernels::un_lr_16_1920_1280_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_16_1920_1280_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_16_1920_1280_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_16_1920_1280_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
-        sync_cores();
-    }
-}
-
-/// un_lr_32_1280_1280_first：linear {'rows': 1152, 'k': 1280, 'n': 1280, 'w': 'hf', 'cores': 2, 'ks': [0, 1280], 'stage_name': 'first'}
-#[cfg(feature = "un_lr_32_1280_1280_first")]
-mod prog {
-    use npu::prelude::*;
-    npu::decls! {
-        in_x: input, bytes = 64;
-        out_y: output, bytes = 64;
-        w: weights, bytes = 3276800;
-        act: workspace, bytes = 11796480;
-    }
-    const A_X: u64 = 0;
-    const A_Y: u64 = 2949120;
-    const A_P: u64 = 5898240;
-    const W_W: u64 = 0;
-    #[npu::program(chiplets = 1, cores = 2)]
-    pub fn step() {
-        crate::vae_kernels::un_lr_32_1280_1280_first(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_32_1280_1280_first(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_32_1280_1280_first(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_32_1280_1280_first(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
-        sync_cores();
-    }
-}
-
-/// un_lr_32_1280_1280_mid：linear {'rows': 1152, 'k': 1280, 'n': 1280, 'w': 'hf', 'cores': 2, 'ks': [0, 1280], 'stage_name': 'mid'}
-#[cfg(feature = "un_lr_32_1280_1280_mid")]
-mod prog {
-    use npu::prelude::*;
-    npu::decls! {
-        in_x: input, bytes = 64;
-        out_y: output, bytes = 64;
-        w: weights, bytes = 3276800;
-        act: workspace, bytes = 11796480;
-    }
-    const A_X: u64 = 0;
-    const A_Y: u64 = 2949120;
-    const A_P: u64 = 5898240;
-    const W_W: u64 = 0;
-    #[npu::program(chiplets = 1, cores = 2)]
-    pub fn step() {
-        crate::vae_kernels::un_lr_32_1280_1280_mid(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_32_1280_1280_mid(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_32_1280_1280_mid(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_32_1280_1280_mid(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
-        sync_cores();
-    }
-}
-
-/// un_lr_32_1280_1280_b_last：linear {'rows': 1152, 'k': 1280, 'n': 1280, 'w': 'hf', 'cores': 2, 'bias': 'f32', 'ks': [0, 1280], 'stage_name': 'last'}
-#[cfg(feature = "un_lr_32_1280_1280_b_last")]
-mod prog {
-    use npu::prelude::*;
-    npu::decls! {
-        in_x: input, bytes = 64;
-        out_y: output, bytes = 64;
-        w: weights, bytes = 3284992;
-        act: workspace, bytes = 11796480;
-    }
-    const A_X: u64 = 0;
-    const A_Y: u64 = 2949120;
-    const A_P: u64 = 5898240;
-    const W_W: u64 = 0;
-    const W_B: u64 = 3276800;
-    #[npu::program(chiplets = 1, cores = 2)]
-    pub fn step() {
-        crate::vae_kernels::un_lr_32_1280_1280_b_last(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_P).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_32_1280_1280_b_last(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_P).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_32_1280_1280_b_last(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_P).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_32_1280_1280_b_last(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_P).cast(), act().at(A_Y).cast());
-        sync_cores();
-    }
-}
-
-/// un_lr_32_1920_640_first：linear {'rows': 1152, 'k': 1920, 'n': 640, 'w': 'hf', 'cores': 2, 'ks': [0, 1920], 'stage_name': 'first'}
-#[cfg(feature = "un_lr_32_1920_640_first")]
-mod prog {
-    use npu::prelude::*;
-    npu::decls! {
-        in_x: input, bytes = 64;
-        out_y: output, bytes = 64;
-        w: weights, bytes = 2457600;
-        act: workspace, bytes = 8847360;
-    }
-    const A_X: u64 = 0;
-    const A_Y: u64 = 4423680;
-    const A_P: u64 = 5898240;
-    const W_W: u64 = 0;
-    #[npu::program(chiplets = 1, cores = 2)]
-    pub fn step() {
-        crate::vae_kernels::un_lr_32_1920_640_first(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_32_1920_640_first(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_32_1920_640_first(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_32_1920_640_first(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
-        sync_cores();
-    }
-}
-
-/// un_lr_32_1920_640_mid：linear {'rows': 1152, 'k': 1920, 'n': 640, 'w': 'hf', 'cores': 2, 'ks': [0, 1920], 'stage_name': 'mid'}
-#[cfg(feature = "un_lr_32_1920_640_mid")]
-mod prog {
-    use npu::prelude::*;
-    npu::decls! {
-        in_x: input, bytes = 64;
-        out_y: output, bytes = 64;
-        w: weights, bytes = 2457600;
-        act: workspace, bytes = 8847360;
-    }
-    const A_X: u64 = 0;
-    const A_Y: u64 = 4423680;
-    const A_P: u64 = 5898240;
-    const W_W: u64 = 0;
-    #[npu::program(chiplets = 1, cores = 2)]
-    pub fn step() {
-        crate::vae_kernels::un_lr_32_1920_640_mid(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_32_1920_640_mid(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_32_1920_640_mid(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_32_1920_640_mid(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
-        sync_cores();
-    }
-}
-
-/// un_lr_32_1920_640_b_last：linear {'rows': 1152, 'k': 1920, 'n': 640, 'w': 'hf', 'cores': 2, 'bias': 'f32', 'ks': [0, 1920], 'stage_name': 'last'}
-#[cfg(feature = "un_lr_32_1920_640_b_last")]
-mod prog {
-    use npu::prelude::*;
-    npu::decls! {
-        in_x: input, bytes = 64;
-        out_y: output, bytes = 64;
-        w: weights, bytes = 2461696;
-        act: workspace, bytes = 8847360;
-    }
-    const A_X: u64 = 0;
-    const A_Y: u64 = 4423680;
-    const A_P: u64 = 5898240;
-    const W_W: u64 = 0;
-    const W_B: u64 = 2457600;
-    #[npu::program(chiplets = 1, cores = 2)]
-    pub fn step() {
-        crate::vae_kernels::un_lr_32_1920_640_b_last(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_P).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_32_1920_640_b_last(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_P).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_32_1920_640_b_last(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_P).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_32_1920_640_b_last(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_P).cast(), act().at(A_Y).cast());
-        sync_cores();
-    }
-}
-
-/// un_lr_32_1920_640_b：linear {'rows': 1152, 'k': 1920, 'n': 640, 'w': 'hf', 'cores': 2, 'bias': 'f32'}
-#[cfg(feature = "un_lr_32_1920_640_b")]
-mod prog {
-    use npu::prelude::*;
-    npu::decls! {
-        in_x: input, bytes = 64;
-        out_y: output, bytes = 64;
-        w: weights, bytes = 2461696;
-        act: workspace, bytes = 8847360;
-    }
-    const A_X: u64 = 0;
-    const A_Y: u64 = 4423680;
-    const A_P: u64 = 5898240;
-    const W_W: u64 = 0;
-    const W_B: u64 = 2457600;
-    #[npu::program(chiplets = 1, cores = 2)]
-    pub fn step() {
-        crate::vae_kernels::un_lr_32_1920_640_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_32_1920_640_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_32_1920_640_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_32_1920_640_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
-        sync_cores();
-    }
-}
-
-/// un_lr_32_1280_640_first：linear {'rows': 1152, 'k': 1280, 'n': 640, 'w': 'hf', 'cores': 2, 'ks': [0, 1280], 'stage_name': 'first'}
-#[cfg(feature = "un_lr_32_1280_640_first")]
-mod prog {
-    use npu::prelude::*;
-    npu::decls! {
-        in_x: input, bytes = 64;
-        out_y: output, bytes = 64;
-        w: weights, bytes = 1638400;
-        act: workspace, bytes = 7372800;
-    }
-    const A_X: u64 = 0;
-    const A_Y: u64 = 2949120;
-    const A_P: u64 = 4423680;
-    const W_W: u64 = 0;
-    #[npu::program(chiplets = 1, cores = 2)]
-    pub fn step() {
-        crate::vae_kernels::un_lr_32_1280_640_first(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_32_1280_640_first(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_32_1280_640_first(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_32_1280_640_first(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
-        sync_cores();
-    }
-}
-
-/// un_lr_32_1280_640_mid：linear {'rows': 1152, 'k': 1280, 'n': 640, 'w': 'hf', 'cores': 2, 'ks': [0, 1280], 'stage_name': 'mid'}
-#[cfg(feature = "un_lr_32_1280_640_mid")]
-mod prog {
-    use npu::prelude::*;
-    npu::decls! {
-        in_x: input, bytes = 64;
-        out_y: output, bytes = 64;
-        w: weights, bytes = 1638400;
-        act: workspace, bytes = 7372800;
-    }
-    const A_X: u64 = 0;
-    const A_Y: u64 = 2949120;
-    const A_P: u64 = 4423680;
-    const W_W: u64 = 0;
-    #[npu::program(chiplets = 1, cores = 2)]
-    pub fn step() {
-        crate::vae_kernels::un_lr_32_1280_640_mid(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_32_1280_640_mid(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_32_1280_640_mid(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_32_1280_640_mid(act().at(A_X).cast(), w().at(W_W).cast(), act().at(A_P).cast());
-        sync_cores();
-    }
-}
-
-/// un_lr_32_1280_640_b_last：linear {'rows': 1152, 'k': 1280, 'n': 640, 'w': 'hf', 'cores': 2, 'bias': 'f32', 'ks': [0, 1280], 'stage_name': 'last'}
-#[cfg(feature = "un_lr_32_1280_640_b_last")]
-mod prog {
-    use npu::prelude::*;
-    npu::decls! {
-        in_x: input, bytes = 64;
-        out_y: output, bytes = 64;
-        w: weights, bytes = 1642496;
-        act: workspace, bytes = 7372800;
-    }
-    const A_X: u64 = 0;
-    const A_Y: u64 = 2949120;
-    const A_P: u64 = 4423680;
-    const W_W: u64 = 0;
-    const W_B: u64 = 1638400;
-    #[npu::program(chiplets = 1, cores = 2)]
-    pub fn step() {
-        crate::vae_kernels::un_lr_32_1280_640_b_last(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_P).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_32_1280_640_b_last(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_P).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_32_1280_640_b_last(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_P).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_32_1280_640_b_last(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_P).cast(), act().at(A_Y).cast());
-        sync_cores();
-    }
-}
-
-/// un_lr_32_1280_640_b：linear {'rows': 1152, 'k': 1280, 'n': 640, 'w': 'hf', 'cores': 2, 'bias': 'f32'}
-#[cfg(feature = "un_lr_32_1280_640_b")]
-mod prog {
-    use npu::prelude::*;
-    npu::decls! {
-        in_x: input, bytes = 64;
-        out_y: output, bytes = 64;
-        w: weights, bytes = 1642496;
-        act: workspace, bytes = 7372800;
-    }
-    const A_X: u64 = 0;
-    const A_Y: u64 = 2949120;
-    const A_P: u64 = 4423680;
-    const W_W: u64 = 0;
-    const W_B: u64 = 1638400;
-    #[npu::program(chiplets = 1, cores = 2)]
-    pub fn step() {
-        crate::vae_kernels::un_lr_32_1280_640_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_32_1280_640_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_32_1280_640_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
-        sync_cores();
-        crate::vae_kernels::un_lr_32_1280_640_b(act().at(A_X).cast(), w().at(W_W).cast(), w().at(W_B).cast(), act().at(A_Y).cast());
         sync_cores();
     }
 }

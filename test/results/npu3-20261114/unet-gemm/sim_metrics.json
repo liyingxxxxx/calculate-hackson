@@ -1,0 +1,74 @@
+{
+ "t": 500.0,
+ "sim_s": 16.2,
+ "stages": {
+  "s1": "141 个作业（fill16k 4 次、timestep_embed 1 次、linear 11 次、unary 2 次、bias_fold 1 次、conv2d 50 次、gn_stats 12 次、gn_apply 12 次、ln_nhwc 12 次、pack_int 12 次、flash_attn 8 次、unpack_int 4 次、geglu 4 次、gemm_rows 4 次、res_add 4 次），138 条屏障；接线检查全过；numpy 用时 3.8 s",
+  "s2": "198 个作业（fill16k 4 次、conv2d 30 次、gn_stats 18 次、gn_apply 18 次、gemm_rows 60 次、ln_nhwc 14 次、pack_int 18 次、flash_attn 10 次、unpack_int 6 次、linear 8 次、geglu 4 次、res_add 8 次），195 条屏障；接线检查全过；numpy 用时 1.1 s",
+  "s3": "916 个作业（fill16k 4 次、ln_nhwc 34 次、gemm_rows 566 次、linear 24 次、flash_attn 22 次、res_add 68 次、geglu 12 次、gn_stats 54 次、gn_apply 54 次、pack_int 24 次、unpack_int 8 次、conv2d 2 次、copy_win 24 次、upsample2 20 次），913 条屏障；接线检查全过；numpy 用时 2.2 s",
+  "s4": "254 个作业（fill16k 4 次、copy_win 12 次、gn_stats 18 次、gn_apply 18 次、gemm_rows 88 次、conv2d 30 次、ln_nhwc 18 次、pack_int 18 次、flash_attn 12 次、unpack_int 6 次、linear 12 次、geglu 6 次、res_add 6 次、upsample2 6 次），251 条屏障；接线检查全过；numpy 用时 1.7 s",
+  "s5": "74 个作业（fill16k 4 次、copy_win 4 次、gn_stats 6 次、gn_apply 6 次、conv2d 26 次、ln_nhwc 6 次、pack_int 6 次、flash_attn 4 次、unpack_int 2 次、linear 4 次、geglu 2 次、gemm_rows 2 次、res_add 2 次），71 条屏障；接线检查全过；numpy 用时 2.1 s",
+  "s6": "150 个作业（fill16k 4 次、copy_win 8 次、gn_stats 14 次、gn_apply 14 次、conv2d 54 次、ln_nhwc 12 次、pack_int 12 次、flash_attn 8 次、unpack_int 4 次、linear 8 次、geglu 4 次、gemm_rows 4 次、res_add 4 次），147 条屏障；接线检查全过；numpy 用时 4.1 s"
+ },
+ "cond": {
+  "vs_bf16": {
+   "max_abs": 0.015625,
+   "rms": 0.0020183585535261833,
+   "cos": 0.9999976291255604,
+   "snr_db": 53.238216530889446,
+   "finite": true
+  },
+  "vs_fp32": {
+   "max_abs": 0.016937732696533203,
+   "rms": 0.0024980657555840015,
+   "cos": 0.9999964420459704,
+   "snr_db": 51.38899993818257,
+   "finite": true
+  },
+  "ref_bf16_vs_fp32": {
+   "max_abs": 0.016937732696533203,
+   "rms": 0.0025353211739067316,
+   "cos": 0.9999963137842792,
+   "snr_db": 51.260417587545646,
+   "finite": true
+  }
+ },
+ "uncond": {
+  "vs_bf16": {
+   "max_abs": 0.015625,
+   "rms": 0.002128571010813109,
+   "cos": 0.9999974093434373,
+   "snr_db": 52.8313881545954,
+   "finite": true
+  },
+  "vs_fp32": {
+   "max_abs": 0.018128633499145508,
+   "rms": 0.002687537406948823,
+   "cos": 0.9999960027265391,
+   "snr_db": 50.812306645727375,
+   "finite": true
+  },
+  "ref_bf16_vs_fp32": {
+   "max_abs": 0.018128633499145508,
+   "rms": 0.0029191970225052,
+   "cos": 0.9999953622333361,
+   "snr_db": 50.094128853296425,
+   "finite": true
+  }
+ },
+ "cfg": {
+  "vs_bf16": {
+   "max_abs": 0.1171875,
+   "rms": 0.02033531503229611,
+   "cos": 0.9997473723975862,
+   "snr_db": 32.957699434715664,
+   "finite": true
+  },
+  "vs_fp32": {
+   "max_abs": 0.12957143783569336,
+   "rms": 0.018394358804647494,
+   "cos": 0.9997924937390033,
+   "snr_db": 33.81375907005936,
+   "finite": true
+  }
+ }
+}

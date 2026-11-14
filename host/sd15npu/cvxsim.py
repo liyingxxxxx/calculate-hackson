@@ -649,6 +649,14 @@ class Sim:
         job.writes.append((yr[0], yr[1] + (B * wo + B) * po * 2, yr[2]))
         dst[:] = src
 
+    def _k_gemm_rows(self, job, c, args):
+        """本仓 gemm_rows!：数值同 calblas linear!(w = hf)（只是一块权重给 MG 块 16 行用），参数与 K 分段的阶段同 linear!。"""
+        st = c.get("stage")
+        c2 = {"w": "hf", "rows": c["rows"], "k": c["k"], "n": c["n"], "bias": c.get("bias")}
+        if st:
+            c2.update(ks=[0, c["k"]], stage_name=st)
+        self._k_linear(job, c2, args)
+
     def _k_res_add(self, job, c, args):
         """本仓 res_add!：y 的内部 = 舍(a + r)（三张带边框的图，只读写内部的 c 个通道）。"""
         h, w, ch = c["h"], c["w"], c["c"]

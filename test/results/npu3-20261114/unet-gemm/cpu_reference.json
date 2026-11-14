@@ -1,0 +1,1 @@
+{"measured": "本机 CPU 实测（不是 NPU 的数）", "what": "diffusers UNet2DConditionModel fp32，CFG 两路一批（batch 2），t = 500，torch 16 线程，先跑 2 遍热身再量 5 遍", "step_s": [1.455, 1.405, 1.333, 1.402, 1.517], "median_s": 1.405, "host": "AMD Ryzen 9 9955HX（16 核 32 线程）"}

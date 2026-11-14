@@ -91,11 +91,10 @@ def plan(kind: str, c: dict) -> dict:
     if kind == "transpose2d":
         n = c["rows"] * c["cols"] * 2
         return {"act": {"x": n, "y": n}, "w": {}, "args": ["act:x", "act:y"], "flop": None, "bytes": 2 * n}
-    if kind == "linear":
+    if kind in ("linear", "gemm_rows"):
         r, k, n = c["rows"], c["k"], c["n"]
         bias = c.get("bias") == "f32"
-        st = cvxsim.parse_specs  # noqa: F841（分段的阶段名在 c["stage_name"]）
-        stage = c.get("stage_name")
+        stage = c.get("stage_name") or c.get("stage")
         act = {"x": r * k * 2, "y": r * n * 2, "p": r * n * 4}
         if stage in ("first", "mid"):
             args = ["act:x", "w:w", "act:p"]

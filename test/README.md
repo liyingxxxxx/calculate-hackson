@@ -103,8 +103,8 @@ TAESD 本身是有损的：同一张图编码再解码，fp32 也只有 27.3 dB�
 
 - **正确性**：2 遍逐字节一致；对 bf16 口径的 torch 参照 有提示词 49.8 dB、空提示词 50.1 dB（余弦 0.999995），对 diffusers fp32 49.4 / 48.0 dB。
 - **时间**：一步（CFG 两路）第一版 12.35 s ⇒ 注意力换成本仓的 `flash_attn!` 8.19 s（`results/npu3-20261114/unet-attn/`）
-  ⇒ 宽通道卷积改走 `linear!` 5.16 s（10 段，`results/npu3-20261114/unet-wide/`）⇒ 自注意力压成稠密 token 4.18 s（`results/npu3-20261114/unet-dense/`）⇒ 自注意力一次 128 行 q **3.12 s**（5 段，
-  `results/npu3-20261114/unet-qt128/`），精度不变；同机 CPU fp32 约 2.4 s，还慢约 30%（见 [`PERF.md`](PERF.md) 1c）。
+  ⇒ 宽通道卷积改走 `linear!` 5.16 s（10 段，`results/npu3-20261114/unet-wide/`）⇒ 自注意力压成稠密 token 4.18 s（`results/npu3-20261114/unet-dense/`）⇒ 自注意力一次 128 行 q 3.12 s（`results/npu3-20261114/unet-qt128/`）
+  ⇒ 矩阵乘换成 `gemm_rows!` **2.67 s**（6 段，`results/npu3-20261114/unet-gemm/`），精度不变；**同机 CPU fp32 实测 1.41 s，NPU 还慢约 1.9 倍**（见 [`PERF.md`](PERF.md) 1c）。
 - 还没接进 ComfyUI 的采样循环（KSampler 里的 UNet 现在还在 CPU 上）。
 
 在真卡上跑：`SD15NPU_ALLOW_BOARD=1 SD15NPU_BOARD_LOCK=… $CALCULET_HOME/venv/bin/python -I tools/unet.py board --t 500`（先 `tools/unet.py calbin` 出 20 段 calbin，约 2 分钟）；
@@ -149,6 +149,7 @@ test/
     ├── unet-wide/            UNet 宽通道卷积走 linear! 之后（10 段，5.16 s）：同上
     ├── unet-dense/           UNet 自注意力压成稠密 token 之后（10 段，4.18 s）：同上
     ├── unet-qt128/           UNet 自注意力一次 128 行 q 之后（5 段，3.12 s）：同上
+    ├── unet-gemm/            UNet 矩阵乘换成 gemm_rows! 之后（6 段，2.67 s）：同上，另有 cpu_reference.json（同机 CPU 实测 1.41 s）
     └── comfyui/              ComfyUI 工作流：run.json、node_log.txt、taesd_npu.png（真卡）、vae_cpu_ref.png（CPU 对照）
 ```
 
