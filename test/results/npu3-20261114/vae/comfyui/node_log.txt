@@ -1,0 +1,2 @@
+[INFO] [sd15-npu] VAE 解码 第 1/1 张：backend=npu，5.89 s，dort 墙钟合计 5.178 s（6 段 {'s1': 0.052, 's2': 0.102, 's3': 0.24, 's4': 0.984, 's5': 1.446, 's6': 2.354}）
+[INFO] Prompt executed in 55.29 seconds

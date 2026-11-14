@@ -140,8 +140,10 @@ def cmd_check(a):
     print("✓ 正式 VAE 6 段程序的模拟：接线检查全过，对两份参照都在容差内")
 
 
-# 上板的首轮门槛：板上比模拟多了近似指令（exp、rsqrt、tanh 没用到）与 TU 的累加次序；按 TAESD 的经验先放宽，实测后收紧（写进 PROGRESS）。
-BOARD_TOL = {"cos_bf16": 0.9999, "psnr_bf16_db": 35.0, "psnr_fp32_db": 30.0}
+# 上板门槛。首轮按 35 / 30 dB 收；2026-11-14 npu3 真机实测（latent = image）：3 遍逐字节一致，对 bf16 参照余弦 0.999998、PSNR 58.3 dB、
+# 对 fp32 56.9 dB，比模拟（59.8 / 57.1）低不到 1.5 dB ⇒ 收紧。门槛对 --latent 的每一组都用，而板上只测过 image：按模拟里最差的 randn:0
+# （54.2 / 53.0 dB、余弦 0.999993）再减板上多掉的 1.5 dB、留约 2 dB ⇒ 50 / 48 dB；余弦 1 − cos 留一倍多 ⇒ 0.99998。
+BOARD_TOL = {"cos_bf16": 0.99998, "psnr_bf16_db": 50.0, "psnr_fp32_db": 48.0}
 
 
 def cmd_board(a):

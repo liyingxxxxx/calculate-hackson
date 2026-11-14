@@ -1,0 +1,37 @@
+{
+ "measured": "真机实测",
+ "started": "20261114-172211",
+ "dort_index": "0",
+ "steps": [
+  {
+   "step": "1. 上板前静态核对（不开设备）",
+   "ok": true,
+   "seconds": 1.5,
+   "detail": "退出 0：-I tools/preflight.py"
+  },
+  {
+   "step": "2. 卡的状态（只读）",
+   "ok": true,
+   "seconds": 0.0,
+   "detail": "OS up / RT up、dort 没被拒、没有别的进程"
+  },
+  {
+   "step": "4b. 正式 VAE 6 段上板（3 遍）",
+   "ok": true,
+   "seconds": 23.3,
+   "detail": "退出 0：-I tools/vae.py board --runs 3 --no-build"
+  },
+  {
+   "step": "5. ComfyUI 原生工作流（解码走 npu）",
+   "ok": true,
+   "seconds": 54.2,
+   "detail": "退出 0：-I comfy/run_workflow.py --backend npu --steps 20"
+  },
+  {
+   "step": "5b. ComfyUI 原生工作流（正式 VAE 解码走 npu）",
+   "ok": true,
+   "seconds": 60.2,
+   "detail": "退出 0：-I comfy/run_workflow.py comfy/workflows/sd15_vae_npu.api.json --backend npu --steps 20"
+  }
+ ]
+}

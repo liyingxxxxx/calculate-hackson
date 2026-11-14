@@ -321,5 +321,113 @@
  "compile_s": {
   "taesd_device_pass_s": "< 0.1（增量）",
   "taesd_docc_from_calvx_s": 4.5
+ },
+ "vae_512": {
+  "gflops": 2514.5,
+  "stages": [
+   {
+    "stage": "s1",
+    "gflops": 38.8,
+    "in_bytes": 295936,
+    "out_bytes": 4734976,
+    "param_bytes": 11849728,
+    "deploy_only_s": 0.01,
+    "run_walls_s": [
+     0.052,
+     0.051,
+     0.054
+    ],
+    "median_s": 0.052
+   },
+   {
+    "stage": "s2",
+    "gflops": 42.9,
+    "in_bytes": 4734976,
+    "out_bytes": 4734976,
+    "param_bytes": 3162112,
+    "deploy_only_s": 0.005,
+    "run_walls_s": [
+     0.104,
+     0.102,
+     0.104
+    ],
+    "median_s": 0.104
+   },
+   {
+    "stage": "s3",
+    "gflops": 231.9,
+    "in_bytes": 4734976,
+    "out_bytes": 17842176,
+    "param_bytes": 50892800,
+    "deploy_only_s": 0.019,
+    "run_walls_s": [
+     0.24,
+     0.24,
+     0.24
+    ],
+    "median_s": 0.24
+   },
+   {
+    "stage": "s4",
+    "gflops": 773.1,
+    "in_bytes": 17842176,
+    "out_bytes": 69222400,
+    "param_bytes": 58224640,
+    "deploy_only_s": 0.02,
+    "run_walls_s": [
+     0.984,
+     0.978,
+     0.981
+    ],
+    "median_s": 0.981
+   },
+   {
+    "stage": "s5",
+    "gflops": 867.6,
+    "in_bytes": 69222400,
+    "out_bytes": 136323072,
+    "param_bytes": 68452352,
+    "deploy_only_s": 0.022,
+    "run_walls_s": [
+     1.446,
+     1.443,
+     1.444
+    ],
+    "median_s": 1.444
+   },
+   {
+    "stage": "s6",
+    "gflops": 560.2,
+    "in_bytes": 136323072,
+    "out_bytes": 17040384,
+    "param_bytes": 136454144,
+    "deploy_only_s": 0.042,
+    "run_walls_s": [
+     2.355,
+     2.355,
+     2.354
+    ],
+    "median_s": 2.355
+   }
+  ],
+  "latent": "image",
+  "runs": 3,
+  "deterministic": true,
+  "total_median_s": 5.177,
+  "deploy_only_total_s": 0.118,
+  "inference_est_s": 5.059,
+  "effective_tflops_est": 0.5,
+  "cpu_fp32_s": 1.712,
+  "psnr_bf16_db": 58.3,
+  "psnr_fp32_db": 56.9,
+  "cos_bf16": 0.9999979705841646,
+  "comfyui": {
+   "workflow": "comfy/workflows/sd15_vae_npu.api.json",
+   "run_s": 56.1,
+   "prompt_executed_s": 55.29,
+   "vae_node_s": 5.89,
+   "vae_dort_wall_sum_s": 5.178,
+   "psnr_vs_comfyui_vaedecode_db": 55.6
+  }
  }
 }

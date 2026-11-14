@@ -38,6 +38,8 @@
 
 | F22 | **docc 0.4.1 每颗核的代码不能超过约 1 MB**：VAE 的 45 个 kernel 编进一个程序，docc 出 ELF 时报「riscvc：链接：main0.o：.text 处到 `.LBB25_1` 的距离 -1120872 超出 21 位」（RISC-V 的跳转 ±1 MB）；docc 没有放宽它的选项。单个 kernel 的代码量（探针，每个连着一个最小的入口）：64² × 512 的 `group_norm!` 292 KB（16 组的循环被整个展开）、其余 `group_norm!` 112 KB、`attn_wide!` 215 KB、512 通道快路的卷积 106 KB、原路卷积 26–51 KB、排布转换 35–40 KB；VAE 合计约 2.7 MB | `tools/calbin.sh vae`（2026-11-14）、`$CALCULET_HOME/work/vprobe/logs/` | 大模型要切成几段程序，每段 < 1 MB（D15）；换掉排布转换 + calblas GN（D13 → NHWC 原生 GN）能省很多代码。**128² × 512 的 `group_norm!` 单个 kernel 就超**（缺省切 16 段，docc 把外层 16 组也展开，约 1.1 MB）⇒ 本仓抄一份加 `parts = N`，切 64 段是 232 KB（64² 的反过来：缺省 4 段 292 KB、64 段 788 KB，保持缺省）。切 6 段之后每核 ELF：s1 753 KB、s2 910 KB、s3 766 KB、s4 559 KB、s5 723 KB、s6 560 KB，doctor 拒收都是 0 |
 
+| F23 | **真机实测**：正式 VAE 的 6 段程序在 npu3 上第一次就算对（3 遍逐字节一致，对 bf16 参照 58.3 dB），但 6 段合计 5.18 s，比同机 CPU fp32 慢约 3 倍。每段的折合算力（估算）：64² 的快路卷积约 1 TFLOPS，128² 0.8、256² 0.6、512² 只有 0.24 TFLOPS；部署 314 MB 参数只要 0.12 s | `test/PERF.md`、`test/results/npu3-20261114/vae/` | 性能的大头在大图卷积走不了快路（输入 3 行 + 16 像素放不进 384 KB 的 VB，512² × 128 通道要 400 KB）与 GroupNorm 的排布转换（D13）；先给宽图的卷积按行切半走快路，再换 NHWC 原生 GN |
+
 calBLAS 文档里写的、我们还没亲自核的（上板时核）：KS1 的 exp / rsqrt 是查表近似（≤ 1 ULP），除法精确；DDR 实测约 84 GB/s；
 35B（21 GB）光部署权重 195 秒（粗算 0.1 GB/s 量级）。
 

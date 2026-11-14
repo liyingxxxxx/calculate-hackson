@@ -6,7 +6,7 @@
 | --- | --- | --- |
 | A0 | 环境、编译链、CPU 参照、算子清单 | ✅ 2026-11-14 |
 | A1 | 新写的算子（quick_gelu、erf-GELU / GEGLU、时间步嵌入、NHWC GroupNorm+SiLU……），各配独立参照与边界测试 | 进行中：时间步嵌入**真机实测**过了（2026-11-14 npu3；cos_approx 分辨率 1/128，DESIGN F19）；quick_gelu、NHWC GroupNorm 未写 |
-| B1 | VAE 解码上 NPU（先 TAESD，再正式 VAE），接进 ComfyUI | 进行中：TAESD **真机跑通**（2026-11-14 npu3：对 bf16 参照 60.3 dB、推理约 0.11 s），ComfyUI 原生工作流解码走 npu；正式 VAE 未开始 |
+| B1 | VAE 解码上 NPU（先 TAESD，再正式 VAE），接进 ComfyUI | ✅ 2026-11-14：TAESD 与正式 VAE（6 段）都**真机跑通**、ComfyUI 解码走 npu；正式 VAE 比 CPU 慢约 3 倍，待优化（V7） |
 | B2 | CLIP 文本编码器上 NPU | |
 | B3 | UNet 一次前向对 diffusers | |
 | B4 | ComfyUI 原生工作流 512² 出图（去噪循环在设备上，见 DESIGN D2） | |
@@ -117,7 +117,7 @@
       对 fp32 55.9 dB；只部署 0.003 s，推理约 0.11 s（估算）；ComfyUI 原生工作流解码走 npu、没有落回 CPU。
 ### B1b 正式 VAE 解码器（2026-11-14 定的计划；不上板的部分都在 CPU 上做，上板要负责人点头）
 
-**代码在 `wip/vae-decoder` 分支**（`ref/vae_ref.py`、`crates/kernels/src/attn.rs`）；`main` 只放真卡上验过的稳定版。
+2026-11-14 在 `wip/vae-decoder` 分支上做，真卡上验过之后合进 `main`。
 
 为什么先做它：画质比 TAESD 高一大截（ComfyUI 里直接看得到）；它的卷积、GroupNorm、ResNet、4096 token 的注意力，
 UNet（B3）几乎全要用 ⇒ 先在一个「只跑一次前向、好对 diffusers」的模型上把这些做对。结构：post_quant_conv（1×1）⇒ conv_in（4→512）@64²
@@ -131,14 +131,24 @@ UNet（B3）几乎全要用 ⇒ 先在一个「只跑一次前向、好对 diffu
       （余弦都 ≥ 0.99999）；测试图来回一趟 fp32 31.6 dB（TAESD 是 27.3 dB）。CPU 上一次 fp32 约 1.9 s、bf16 参照约 2.4 s。
 - [x] 2026-11-14 V2a `sd_kernels::attn_wide!`（`crates/kernels/src/attn.rs`，D14；VENDORED.md 记了出处）：头维按 128 一段，分数整行存 VB、只算一遍。
       探针（rows 4096、单头、512 维）设备遍 + docc 1.5 s，doctor 拒收 0 条。**还没有数值验证**（下一条的测试与模拟器）。
-- [ ] V2b 单 kernel 测试（`crates/ktest` + `ref/ktest.py`）补 `attn_wide`，以及：
-      原路卷积（128² 512→512）、1×1 shortcut、GN 三步、`linear!` 多行、`attn_wide!`、512 通道上采样。模拟器（`cvxsim.py`）认这些新模板。
-- [ ] V3 整步程序 `crates/vae`（layout.rs ⇒ kernels.rs ⇒ step.rs）+ 打包 `host/sd15npu/vae.py`（卷积权重、GN 的展开 w / b、注意力的 HF 权重、掩码）。
-      先算 @act / @w 的大小与 docc 的耗时（粗估 @act 约 1 GB、@w 约 320 MB，其中 GN 展开约 220 MB）。
-- [ ] V4 模拟对两份参照（`tools/vae.py check`）、calbin + doctor、`preflight.py` 认它、`verify_all.sh` 加一项。
-- [ ] V5 ComfyUI 节点 `SD15 NPU · VAE Decode`（npu / npu-sim / cpu，同 D11）+ 工作流。
-- [ ] V6 上板（负责人点头）：先 V2 的单 kernel，再整个解码器，再 ComfyUI；部署 / 推理分开计时。
-- [ ] V7（性能，可放到 B5）：NHWC 原生 GroupNorm+SiLU 换掉 D13 的三步；大分辨率卷积的快路。
+- [x] 2026-11-14 V3 整步程序 `crates/vae` + 打包 `host/sd15npu/vae.py`。整个解码器编成一个程序时 docc 报跳转超距：45 个 kernel 约 2.7 MB，
+      超过每核约 1 MB（DESIGN F22）⇒ **切成 6 段**（D15，feature `s1`…`s6`，主机把上一段的 out_y 原样当下一段的 in_x）。
+      128² × 512 的 calblas `group_norm!` 单个就约 1.1 MB ⇒ 本仓抄一份加 `parts = N`，切 64 段之后 232 KB（VENDORED.md）。
+      6 段每核 ELF 559–910 KB，带真权重的 calbin docc 合计约 50 s，doctor 都是拒收 0 条；6 段参数块合计 314 MB。
+- [x] 2026-11-14 V4 模拟器认 group_norm / 排布转换 / 转置 / linear / attn_wide；`tools/vae.py sim` 6 段串起来，对两份独立参照（对 bf16 参照 / 对 fp32）：
+      image 59.8 / 57.1 dB、randn:0 54.2 / 53.0、zeros 55.2 / 57.9、big 61.3 / 57.2 dB；6 段 150 个作业、numpy 约 25 s。
+      `preflight.py` 认 6 段（14 个 calbin）；`verify_all.sh` 加了 VAE 的 calbin、模拟、ComfyUI 三项（VERIFY_FULL 16 项全过）。
+- [x] 2026-11-14 V5 ComfyUI 节点 **SD15 NPU · VAE Decode**（`runner.VaeDecoder`，npu / npu-sim / cpu；LATENT 原样喂，不乘 0.18215）+ 工作流
+      `comfy/workflows/sd15_vae_npu.api.json`。npu-sim 出的图和 ComfyUI 自带 VAEDecode 相比 55.7 dB。`board_check.py --vae` 用测试替身空跑通过。
+- [x] 2026-11-14 V6 **上板（真机实测，npu3，负责人点头）**：`board_check.py --no-build --tests "" --no-taesd --vae --comfy` 全过。
+      正式 VAE：3 遍逐字节一致，对 bf16 参照余弦 0.999998、**58.3 dB**，对 fp32 56.9 dB；6 段整次之和中位数 **5.18 s**（s1 0.05、s2 0.10、s3 0.24、s4 0.98、s5 1.44、s6 2.36 s），
+      只部署合计 0.12 s。ComfyUI 正式 VAE 工作流成功，节点 5.89 s，出的图和自带 VAEDecode 相比 **55.6 dB、最大差 5/255**。
+      结果在 `test/results/npu3-20261114/vae/`，性能在 `test/PERF.md`。`tools/vae.py` 的门槛按实测收紧到 50 / 48 dB、余弦 0.99998。
+      **比同机 CPU fp32（1.71 s）慢约 3 倍**：算对了，但还没优化（DESIGN F23）。
+- [ ] V2b 单 kernel 测试：`crates/ktest` 已加 `attn_wide`、`gn_128` 两个程序（编得过），`ref/ktest.py` 的期望值与用例还没写；
+      之后再补原路卷积（128² 512→512）、1×1 shortcut、`linear!` 多行、512 通道上采样。整段算错时用来二分（这次第一遍就对了，没用上）。
+- [ ] V7 性能（DESIGN F23）：① 宽图卷积按行切半走快路（512² × 128 通道差一点就放得进 VB），s5、s6 是大头；
+      ② NHWC 原生 GroupNorm+SiLU 换掉 D13 的三步（省排布转换与 219 MB 的展开参数，代码也小）；③ 代码小了就并段，少几次主机转手。
 
 之后：B2 CLIP（LLM 式模板现成：`layer_norm!`、`linear!`、`attention!(mask = full)`；新写 quick_gelu）⇒ B3 UNet 一次前向 ⇒ B4 去噪循环进设备（D2）⇒ B5 性能与多尺寸。
 

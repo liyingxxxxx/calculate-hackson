@@ -1,8 +1,8 @@
 # 交接文档：Calculet NPU 黑客松 · 在 NPU 上跑 SD1.5 并接 ComfyUI（项目 sd15-npu）
 
 > 把这份文档交给接手的人（或 AI 编码助手）当第一条消息。仓库：**https://github.com/liyingxxxxx/calculate-hackson**（公开）。
-> - `main` 分支：稳定版，在真卡上验过（2026-11-14，npu3）；
-> - `wip/vae-decoder` 分支：正式 VAE 解码器，做到一半，没验过数值、没上过卡（第 8 节）。
+> - `main` 分支：稳定版，在真卡上验过（2026-11-14，npu3）：TAESD 与正式 VAE 两个解码器都在 NPU 上；
+> - `wip/vae-decoder` 分支：正式 VAE 的开发分支，真卡验过之后已合进 `main`。
 >
 > `tools/make_handoff.py` 把本文和附录拼成 `<CALCULET_HOME>/交接提示词.md`（附录 A 是赛题原文，附录 B 是仓库每个文件的全文），并打一个 tar 包，给连不上 GitHub 的时候用。
 
@@ -16,8 +16,9 @@ source ~/calculet/env.sh && cd sd15-npu               # 以后每个 shell 先 s
 
 bash test/run_example.sh                              # 简单示例，先不上卡（npu-sim：CPU 上模拟，不是 NPU 的数）
 # 确认这块卡现在可以用、板锁文件是哪个之后：
-SD15NPU_ALLOW_BOARD=1 SD15NPU_BOARD_LOCK=<板锁文件> bash test/run_example.sh --comfy
-SD15NPU_ALLOW_BOARD=1 SD15NPU_BOARD_LOCK=<板锁文件> $CALCULET_HOME/venv/bin/python -I tools/board_check.py --comfy
+SD15NPU_ALLOW_BOARD=1 SD15NPU_BOARD_LOCK=<板锁文件> bash test/run_example.sh --comfy        # TAESD 解码
+SD15NPU_ALLOW_BOARD=1 SD15NPU_BOARD_LOCK=<板锁文件> bash test/run_example.sh --vae --comfy  # 正式 VAE 解码（6 段）
+SD15NPU_ALLOW_BOARD=1 SD15NPU_BOARD_LOCK=<板锁文件> $CALCULET_HOME/venv/bin/python -I tools/board_check.py --vae --comfy
 ```
 
 这几步 2026-11-14 在 npu3 上照做过：从 GitHub 克隆到全新目录，从零重建约 6 分钟、自检全过；真卡上出的图和仓里存的逐字节相同。
@@ -25,7 +26,7 @@ SD15NPU_ALLOW_BOARD=1 SD15NPU_BOARD_LOCK=<板锁文件> $CALCULET_HOME/venv/bin/
 TAESD 3 遍逐字节一致、对 bf16 参照约 60 dB、对 fp32 约 56 dB；7 个单 kernel 全过；ComfyUI 出图，节点日志写 `backend=npu`。
 对不上就停，把 `out/board/summary-*.json` 和那一步的输出发给负责人。
 
-然后读仓库里的 `AGENTS.md`（硬规矩、写程序的规矩）、`PROGRESS.md`（做到哪了）、`docs/DESIGN.md`（关键事实 F1–F21、设计决定 D1–D14），
+然后读仓库里的 `AGENTS.md`（硬规矩、写程序的规矩）、`PROGRESS.md`（做到哪了）、`docs/DESIGN.md`（关键事实 F1–F23、设计决定 D1–D15），
 再从第 8 节「下一步」接着干。不清楚的先问负责人，别猜。
 
 ## 1. 边界
@@ -37,6 +38,8 @@ TAESD 3 遍逐字节一致、对 bf16 参照约 60 dB、对 fp32 约 56 dB；7 �
   - TAESD 整个解码器：3 遍逐字节一致，对 bf16 参照 60.3 dB、对 fp32 55.9 dB，只部署 0.003 s、推理约 0.11 s；
     另外三组 latent（randn:0、zeros、big）也在真卡上过了，最差的 randn:0 也有 52.7 dB；
   - ComfyUI 原生工作流：解码走 npu，没有落回 CPU。
+  - **正式 VAE 解码器**（6 段程序）：3 遍逐字节一致，对 bf16 参照 58.3 dB；ComfyUI 节点 SD15 NPU · VAE Decode 出的图和自带 VAEDecode 相比 55.6 dB。
+    6 段合计 5.18 s，比同机 CPU fp32 慢约 3 倍（还没优化，`test/PERF.md`）。
   - 结果与图在 `test/results/npu3-20261114/`；性能全表在 `test/PERF.md`（TAESD 整次中位数 0.113 s，比同机 CPU fp32 快约 1.6 倍）。
 - 编译链：赛方工具链装在隔离目录，经赛方 cargo 源依赖 calblas；整步程序 ⇒ CalVX ⇒ docc 出 calbin，doctor 拒收 0 条。
 - B1 的 TAESD 解码器：整步程序在 `crates/taesd`，有带真权重的 calbin。numpy 模拟器照编出来的 `.cvx` 重放，查接线；对两份独立参照是 60.6 / 55.9 dB。
@@ -47,7 +50,8 @@ TAESD 3 遍逐字节一致、对 bf16 参照约 60 dB、对 fp32 约 56 dB；7 �
 ### 1.2 没做的（⛔ 不能说成做完了）
 
 - **真机实测只覆盖 TAESD 和它的 7 个单 kernel**：一块卡（npu3）、一天，TAESD 测了四组 latent。别的数都是 CPU 上的模拟与参照。`npu-sim` 不是 NPU，不算 NPU 贡献。
-- ComfyUI 工作流里的 CLIP、UNet（KSampler）和正式 VAE，现在是 ComfyUI 原生节点在 **CPU** 上跑；B2–B4 还没写。
+- ComfyUI 工作流里的 CLIP、UNet（KSampler）现在是 ComfyUI 原生节点在 **CPU** 上跑；B2–B4 还没写。
+- 正式 VAE 在 NPU 上比 CPU 慢约 3 倍（DESIGN F23）；只测了一组 latent。
 - 时间步嵌入：板上 `cos_approx` 的输出只有 1/128 的分辨率（DESIGN F19），对 UNet 有多大影响还没测。
 - 只有 512×512 一个档位。
 
@@ -148,7 +152,9 @@ npu3 上的实测：一次 `dort calbin run`，小 kernel 约 2 ms，TAESD 整�
 - **F16** 公开环境里除了真机，没有能执行 kernel 的东西 ⇒ 我们的 numpy 模拟器只查到 kernel 调用这一级，kernel 内部对不对要上板才知道。
 - **F17** calDNN 的图运算里没有二维卷积、上采样、GroupNorm ⇒ SD 照 calBLAS yolo26 的路子走：自己的作业表 + 整步程序。
 - **F19**（真机实测）`cos_approx` 的输出落在 1/128 的网格上；`tanh_approx`（f32）几乎精确；卷积最差 1 ULP(max)。
-- **F21** 正式 VAE 要用的模板 docc 都收，只有 `attention!` 头维 512 不收（TU 的操作数放不下）⇒ 新写按头维分段的 `attn_wide!`（在 WIP 分支上）。
+- **F21** 正式 VAE 要用的模板 docc 都收，只有 `attention!` 头维 512 不收（TU 的操作数放不下）⇒ 新写按头维分段的 `attn_wide!`。
+- **F22** docc 每核的代码不能超过约 1 MB（RISC-V 跳转 ±1 MB）⇒ 正式 VAE 切成 6 段程序、主机串起来（D15）；128² 的 calblas `group_norm!` 单个就超，本仓抄一份加 `parts`。
+- **F23**（真机实测）正式 VAE 算对了但比 CPU 慢约 3 倍：大图卷积走不了快路、GroupNorm 要转排布。
 
 ## 8. 进度与下一步（细账在 PROGRESS.md）
 
@@ -157,12 +163,13 @@ npu3 上的实测：一次 `dort calbin run`，小 kernel 约 2 ms，TAESD 整�
 | A0 | 环境、编译链、CPU 参照、算子清单、ComfyUI、模拟器、测试台、一键重建 | ✅ |
 | A1 | 新算子 | 时间步嵌入真机实测过；quick_gelu、NHWC GroupNorm 未写 |
 | B1 | TAESD 解码上 NPU + ComfyUI 节点 | ✅ **真机跑通**（2026-11-14 npu3） |
-| B1b | 正式 VAE 解码器上 NPU | 进行中，在 `wip/vae-decoder`：V0 可行性、V1 独立参照、V2a `attn_wide!`（编得过，数值没验） |
+| B1b | 正式 VAE 解码器上 NPU | ✅ **真机跑通**（6 段，58.3 dB；ComfyUI 节点）；性能待优化（V7），单 kernel 测试待补（V2b） |
 | B2–B5 | CLIP、UNet、去噪循环进设备、性能与多尺寸 | 未开始 |
 
 接着做什么：
 
-1. **B1b 正式 VAE**（代码在 `wip/vae-decoder` 分支，计划在 PROGRESS 的「B1b」一节）。
+1. **正式 VAE 的性能**（PROGRESS「B1b」的 V7，DESIGN F23）：宽图卷积按行切半走快路（s5、s6 是大头）⇒ NHWC 原生 GroupNorm ⇒ 并段。
+   正式 VAE 已经真机跑通，下面是当时的做法，留作写 UNet 的参考：
    - 结构：post_quant_conv ⇒ conv_in(4→512) @64² ⇒ 中间块（ResNet、单头 512 维注意力、ResNet）⇒ 4 个上采样段（通道 512 / 512 / 256 / 128）⇒ GN+SiLU ⇒ conv_out。
    - GroupNorm 先走「排布转换 + calblas `group_norm!`」（D13）；注意力走稠密 token + `attn_wide!`（D14）。
    - 剩下的步骤：V2b 单 kernel 测试与模拟器 ⇒ V3 整步程序 `crates/vae` 与打包 ⇒ V4 模拟对参照 ⇒ V5 ComfyUI 节点 ⇒ V6 上板。

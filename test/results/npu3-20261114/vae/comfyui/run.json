@@ -1,0 +1,37 @@
+{
+ "workflow": "comfy/workflows/sd15_vae_npu.api.json",
+ "steps": 20,
+ "backend": "npu",
+ "server_start_s": 4.0,
+ "run_s": 56.1,
+ "status": "success",
+ "completed": true,
+ "messages": [
+  [
+   "execution_start",
+   {
+    "prompt_id": "59c070ae-86a6-45c6-af3a-69b98af2f3e7",
+    "timestamp": 1794648214645
+   }
+  ],
+  [
+   "execution_cached",
+   {
+    "nodes": [],
+    "prompt_id": "59c070ae-86a6-45c6-af3a-69b98af2f3e7",
+    "timestamp": 1794648214646
+   }
+  ],
+  [
+   "execution_success",
+   {
+    "prompt_id": "59c070ae-86a6-45c6-af3a-69b98af2f3e7",
+    "timestamp": 1794648269931
+   }
+  ]
+ ],
+ "images": [
+  "/home/sweet/hachson/ComfyUI/output/sd15npu_vae_ref_00009_.png",
+  "/home/sweet/hachson/ComfyUI/output/sd15npu_vae_npu_00003_.png"
+ ]
+}

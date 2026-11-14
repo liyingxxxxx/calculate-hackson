@@ -15,6 +15,9 @@ SD15NPU_ALLOW_BOARD=1 SD15NPU_BOARD_LOCK=<现场的板锁文件> bash test/run_e
 
 # 没有卡：同一个设备程序在 CPU 上重放（npu-sim，只查接线，不是 NPU 的数）
 bash test/run_example.sh
+
+# 解码器换成正式 VAE（6 段程序，画质同 ComfyUI 自带的 VAEDecode）：上面每条命令后面加 --vae，例如
+SD15NPU_ALLOW_BOARD=1 SD15NPU_BOARD_LOCK=<现场的板锁文件> bash test/run_example.sh --vae --comfy
 ```
 
 各种情况下会看到什么：
@@ -78,6 +81,22 @@ TAESD 本身是有损的：同一张图编码再解码，fp32 也只有 27.3 dB�
 - 整条工作流 50.1 s，服务起来另用 4.0 s。大头是 CLIP 和 UNet 采样，**现在还在 CPU 上**（README「NPU / CPU 分工」）。
 - 两张图的差别（PSNR 29.9 dB）来自 TAESD 本身比正式 VAE 粗；正式 VAE 上 NPU 是下一步（PROGRESS「B1b」）。
 
+### 2b. 正式 VAE 解码器（6 段程序，画质同 ComfyUI 自带的 VAEDecode）
+
+2026-11-14 17:22 在同一块卡上跑（`board_check.py --no-build --tests "" --no-taesd --vae --comfy`，结果在 `results/npu3-20261114/vae/`）：
+
+- **正确性**：3 遍逐字节一致；对 bf16 口径的 torch 参照余弦 0.999998、PSNR 58.3 dB，对 diffusers fp32 56.9 dB（latent 是合成测试图经 VAE 编码器）。
+- **ComfyUI**：同一份工作流把解码换成 **SD15 NPU · VAE Decode**（`comfy/workflows/sd15_vae_npu.api.json`），
+  出的图和旁边 ComfyUI 自带 VAEDecode（CPU）出的相比 **55.6 dB、最大差 5/255**。
+- **时间**：6 段合计 5.18 s（节点 5.89 s）。比同机 CPU fp32（1.71 s）慢约 3 倍，还没优化，见 [`PERF.md`](PERF.md)。
+
+| SD15 NPU · VAE Decode（真卡） | ComfyUI 自带 VAEDecode（CPU） | SD15 NPU · TAESD Decode（真卡，对照） |
+| --- | --- | --- |
+| ![](results/npu3-20261114/vae/comfyui/vae_npu.png) | ![](results/npu3-20261114/vae/comfyui/vae_cpu_ref.png) | ![](results/npu3-20261114/comfyui/taesd_npu.png) |
+
+在真卡上跑正式 VAE：`SD15NPU_ALLOW_BOARD=1 SD15NPU_BOARD_LOCK=… $CALCULET_HOME/venv/bin/python -I tools/vae.py board`
+（先 `tools/vae.py calbin` 出 6 段 calbin）；ComfyUI 里把 `comfy/workflows/sd15_vae_npu.api.json` 拖进去，backend 选 npu。
+
 ### 3. 单 kernel（7 个 kernel、20 个用例：19 个必过，`tanh/tiny` 只记录）
 
 明细在 `results/npu3-20261114/kernels.json`。期望值按 torch 语义另算，「ULP(max)」是以输出最大值的 bf16 ULP 为单位的最大差。
@@ -109,6 +128,7 @@ test/
     ├── perf.json             性能的原始记录（PERF.md 的数都从这里来）
     ├── taesd_image/          TAESD 解码：metrics.json、dort.log、board.png（真卡出的图）、source.png、ref_fp32.png
     ├── taesd_latents/        另外三组 latent（randn-0、zeros、big）：各自的 metrics.json、board.png；run.log
+    ├── vae/                  正式 VAE（6 段）：metrics.json、board.png、dort.log、board_summary.json；comfyui/（真卡出的图、CPU 对照、日志）
     └── comfyui/              ComfyUI 工作流：run.json、node_log.txt、taesd_npu.png（真卡）、vae_cpu_ref.png（CPU 对照）
 ```
 

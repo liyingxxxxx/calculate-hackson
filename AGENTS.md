@@ -29,6 +29,7 @@ bash tools/verify_all.sh                 # 不上板能做的全部检查；改�
 tools/check_env.sh                       # 环境自检
 tools/calbin.sh <crate> [--features f] [--params 目录]   # 整步程序 ⇒ calbin ⇒ docc doctor（不上板）
 $CALCULET_HOME/venv/bin/python -I tools/taesd.py {params|calbin|sim|check}   # TAESD（B1）
+$CALCULET_HOME/venv/bin/python -I tools/vae.py {params|calbin|sim|check}     # 正式 VAE（B1b，6 段程序）
 $CALCULET_HOME/venv/bin/python -I ref/ktest.py {gen|sim|calbin} <测试>      # 单 kernel 测试台
 $CALCULET_HOME/venv/bin/python -I ref/test_cvxsim.py                        # 模拟器自测
 bash comfy/run_comfyui.sh                # ComfyUI（venv 在 $CALCULET_HOME/comfy-venv）
@@ -46,6 +47,7 @@ bash ref/setup_ref_env.sh                # CPU 参照环境与权重
 - workspace 的初值不可靠：入口先清零（`fill16k!`），模拟器把 workspace 填成 NaN 来查这一条。
 - 带 feature 编设备遍要用自己的 `--target-dir`（cargo 切回编过的 feature 不重编，`npu/<crate>.cvx` 会是上一个组合的）。
 - 宏参数别和宏里的 `const` 同名（`c = C` 会展开成 `const C: usize = C;`）。
+- **每核的代码不能超过约 1 MB**（docc 0.4.1，DESIGN F22）：docc 会展开 ≤ 64 轮的循环，单个 kernel 也可能很大（128² 的 calblas group_norm! 约 1.1 MB）。放不下就切段（crates/vae）；calbin 里只有调到的 kernel 进 ELF。
 - 改了入口或 kernel 特化：`tools/taesd.py check`（或对应程序的 check）+ `ref/test_cvxsim.py` 必须过；新 kernel 要在 `crates/ktest` 加一个测试。
 
 ## 写 kernel 前先读
@@ -54,4 +56,4 @@ bash ref/setup_ref_env.sh                # CPU 参照环境与权重
 - `npu/SYNTAX.md`（kernel 语法）；calBLAS 的 `README.md`（覆盖表与「绕开 docc 现状的写法」）、`AGENTS.md`（整步程序、两核、数值的坑）；
   `src/kernels/vision.rs`（卷积、GroupNorm、上采样、空间注意力）；`examples/yolo26/deploy/DEPLOY.md`（卷积网络整套做法与 docc 的规矩）。
 - 两核：`cores = 2` 的 kernel 调完必须 `sync_cores()`；不能原地（同一块既输入又输出）；单核 kernel 看它分不分行（见上一节）。
-- 本仓的现成例子：`crates/taesd`（整步程序的写法）、`crates/kernels`（模板的写法）、`crates/ktest`（单 kernel 测试）。
+- 本仓的现成例子：`crates/taesd`（整步程序的写法）、`crates/vae`（大模型切段：段表、按段的偏移、一个 feature 一段）、`crates/kernels`（模板的写法）、`crates/ktest`（单 kernel 测试）。

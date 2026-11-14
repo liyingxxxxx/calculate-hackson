@@ -1,0 +1,384 @@
+$ dort -i 0 -j calbin run -f /home/sweet/hachson/sd15-npu/out/vae-real/s1/cal -m vae --deploy-only --board-lock /opt/data/locks/board-0000:07:00.0.lock
+# 退出 0，墙钟 0.010 s
+calbin /home/sweet/hachson/sd15-npu/out/vae-real/s1/cal
+  configure 完成（这一次覆盖 calbin 里的全部模型）
+只部署，未推理
+
+09:22:15.766 INFO    [RT] device.rs:250 启动流带：开（板键 0000:07:00.0）
+09:22:15.766 INFO    [RT] device.rs:251 成对写 CSR：开（相邻两条两核写并成一条命令 21）
+09:22:15.766 INFO    [RT] device.rs:252 精简 CSR：开（链里第 1 节起不重写不变的 icsr；成对写时落单的那条自配成一条命令 21）
+09:22:15.766 INFO    [RT] deployment.rs:344 [host runtime] --> deploying model [vae]
+09:22:15.770 INFO    [RT] rodata.rs:116 [host runtime] 参数块 1 个切片 11 MiB 用时 3 ms（串行）
+09:22:15.771 INFO    [RT] deployment.rs:350 [host runtime] --> vae deploy completed
+
+$ dort -i 0 -j calbin run -f /home/sweet/hachson/sd15-npu/out/vae-real/s2/cal -m vae --deploy-only --board-lock /opt/data/locks/board-0000:07:00.0.lock
+# 退出 0，墙钟 0.005 s
+calbin /home/sweet/hachson/sd15-npu/out/vae-real/s2/cal
+  configure 完成（这一次覆盖 calbin 里的全部模型）
+只部署，未推理
+
+09:22:15.775 INFO    [RT] device.rs:250 启动流带：开（板键 0000:07:00.0）
+09:22:15.775 INFO    [RT] device.rs:251 成对写 CSR：开（相邻两条两核写并成一条命令 21）
+09:22:15.775 INFO    [RT] device.rs:252 精简 CSR：开（链里第 1 节起不重写不变的 icsr；成对写时落单的那条自配成一条命令 21）
+09:22:15.775 INFO    [RT] deployment.rs:344 [host runtime] --> deploying model [vae]
+09:22:15.776 INFO    [RT] rodata.rs:116 [host runtime] 参数块 1 个切片 3 MiB 用时 1 ms（串行）
+09:22:15.777 INFO    [RT] deployment.rs:350 [host runtime] --> vae deploy completed
+
+$ dort -i 0 -j calbin run -f /home/sweet/hachson/sd15-npu/out/vae-real/s3/cal -m vae --deploy-only --board-lock /opt/data/locks/board-0000:07:00.0.lock
+# 退出 0，墙钟 0.019 s
+calbin /home/sweet/hachson/sd15-npu/out/vae-real/s3/cal
+  configure 完成（这一次覆盖 calbin 里的全部模型）
+只部署，未推理
+
+09:22:15.779 INFO    [RT] device.rs:250 启动流带：开（板键 0000:07:00.0）
+09:22:15.779 INFO    [RT] device.rs:251 成对写 CSR：开（相邻两条两核写并成一条命令 21）
+09:22:15.779 INFO    [RT] device.rs:252 精简 CSR：开（链里第 1 节起不重写不变的 icsr；成对写时落单的那条自配成一条命令 21）
+09:22:15.779 INFO    [RT] deployment.rs:344 [host runtime] --> deploying model [vae]
+09:22:15.794 INFO    [RT] rodata.rs:116 [host runtime] 参数块 1 个切片 48 MiB 用时 14 ms（串行）
+09:22:15.796 INFO    [RT] deployment.rs:350 [host runtime] --> vae deploy completed
+
+$ dort -i 0 -j calbin run -f /home/sweet/hachson/sd15-npu/out/vae-real/s4/cal -m vae --deploy-only --board-lock /opt/data/locks/board-0000:07:00.0.lock
+# 退出 0，墙钟 0.020 s
+calbin /home/sweet/hachson/sd15-npu/out/vae-real/s4/cal
+  configure 完成（这一次覆盖 calbin 里的全部模型）
+只部署，未推理
+
+09:22:15.798 INFO    [RT] device.rs:250 启动流带：开（板键 0000:07:00.0）
+09:22:15.798 INFO    [RT] device.rs:251 成对写 CSR：开（相邻两条两核写并成一条命令 21）
+09:22:15.798 INFO    [RT] device.rs:252 精简 CSR：开（链里第 1 节起不重写不变的 icsr；成对写时落单的那条自配成一条命令 21）
+09:22:15.798 INFO    [RT] deployment.rs:344 [host runtime] --> deploying model [vae]
+09:22:15.815 INFO    [RT] rodata.rs:116 [host runtime] 参数块 1 个切片 55 MiB 用时 16 ms（串行）
+09:22:15.816 INFO    [RT] deployment.rs:350 [host runtime] --> vae deploy completed
+
+$ dort -i 0 -j calbin run -f /home/sweet/hachson/sd15-npu/out/vae-real/s5/cal -m vae --deploy-only --board-lock /opt/data/locks/board-0000:07:00.0.lock
+# 退出 0，墙钟 0.022 s
+calbin /home/sweet/hachson/sd15-npu/out/vae-real/s5/cal
+  configure 完成（这一次覆盖 calbin 里的全部模型）
+只部署，未推理
+
+09:22:15.818 INFO    [RT] device.rs:250 启动流带：开（板键 0000:07:00.0）
+09:22:15.818 INFO    [RT] device.rs:251 成对写 CSR：开（相邻两条两核写并成一条命令 21）
+09:22:15.818 INFO    [RT] device.rs:252 精简 CSR：开（链里第 1 节起不重写不变的 icsr；成对写时落单的那条自配成一条命令 21）
+09:22:15.818 INFO    [RT] deployment.rs:344 [host runtime] --> deploying model [vae]
+09:22:15.837 INFO    [RT] rodata.rs:116 [host runtime] 参数块 1 个切片 65 MiB 用时 18 ms（串行）
+09:22:15.838 INFO    [RT] deployment.rs:350 [host runtime] --> vae deploy completed
+
+$ dort -i 0 -j calbin run -f /home/sweet/hachson/sd15-npu/out/vae-real/s6/cal -m vae --deploy-only --board-lock /opt/data/locks/board-0000:07:00.0.lock
+# 退出 0，墙钟 0.042 s
+calbin /home/sweet/hachson/sd15-npu/out/vae-real/s6/cal
+  configure 完成（这一次覆盖 calbin 里的全部模型）
+只部署，未推理
+
+09:22:15.840 INFO    [RT] device.rs:250 启动流带：开（板键 0000:07:00.0）
+09:22:15.840 INFO    [RT] device.rs:251 成对写 CSR：开（相邻两条两核写并成一条命令 21）
+09:22:15.840 INFO    [RT] device.rs:252 精简 CSR：开（链里第 1 节起不重写不变的 icsr；成对写时落单的那条自配成一条命令 21）
+09:22:15.840 INFO    [RT] deployment.rs:344 [host runtime] --> deploying model [vae]
+09:22:15.878 INFO    [RT] rodata.rs:116 [host runtime] 参数块 1 个切片 130 MiB 用时 38 ms（串行）
+09:22:15.880 INFO    [RT] deployment.rs:350 [host runtime] --> vae deploy completed
+
+$ dort -i 0 -j calbin run -f /home/sweet/hachson/sd15-npu/out/vae-real/s1/cal -m vae --raw-in /tmp/sd15npu-_nfw2r9o/in.bin --raw-out /tmp/sd15npu-_nfw2r9o/out.bin --in-tensor in_x --out-tensor out_y --board-lock /opt/data/locks/board-0000:07:00.0.lock
+# 退出 0，墙钟 0.052 s
+calbin /home/sweet/hachson/sd15-npu/out/vae-real/s1/cal
+  configure 完成（这一次覆盖 calbin 里的全部模型）
+  写入 295936 字节 -> 张量 `in_x`
+  已提交，等完成…
+  完成
+  读出 4734976 字节 -> /tmp/sd15npu-_nfw2r9o/out.bin
+  前 8 个 bf16: -0.0000 1.1641 -0.0000 1.1641 -0.0000 1.1641 -0.0000 1.1641
+
+09:22:15.884 INFO    [RT] device.rs:250 启动流带：开（板键 0000:07:00.0）
+09:22:15.884 INFO    [RT] device.rs:251 成对写 CSR：开（相邻两条两核写并成一条命令 21）
+09:22:15.884 INFO    [RT] device.rs:252 精简 CSR：开（链里第 1 节起不重写不变的 icsr；成对写时落单的那条自配成一条命令 21）
+09:22:15.884 INFO    [RT] deployment.rs:344 [host runtime] --> deploying model [vae]
+09:22:15.887 INFO    [RT] rodata.rs:116 [host runtime] 参数块 1 个切片 11 MiB 用时 3 ms（串行）
+09:22:15.889 INFO    [RT] deployment.rs:350 [host runtime] --> vae deploy completed
+
+$ dort -i 0 -j calbin run -f /home/sweet/hachson/sd15-npu/out/vae-real/s2/cal -m vae --raw-in /tmp/sd15npu-08yry68m/in.bin --raw-out /tmp/sd15npu-08yry68m/out.bin --in-tensor in_x --out-tensor out_y --board-lock /opt/data/locks/board-0000:07:00.0.lock
+# 退出 0，墙钟 0.104 s
+calbin /home/sweet/hachson/sd15-npu/out/vae-real/s2/cal
+  configure 完成（这一次覆盖 calbin 里的全部模型）
+  写入 4734976 字节 -> 张量 `in_x`
+  已提交，等完成…
+  完成
+  读出 4734976 字节 -> /tmp/sd15npu-08yry68m/out.bin
+  前 8 个 bf16: -0.0410 0.0173 -0.0210 0.0018 0.0422 -0.0189 -0.0574 -0.0255
+
+09:22:15.938 INFO    [RT] device.rs:250 启动流带：开（板键 0000:07:00.0）
+09:22:15.938 INFO    [RT] device.rs:251 成对写 CSR：开（相邻两条两核写并成一条命令 21）
+09:22:15.938 INFO    [RT] device.rs:252 精简 CSR：开（链里第 1 节起不重写不变的 icsr；成对写时落单的那条自配成一条命令 21）
+09:22:15.938 INFO    [RT] deployment.rs:344 [host runtime] --> deploying model [vae]
+09:22:15.939 INFO    [RT] rodata.rs:116 [host runtime] 参数块 1 个切片 3 MiB 用时 1 ms（串行）
+09:22:15.941 INFO    [RT] deployment.rs:350 [host runtime] --> vae deploy completed
+
+$ dort -i 0 -j calbin run -f /home/sweet/hachson/sd15-npu/out/vae-real/s3/cal -m vae --raw-in /tmp/sd15npu-xmbwiw86/in.bin --raw-out /tmp/sd15npu-xmbwiw86/out.bin --in-tensor in_x --out-tensor out_y --board-lock /opt/data/locks/board-0000:07:00.0.lock
+# 退出 0，墙钟 0.240 s
+calbin /home/sweet/hachson/sd15-npu/out/vae-real/s3/cal
+  configure 完成（这一次覆盖 calbin 里的全部模型）
+  写入 4734976 字节 -> 张量 `in_x`
+  已提交，等完成…
+  完成
+  读出 17842176 字节 -> /tmp/sd15npu-xmbwiw86/out.bin
+  前 8 个 bf16: 12754194144713244672.0000 1.1016 12754194144713244672.0000 1.1016 12754194144713244672.0000 1.1016 12754194144713244672.0000 1.1016
+
+09:22:16.043 INFO    [RT] device.rs:250 启动流带：开（板键 0000:07:00.0）
+09:22:16.043 INFO    [RT] device.rs:251 成对写 CSR：开（相邻两条两核写并成一条命令 21）
+09:22:16.043 INFO    [RT] device.rs:252 精简 CSR：开（链里第 1 节起不重写不变的 icsr；成对写时落单的那条自配成一条命令 21）
+09:22:16.043 INFO    [RT] deployment.rs:344 [host runtime] --> deploying model [vae]
+09:22:16.058 INFO    [RT] rodata.rs:116 [host runtime] 参数块 1 个切片 48 MiB 用时 14 ms（串行）
+09:22:16.060 INFO    [RT] deployment.rs:350 [host runtime] --> vae deploy completed
+
+$ dort -i 0 -j calbin run -f /home/sweet/hachson/sd15-npu/out/vae-real/s4/cal -m vae --raw-in /tmp/sd15npu-o_u4w5xt/in.bin --raw-out /tmp/sd15npu-o_u4w5xt/out.bin --in-tensor in_x --out-tensor out_y --board-lock /opt/data/locks/board-0000:07:00.0.lock
+# 退出 0，墙钟 0.984 s
+calbin /home/sweet/hachson/sd15-npu/out/vae-real/s4/cal
+  configure 完成（这一次覆盖 calbin 里的全部模型）
+  写入 17842176 字节 -> 张量 `in_x`
+  已提交，等完成…
+  完成
+  读出 69222400 字节 -> /tmp/sd15npu-o_u4w5xt/out.bin
+  前 8 个 bf16: -0.0352 0.0625 -0.0225 -0.6602 -0.9375 0.1738 -0.3047 -0.1895
+
+09:22:16.289 INFO    [RT] device.rs:250 启动流带：开（板键 0000:07:00.0）
+09:22:16.289 INFO    [RT] device.rs:251 成对写 CSR：开（相邻两条两核写并成一条命令 21）
+09:22:16.289 INFO    [RT] device.rs:252 精简 CSR：开（链里第 1 节起不重写不变的 icsr；成对写时落单的那条自配成一条命令 21）
+09:22:16.289 INFO    [RT] deployment.rs:344 [host runtime] --> deploying model [vae]
+09:22:16.307 INFO    [RT] rodata.rs:116 [host runtime] 参数块 1 个切片 55 MiB 用时 17 ms（串行）
+09:22:16.308 INFO    [RT] deployment.rs:350 [host runtime] --> vae deploy completed
+
+$ dort -i 0 -j calbin run -f /home/sweet/hachson/sd15-npu/out/vae-real/s5/cal -m vae --raw-in /tmp/sd15npu-wy9bak1b/in.bin --raw-out /tmp/sd15npu-wy9bak1b/out.bin --in-tensor in_x --out-tensor out_y --board-lock /opt/data/locks/board-0000:07:00.0.lock
+# 退出 0，墙钟 1.446 s
+calbin /home/sweet/hachson/sd15-npu/out/vae-real/s5/cal
+  configure 完成（这一次覆盖 calbin 里的全部模型）
+  写入 69222400 字节 -> 张量 `in_x`
+  已提交，等完成…
+  完成
+  读出 136323072 字节 -> /tmp/sd15npu-wy9bak1b/out.bin
+  前 8 个 bf16: -0.8984 13.1875 -2.7031 -11.1250 0.3555 -3.0625 2.9062 1.2422
+
+09:22:17.294 INFO    [RT] device.rs:250 启动流带：开（板键 0000:07:00.0）
+09:22:17.294 INFO    [RT] device.rs:251 成对写 CSR：开（相邻两条两核写并成一条命令 21）
+09:22:17.294 INFO    [RT] device.rs:252 精简 CSR：开（链里第 1 节起不重写不变的 icsr；成对写时落单的那条自配成一条命令 21）
+09:22:17.294 INFO    [RT] deployment.rs:344 [host runtime] --> deploying model [vae]
+09:22:17.313 INFO    [RT] rodata.rs:116 [host runtime] 参数块 1 个切片 65 MiB 用时 19 ms（串行）
+09:22:17.315 INFO    [RT] deployment.rs:350 [host runtime] --> vae deploy completed
+
+$ dort -i 0 -j calbin run -f /home/sweet/hachson/sd15-npu/out/vae-real/s6/cal -m vae --raw-in /tmp/sd15npu-m4y58loa/in.bin --raw-out /tmp/sd15npu-m4y58loa/out.bin --in-tensor in_x --out-tensor out_y --board-lock /opt/data/locks/board-0000:07:00.0.lock
+# 退出 0，墙钟 2.355 s
+calbin /home/sweet/hachson/sd15-npu/out/vae-real/s6/cal
+  configure 完成（这一次覆盖 calbin 里的全部模型）
+  写入 136323072 字节 -> 张量 `in_x`
+  已提交，等完成…
+  完成
+  读出 17040384 字节 -> /tmp/sd15npu-m4y58loa/out.bin
+  前 8 个 bf16: 1.2266 -10.9375 -3.8594 8.7500 -11.1875 -6.8438 9.4375 3.9844
+
+09:22:18.779 INFO    [RT] device.rs:250 启动流带：开（板键 0000:07:00.0）
+09:22:18.779 INFO    [RT] device.rs:251 成对写 CSR：开（相邻两条两核写并成一条命令 21）
+09:22:18.779 INFO    [RT] device.rs:252 精简 CSR：开（链里第 1 节起不重写不变的 icsr；成对写时落单的那条自配成一条命令 21）
+09:22:18.779 INFO    [RT] deployment.rs:344 [host runtime] --> deploying model [vae]
+09:22:18.817 INFO    [RT] rodata.rs:116 [host runtime] 参数块 1 个切片 130 MiB 用时 37 ms（串行）
+09:22:18.818 INFO    [RT] deployment.rs:350 [host runtime] --> vae deploy completed
+
+$ dort -i 0 -j calbin run -f /home/sweet/hachson/sd15-npu/out/vae-real/s1/cal -m vae --raw-in /tmp/sd15npu-w07_i12o/in.bin --raw-out /tmp/sd15npu-w07_i12o/out.bin --in-tensor in_x --out-tensor out_y --board-lock /opt/data/locks/board-0000:07:00.0.lock
+# 退出 0，墙钟 0.051 s
+calbin /home/sweet/hachson/sd15-npu/out/vae-real/s1/cal
+  configure 完成（这一次覆盖 calbin 里的全部模型）
+  写入 295936 字节 -> 张量 `in_x`
+  已提交，等完成…
+  完成
+  读出 4734976 字节 -> /tmp/sd15npu-w07_i12o/out.bin
+  前 8 个 bf16: -0.0000 1.1641 -0.0000 1.1641 -0.0000 1.1641 -0.0000 1.1641
+
+09:22:21.142 INFO    [RT] device.rs:250 启动流带：开（板键 0000:07:00.0）
+09:22:21.142 INFO    [RT] device.rs:251 成对写 CSR：开（相邻两条两核写并成一条命令 21）
+09:22:21.142 INFO    [RT] device.rs:252 精简 CSR：开（链里第 1 节起不重写不变的 icsr；成对写时落单的那条自配成一条命令 21）
+09:22:21.142 INFO    [RT] deployment.rs:344 [host runtime] --> deploying model [vae]
+09:22:21.145 INFO    [RT] rodata.rs:116 [host runtime] 参数块 1 个切片 11 MiB 用时 3 ms（串行）
+09:22:21.146 INFO    [RT] deployment.rs:350 [host runtime] --> vae deploy completed
+
+$ dort -i 0 -j calbin run -f /home/sweet/hachson/sd15-npu/out/vae-real/s2/cal -m vae --raw-in /tmp/sd15npu-yzdomm1q/in.bin --raw-out /tmp/sd15npu-yzdomm1q/out.bin --in-tensor in_x --out-tensor out_y --board-lock /opt/data/locks/board-0000:07:00.0.lock
+# 退出 0，墙钟 0.102 s
+calbin /home/sweet/hachson/sd15-npu/out/vae-real/s2/cal
+  configure 完成（这一次覆盖 calbin 里的全部模型）
+  写入 4734976 字节 -> 张量 `in_x`
+  已提交，等完成…
+  完成
+  读出 4734976 字节 -> /tmp/sd15npu-yzdomm1q/out.bin
+  前 8 个 bf16: -0.0410 0.0173 -0.0210 0.0018 0.0422 -0.0189 -0.0574 -0.0255
+
+09:22:21.194 INFO    [RT] device.rs:250 启动流带：开（板键 0000:07:00.0）
+09:22:21.194 INFO    [RT] device.rs:251 成对写 CSR：开（相邻两条两核写并成一条命令 21）
+09:22:21.194 INFO    [RT] device.rs:252 精简 CSR：开（链里第 1 节起不重写不变的 icsr；成对写时落单的那条自配成一条命令 21）
+09:22:21.194 INFO    [RT] deployment.rs:344 [host runtime] --> deploying model [vae]
+09:22:21.196 INFO    [RT] rodata.rs:116 [host runtime] 参数块 1 个切片 3 MiB 用时 1 ms（串行）
+09:22:21.197 INFO    [RT] deployment.rs:350 [host runtime] --> vae deploy completed
+
+$ dort -i 0 -j calbin run -f /home/sweet/hachson/sd15-npu/out/vae-real/s3/cal -m vae --raw-in /tmp/sd15npu-8q6kdwmd/in.bin --raw-out /tmp/sd15npu-8q6kdwmd/out.bin --in-tensor in_x --out-tensor out_y --board-lock /opt/data/locks/board-0000:07:00.0.lock
+# 退出 0，墙钟 0.240 s
+calbin /home/sweet/hachson/sd15-npu/out/vae-real/s3/cal
+  configure 完成（这一次覆盖 calbin 里的全部模型）
+  写入 4734976 字节 -> 张量 `in_x`
+  已提交，等完成…
+  完成
+  读出 17842176 字节 -> /tmp/sd15npu-8q6kdwmd/out.bin
+  前 8 个 bf16: 12754194144713244672.0000 1.1016 12754194144713244672.0000 1.1016 12754194144713244672.0000 1.1016 12754194144713244672.0000 1.1016
+
+09:22:21.299 INFO    [RT] device.rs:250 启动流带：开（板键 0000:07:00.0）
+09:22:21.299 INFO    [RT] device.rs:251 成对写 CSR：开（相邻两条两核写并成一条命令 21）
+09:22:21.299 INFO    [RT] device.rs:252 精简 CSR：开（链里第 1 节起不重写不变的 icsr；成对写时落单的那条自配成一条命令 21）
+09:22:21.299 INFO    [RT] deployment.rs:344 [host runtime] --> deploying model [vae]
+09:22:21.315 INFO    [RT] rodata.rs:116 [host runtime] 参数块 1 个切片 48 MiB 用时 15 ms（串行）
+09:22:21.317 INFO    [RT] deployment.rs:350 [host runtime] --> vae deploy completed
+
+$ dort -i 0 -j calbin run -f /home/sweet/hachson/sd15-npu/out/vae-real/s4/cal -m vae --raw-in /tmp/sd15npu-ffu0877k/in.bin --raw-out /tmp/sd15npu-ffu0877k/out.bin --in-tensor in_x --out-tensor out_y --board-lock /opt/data/locks/board-0000:07:00.0.lock
+# 退出 0，墙钟 0.978 s
+calbin /home/sweet/hachson/sd15-npu/out/vae-real/s4/cal
+  configure 完成（这一次覆盖 calbin 里的全部模型）
+  写入 17842176 字节 -> 张量 `in_x`
+  已提交，等完成…
+  完成
+  读出 69222400 字节 -> /tmp/sd15npu-ffu0877k/out.bin
+  前 8 个 bf16: -0.0352 0.0625 -0.0225 -0.6602 -0.9375 0.1738 -0.3047 -0.1895
+
+09:22:21.543 INFO    [RT] device.rs:250 启动流带：开（板键 0000:07:00.0）
+09:22:21.543 INFO    [RT] device.rs:251 成对写 CSR：开（相邻两条两核写并成一条命令 21）
+09:22:21.543 INFO    [RT] device.rs:252 精简 CSR：开（链里第 1 节起不重写不变的 icsr；成对写时落单的那条自配成一条命令 21）
+09:22:21.543 INFO    [RT] deployment.rs:344 [host runtime] --> deploying model [vae]
+09:22:21.559 INFO    [RT] rodata.rs:116 [host runtime] 参数块 1 个切片 55 MiB 用时 16 ms（串行）
+09:22:21.560 INFO    [RT] deployment.rs:350 [host runtime] --> vae deploy completed
+
+$ dort -i 0 -j calbin run -f /home/sweet/hachson/sd15-npu/out/vae-real/s5/cal -m vae --raw-in /tmp/sd15npu-dje6g0g4/in.bin --raw-out /tmp/sd15npu-dje6g0g4/out.bin --in-tensor in_x --out-tensor out_y --board-lock /opt/data/locks/board-0000:07:00.0.lock
+# 退出 0，墙钟 1.443 s
+calbin /home/sweet/hachson/sd15-npu/out/vae-real/s5/cal
+  configure 完成（这一次覆盖 calbin 里的全部模型）
+  写入 69222400 字节 -> 张量 `in_x`
+  已提交，等完成…
+  完成
+  读出 136323072 字节 -> /tmp/sd15npu-dje6g0g4/out.bin
+  前 8 个 bf16: -0.8984 13.1875 -2.7031 -11.1250 0.3555 -3.0625 2.9062 1.2422
+
+09:22:22.544 INFO    [RT] device.rs:250 启动流带：开（板键 0000:07:00.0）
+09:22:22.544 INFO    [RT] device.rs:251 成对写 CSR：开（相邻两条两核写并成一条命令 21）
+09:22:22.544 INFO    [RT] device.rs:252 精简 CSR：开（链里第 1 节起不重写不变的 icsr；成对写时落单的那条自配成一条命令 21）
+09:22:22.544 INFO    [RT] deployment.rs:344 [host runtime] --> deploying model [vae]
+09:22:22.562 INFO    [RT] rodata.rs:116 [host runtime] 参数块 1 个切片 65 MiB 用时 18 ms（串行）
+09:22:22.564 INFO    [RT] deployment.rs:350 [host runtime] --> vae deploy completed
+
+$ dort -i 0 -j calbin run -f /home/sweet/hachson/sd15-npu/out/vae-real/s6/cal -m vae --raw-in /tmp/sd15npu-3njoaak2/in.bin --raw-out /tmp/sd15npu-3njoaak2/out.bin --in-tensor in_x --out-tensor out_y --board-lock /opt/data/locks/board-0000:07:00.0.lock
+# 退出 0，墙钟 2.355 s
+calbin /home/sweet/hachson/sd15-npu/out/vae-real/s6/cal
+  configure 完成（这一次覆盖 calbin 里的全部模型）
+  写入 136323072 字节 -> 张量 `in_x`
+  已提交，等完成…
+  完成
+  读出 17040384 字节 -> /tmp/sd15npu-3njoaak2/out.bin
+  前 8 个 bf16: 1.2266 -10.9375 -3.8594 8.7500 -11.1875 -6.8438 9.4375 3.9844
+
+09:22:24.029 INFO    [RT] device.rs:250 启动流带：开（板键 0000:07:00.0）
+09:22:24.029 INFO    [RT] device.rs:251 成对写 CSR：开（相邻两条两核写并成一条命令 21）
+09:22:24.029 INFO    [RT] device.rs:252 精简 CSR：开（链里第 1 节起不重写不变的 icsr；成对写时落单的那条自配成一条命令 21）
+09:22:24.029 INFO    [RT] deployment.rs:344 [host runtime] --> deploying model [vae]
+09:22:24.068 INFO    [RT] rodata.rs:116 [host runtime] 参数块 1 个切片 130 MiB 用时 38 ms（串行）
+09:22:24.069 INFO    [RT] deployment.rs:350 [host runtime] --> vae deploy completed
+
+$ dort -i 0 -j calbin run -f /home/sweet/hachson/sd15-npu/out/vae-real/s1/cal -m vae --raw-in /tmp/sd15npu-a777786f/in.bin --raw-out /tmp/sd15npu-a777786f/out.bin --in-tensor in_x --out-tensor out_y --board-lock /opt/data/locks/board-0000:07:00.0.lock
+# 退出 0，墙钟 0.054 s
+calbin /home/sweet/hachson/sd15-npu/out/vae-real/s1/cal
+  configure 完成（这一次覆盖 calbin 里的全部模型）
+  写入 295936 字节 -> 张量 `in_x`
+  已提交，等完成…
+  完成
+  读出 4734976 字节 -> /tmp/sd15npu-a777786f/out.bin
+  前 8 个 bf16: -0.0000 1.1641 -0.0000 1.1641 -0.0000 1.1641 -0.0000 1.1641
+
+09:22:26.391 INFO    [RT] device.rs:250 启动流带：开（板键 0000:07:00.0）
+09:22:26.391 INFO    [RT] device.rs:251 成对写 CSR：开（相邻两条两核写并成一条命令 21）
+09:22:26.391 INFO    [RT] device.rs:252 精简 CSR：开（链里第 1 节起不重写不变的 icsr；成对写时落单的那条自配成一条命令 21）
+09:22:26.391 INFO    [RT] deployment.rs:344 [host runtime] --> deploying model [vae]
+09:22:26.395 INFO    [RT] rodata.rs:116 [host runtime] 参数块 1 个切片 11 MiB 用时 3 ms（串行）
+09:22:26.397 INFO    [RT] deployment.rs:350 [host runtime] --> vae deploy completed
+
+$ dort -i 0 -j calbin run -f /home/sweet/hachson/sd15-npu/out/vae-real/s2/cal -m vae --raw-in /tmp/sd15npu-r0bdthmh/in.bin --raw-out /tmp/sd15npu-r0bdthmh/out.bin --in-tensor in_x --out-tensor out_y --board-lock /opt/data/locks/board-0000:07:00.0.lock
+# 退出 0，墙钟 0.104 s
+calbin /home/sweet/hachson/sd15-npu/out/vae-real/s2/cal
+  configure 完成（这一次覆盖 calbin 里的全部模型）
+  写入 4734976 字节 -> 张量 `in_x`
+  已提交，等完成…
+  完成
+  读出 4734976 字节 -> /tmp/sd15npu-r0bdthmh/out.bin
+  前 8 个 bf16: -0.0410 0.0173 -0.0210 0.0018 0.0422 -0.0189 -0.0574 -0.0255
+
+09:22:26.447 INFO    [RT] device.rs:250 启动流带：开（板键 0000:07:00.0）
+09:22:26.447 INFO    [RT] device.rs:251 成对写 CSR：开（相邻两条两核写并成一条命令 21）
+09:22:26.447 INFO    [RT] device.rs:252 精简 CSR：开（链里第 1 节起不重写不变的 icsr；成对写时落单的那条自配成一条命令 21）
+09:22:26.447 INFO    [RT] deployment.rs:344 [host runtime] --> deploying model [vae]
+09:22:26.449 INFO    [RT] rodata.rs:116 [host runtime] 参数块 1 个切片 3 MiB 用时 1 ms（串行）
+09:22:26.451 INFO    [RT] deployment.rs:350 [host runtime] --> vae deploy completed
+
+$ dort -i 0 -j calbin run -f /home/sweet/hachson/sd15-npu/out/vae-real/s3/cal -m vae --raw-in /tmp/sd15npu-mt1q202l/in.bin --raw-out /tmp/sd15npu-mt1q202l/out.bin --in-tensor in_x --out-tensor out_y --board-lock /opt/data/locks/board-0000:07:00.0.lock
+# 退出 0，墙钟 0.240 s
+calbin /home/sweet/hachson/sd15-npu/out/vae-real/s3/cal
+  configure 完成（这一次覆盖 calbin 里的全部模型）
+  写入 4734976 字节 -> 张量 `in_x`
+  已提交，等完成…
+  完成
+  读出 17842176 字节 -> /tmp/sd15npu-mt1q202l/out.bin
+  前 8 个 bf16: 12754194144713244672.0000 1.1016 12754194144713244672.0000 1.1016 12754194144713244672.0000 1.1016 12754194144713244672.0000 1.1016
+
+09:22:26.553 INFO    [RT] device.rs:250 启动流带：开（板键 0000:07:00.0）
+09:22:26.553 INFO    [RT] device.rs:251 成对写 CSR：开（相邻两条两核写并成一条命令 21）
+09:22:26.553 INFO    [RT] device.rs:252 精简 CSR：开（链里第 1 节起不重写不变的 icsr；成对写时落单的那条自配成一条命令 21）
+09:22:26.553 INFO    [RT] deployment.rs:344 [host runtime] --> deploying model [vae]
+09:22:26.568 INFO    [RT] rodata.rs:116 [host runtime] 参数块 1 个切片 48 MiB 用时 15 ms（串行）
+09:22:26.570 INFO    [RT] deployment.rs:350 [host runtime] --> vae deploy completed
+
+$ dort -i 0 -j calbin run -f /home/sweet/hachson/sd15-npu/out/vae-real/s4/cal -m vae --raw-in /tmp/sd15npu-agxm18fk/in.bin --raw-out /tmp/sd15npu-agxm18fk/out.bin --in-tensor in_x --out-tensor out_y --board-lock /opt/data/locks/board-0000:07:00.0.lock
+# 退出 0，墙钟 0.981 s
+calbin /home/sweet/hachson/sd15-npu/out/vae-real/s4/cal
+  configure 完成（这一次覆盖 calbin 里的全部模型）
+  写入 17842176 字节 -> 张量 `in_x`
+  已提交，等完成…
+  完成
+  读出 69222400 字节 -> /tmp/sd15npu-agxm18fk/out.bin
+  前 8 个 bf16: -0.0352 0.0625 -0.0225 -0.6602 -0.9375 0.1738 -0.3047 -0.1895
+
+09:22:26.799 INFO    [RT] device.rs:250 启动流带：开（板键 0000:07:00.0）
+09:22:26.799 INFO    [RT] device.rs:251 成对写 CSR：开（相邻两条两核写并成一条命令 21）
+09:22:26.799 INFO    [RT] device.rs:252 精简 CSR：开（链里第 1 节起不重写不变的 icsr；成对写时落单的那条自配成一条命令 21）
+09:22:26.799 INFO    [RT] deployment.rs:344 [host runtime] --> deploying model [vae]
+09:22:26.816 INFO    [RT] rodata.rs:116 [host runtime] 参数块 1 个切片 55 MiB 用时 17 ms（串行）
+09:22:26.817 INFO    [RT] deployment.rs:350 [host runtime] --> vae deploy completed
+
+$ dort -i 0 -j calbin run -f /home/sweet/hachson/sd15-npu/out/vae-real/s5/cal -m vae --raw-in /tmp/sd15npu-02pv1mpt/in.bin --raw-out /tmp/sd15npu-02pv1mpt/out.bin --in-tensor in_x --out-tensor out_y --board-lock /opt/data/locks/board-0000:07:00.0.lock
+# 退出 0，墙钟 1.444 s
+calbin /home/sweet/hachson/sd15-npu/out/vae-real/s5/cal
+  configure 完成（这一次覆盖 calbin 里的全部模型）
+  写入 69222400 字节 -> 张量 `in_x`
+  已提交，等完成…
+  完成
+  读出 136323072 字节 -> /tmp/sd15npu-02pv1mpt/out.bin
+  前 8 个 bf16: -0.8984 13.1875 -2.7031 -11.1250 0.3555 -3.0625 2.9062 1.2422
+
+09:22:27.799 INFO    [RT] device.rs:250 启动流带：开（板键 0000:07:00.0）
+09:22:27.799 INFO    [RT] device.rs:251 成对写 CSR：开（相邻两条两核写并成一条命令 21）
+09:22:27.799 INFO    [RT] device.rs:252 精简 CSR：开（链里第 1 节起不重写不变的 icsr；成对写时落单的那条自配成一条命令 21）
+09:22:27.799 INFO    [RT] deployment.rs:344 [host runtime] --> deploying model [vae]
+09:22:27.819 INFO    [RT] rodata.rs:116 [host runtime] 参数块 1 个切片 65 MiB 用时 19 ms（串行）
+09:22:27.821 INFO    [RT] deployment.rs:350 [host runtime] --> vae deploy completed
+
+$ dort -i 0 -j calbin run -f /home/sweet/hachson/sd15-npu/out/vae-real/s6/cal -m vae --raw-in /tmp/sd15npu-zf7yo062/in.bin --raw-out /tmp/sd15npu-zf7yo062/out.bin --in-tensor in_x --out-tensor out_y --board-lock /opt/data/locks/board-0000:07:00.0.lock
+# 退出 0，墙钟 2.354 s
+calbin /home/sweet/hachson/sd15-npu/out/vae-real/s6/cal
+  configure 完成（这一次覆盖 calbin 里的全部模型）
+  写入 136323072 字节 -> 张量 `in_x`
+  已提交，等完成…
+  完成
+  读出 17040384 字节 -> /tmp/sd15npu-zf7yo062/out.bin
+  前 8 个 bf16: 1.2266 -10.9375 -3.8594 8.7500 -11.1875 -6.8438 9.4375 3.9844
+
+09:22:29.284 INFO    [RT] device.rs:250 启动流带：开（板键 0000:07:00.0）
+09:22:29.284 INFO    [RT] device.rs:251 成对写 CSR：开（相邻两条两核写并成一条命令 21）
+09:22:29.284 INFO    [RT] device.rs:252 精简 CSR：开（链里第 1 节起不重写不变的 icsr；成对写时落单的那条自配成一条命令 21）
+09:22:29.284 INFO    [RT] deployment.rs:344 [host runtime] --> deploying model [vae]
+09:22:29.322 INFO    [RT] rodata.rs:116 [host runtime] 参数块 1 个切片 130 MiB 用时 38 ms（串行）
+09:22:29.324 INFO    [RT] deployment.rs:350 [host runtime] --> vae deploy completed
+
