@@ -94,7 +94,7 @@ $PY -I ref/test_board_kit.py             # 没卡时：拿 dort 的测试替身�
 | `comfy/` | ComfyUI：钉版本安装、拉起脚本、自定义节点 `sd15_npu`、工作流 JSON、无界面跑工作流 |
 | `tools/` | `bootstrap.sh`（新机器从零）、`verify_all.sh`（全部自检）、`env.sh` / `check_env.sh`（隔离环境）、`calbin.sh`、`taesd.py` |
 | `docs/` | `DESIGN.md`（设计与关键事实）、`HANDOFF.md`（交接文档）、`赛题原文.md`、`inventory/`（SD1.5 算子清单，脚本生成） |
-| `test/` | 简单示例 `run_example.sh` 与真卡上跑出来的结果（`results/npu3-20261114/`：图、指标、dort 日志） |
+| `test/` | 简单示例 `run_example.sh`、真卡性能 `PERF.md`、真卡上跑出来的结果（`results/npu3-20261114/`：图、指标、dort 日志、perf.json） |
 
 ## NPU / CPU 分工
 
@@ -108,6 +108,8 @@ TAESD 解码与 7 个单 kernel 有**真机实测**（2026-11-14，npu3）；别
 | `cpu` 后端的 TAESD 解码 | CPU（diffusers fp32） | 兜底；每用一次计数并打进日志，不静默 |
 
 ## 时间（分开记）
+
+真卡性能的全表（TAESD 两次上卡 15 遍、20 个单 kernel、ComfyUI 两次、CPU 对照）在 [`test/PERF.md`](test/PERF.md)，原始记录在 `test/results/npu3-20261114/perf.json`。
 
 | 阶段 | TAESD 512² | 口径 |
 | --- | --- | --- |
