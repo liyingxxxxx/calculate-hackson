@@ -102,7 +102,8 @@ TAESD 本身是有损的：同一张图编码再解码，fp32 也只有 27.3 dB�
 2026-11-14 在同一块卡上跑（`tools/unet.py board --t 500 --runs 2`，结果在 `results/npu3-20261114/unet/`）：
 
 - **正确性**：2 遍逐字节一致；对 bf16 口径的 torch 参照 有提示词 49.8 dB、空提示词 50.1 dB（余弦 0.999995），对 diffusers fp32 49.4 / 48.0 dB。
-- **时间**：一步（CFG 两路）12.35 s，比同机 CPU fp32（约 2 s）慢；大头是 64² 的自注意力（一次 625 ms，见 [`PERF.md`](PERF.md) 1c），正在优化。
+- **时间**：一步（CFG 两路）第一版 12.35 s；注意力换成本仓的 `flash_attn!` 之后 **8.19 s**（精度不变，结果在 `results/npu3-20261114/unet-attn/`），
+  还比同机 CPU fp32（约 2 s）慢，正在优化（见 [`PERF.md`](PERF.md) 1c）。
 - 还没接进 ComfyUI 的采样循环（KSampler 里的 UNet 现在还在 CPU 上）。
 
 在真卡上跑：`SD15NPU_ALLOW_BOARD=1 SD15NPU_BOARD_LOCK=… $CALCULET_HOME/venv/bin/python -I tools/unet.py board --t 500`（先 `tools/unet.py calbin` 出 20 段 calbin，约 2 分钟）；
@@ -143,6 +144,7 @@ test/
     ├── vae-opt/              正式 VAE 优化后（3 段，0.98 s）：同上，另有 prof/（优化前、卷积列块、NHWC GN 三份逐 kernel 计时）
     ├── unet/                 UNet 一次前向第一版（20 段，CFG 两路）：board_metrics.json（真卡）、sim_metrics.json（模拟）、
     │                         prof_kernels.json（逐 kernel 计时）、breakdown.json（一步的时间按 kernel / 段拆开）、prof_attention_k_transposed.json
+    ├── unet-attn/            UNet 注意力优化后（18 段，8.19 s）：同上；flash_attn_single_kernel.md（单 kernel 上板与二分）
     └── comfyui/              ComfyUI 工作流：run.json、node_log.txt、taesd_npu.png（真卡）、vae_cpu_ref.png（CPU 对照）
 ```
 

@@ -2381,7 +2381,7 @@ mod prog {
     }
 }
 
-/// un_at_64_s：attention {'rows': 4736, 'heads': 8, 'head': 64, 'scale': 40, 'cores': 2, 'mask': 'keys'}
+/// un_at_64_s：flash_attn {'rows': 4736, 'keys': 4736, 'heads': 8, 'head': 64, 'scale': 40}
 #[cfg(feature = "un_at_64_s")]
 mod prog {
     use npu::prelude::*;
@@ -2409,7 +2409,7 @@ mod prog {
     }
 }
 
-/// un_at_64_x：attention {'rows': 4736, 'keys': 128, 'heads': 8, 'head': 64, 'scale': 40, 'cores': 2, 'mask': 'keys'}
+/// un_at_64_x：flash_attn {'rows': 4736, 'keys': 128, 'heads': 8, 'head': 64, 'scale': 40}
 #[cfg(feature = "un_at_64_x")]
 mod prog {
     use npu::prelude::*;
@@ -2437,7 +2437,7 @@ mod prog {
     }
 }
 
-/// un_at_32_s：attention {'rows': 1408, 'heads': 8, 'head': 96, 'scale': 80, 'cores': 2, 'mask': 'keys'}
+/// un_at_32_s：flash_attn {'rows': 1408, 'keys': 1408, 'heads': 8, 'head': 96, 'scale': 80}
 #[cfg(feature = "un_at_32_s")]
 mod prog {
     use npu::prelude::*;
@@ -2465,7 +2465,7 @@ mod prog {
     }
 }
 
-/// un_at_32_x：attention {'rows': 1408, 'keys': 128, 'heads': 8, 'head': 96, 'scale': 80, 'cores': 2, 'mask': 'keys'}
+/// un_at_32_x：flash_attn {'rows': 1408, 'keys': 128, 'heads': 8, 'head': 96, 'scale': 80}
 #[cfg(feature = "un_at_32_x")]
 mod prog {
     use npu::prelude::*;
@@ -2493,7 +2493,7 @@ mod prog {
     }
 }
 
-/// un_at_16_s：attention {'rows': 512, 'heads': 8, 'head': 160, 'scale': 160, 'cores': 2, 'mask': 'keys'}
+/// un_at_16_s：flash_attn {'rows': 512, 'keys': 512, 'heads': 8, 'head': 160, 'scale': 160}
 #[cfg(feature = "un_at_16_s")]
 mod prog {
     use npu::prelude::*;
@@ -2521,7 +2521,7 @@ mod prog {
     }
 }
 
-/// un_at_16_x：attention {'rows': 512, 'keys': 128, 'heads': 8, 'head': 160, 'scale': 160, 'cores': 2, 'mask': 'keys'}
+/// un_at_16_x：flash_attn {'rows': 512, 'keys': 128, 'heads': 8, 'head': 160, 'scale': 160}
 #[cfg(feature = "un_at_16_x")]
 mod prog {
     use npu::prelude::*;
@@ -2549,7 +2549,7 @@ mod prog {
     }
 }
 
-/// un_at_8_s：attention {'rows': 256, 'heads': 8, 'head': 160, 'scale': 160, 'cores': 2, 'mask': 'keys'}
+/// un_at_8_s：flash_attn {'rows': 256, 'keys': 256, 'heads': 8, 'head': 160, 'scale': 160}
 #[cfg(feature = "un_at_8_s")]
 mod prog {
     use npu::prelude::*;
@@ -2577,7 +2577,7 @@ mod prog {
     }
 }
 
-/// un_at_8_x：attention {'rows': 256, 'keys': 128, 'heads': 8, 'head': 160, 'scale': 160, 'cores': 2, 'mask': 'keys'}
+/// un_at_8_x：flash_attn {'rows': 256, 'keys': 128, 'heads': 8, 'head': 160, 'scale': 160}
 #[cfg(feature = "un_at_8_x")]
 mod prog {
     use npu::prelude::*;

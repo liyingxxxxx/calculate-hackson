@@ -96,7 +96,7 @@ def plan(kind: str, c: dict) -> dict:
         bias = c.get("bias") == "f32"
         return {"act": {"x": r * k * 2, "y": r * n * 2}, "w": {"w": n * k * 2, **({"b": n * 4} if bias else {})},
                 "args": ["act:x", "w:w"] + (["w:b"] if bias else []) + ["act:y"], "flop": 2 * r * k * n, "bytes": None}
-    if kind == "attention":
+    if kind in ("attention", "flash_attn"):
         t, hh, d = c["rows"], c["heads"], c["head"]
         tk = c.get("keys", t)
         return {"act": {"q": t * hh * d * 2, "k": tk * hh * d * 2, "v": tk * hh * d * 2, "o": t * hh * d * 2}, "w": {"m": tk * 2},

@@ -8,7 +8,7 @@
 | A1 | 新写的算子（quick_gelu、erf-GELU / GEGLU、时间步嵌入、NHWC GroupNorm+SiLU……），各配独立参照与边界测试 | 进行中：时间步嵌入**真机实测**过了（2026-11-14 npu3；cos_approx 分辨率 1/128，DESIGN F19）；quick_gelu、NHWC GroupNorm 未写 |
 | B1 | VAE 解码上 NPU（先 TAESD，再正式 VAE），接进 ComfyUI | ✅ 2026-11-14：TAESD 与正式 VAE 都**真机跑通**、ComfyUI 解码走 npu；正式 VAE 优化后 0.98 s，比 CPU 快约 1.75 倍（V7） |
 | B2 | CLIP 文本编码器上 NPU | |
-| B3 | UNet 一次前向对 diffusers | 进行中：**第一版真机跑通**（2026-11-14 npu3：20 段、CFG 两路一次调用，对 bf16 参照 49.8 / 50.1 dB，2 遍逐字节一致）；但一步 12.35 s，比 CPU 慢，正在优化；还没接进 ComfyUI |
+| B3 | UNet 一次前向对 diffusers | 进行中：**真机跑通**（2026-11-14 npu3：CFG 两路一次调用，对 bf16 参照 49.8 / 50.1 dB，2 遍逐字节一致）；一步 12.35 s ⇒ 注意力优化后 **8.19 s**（18 段），还比 CPU 慢，正在优化；还没接进 ComfyUI |
 | B4 | ComfyUI 原生工作流 512² 出图（去噪循环在设备上，见 DESIGN D2） | |
 | B5 | 性能、多尺寸档位、一键拉起、文档 | |
 
@@ -179,8 +179,13 @@ UNet（B3）几乎全要用 ⇒ 先在一个「只跑一次前向、好对 diffu
       逐 kernel 计时（`tools/prof.py --model unet`，DESIGN F27）：64² 的自注意力一次 625 ms（0.07 TFLOPS）× 10 次 = 6.25 s，是大头；
       输入 ≥ 1280 通道的卷积在 8²–32² 走原路、0.1–0.2 TFLOPS，合计约 4 s。结果在 `test/results/npu3-20261114/unet/`。
       单 kernel 测试（ktest）没另做：整条对参照已经过了，新 kernel 的 ktest 项待补。
-- [ ] U6 性能（按逐 kernel 计时的大头来）：① 注意力换成「一块 K / V 给多块 q 用」的写法（把 K 先转好再算试过，627 ms，没用）；
-      ② 小图上宽通道的卷积（1×1 的改走 `linear!`，3×3 的想办法走快路）；③ 量完再看段数（`linear!` 的代码只有 2–3 KB）。
+- [x] 2026-11-14 U6a 注意力（DESIGN D21）：新写 `flash_attn!`（每块 K / V 给 64 行 q 用），64² 自注意力 625 ⇒ 259 ms、32² 58 ⇒ 26 ms；
+      Transformer 拆成三个单元，18 段。第一版在真卡上算错（模拟过了），单 kernel 上板二分查到是 docc 的问题（`bcast` 按行切的 [N, 1] 向量，DESIGN F28），
+      改成整块除之后单 kernel 对 numpy 0.9–1.5%（同 calblas），整条 **一步 8.19 s**（只部署 0.57 s），对 bf16 参照 49.8 / 50.1 dB、2 遍逐字节一致。
+      新的逐 kernel 计时：卷积 4.03 s、注意力 3.0 s（64² 自注意力 2.59 s）。结果在 `test/results/npu3-20261114/unet-attn/`。
+- [ ] U6b 卷积（现在最大的一类，约 4 s）：输入 ≥ 1280 通道的卷积在 8²–32² 走原路（Cin 分段，每个输出行把权重重读一遍）0.1–0.2 TFLOPS；
+      1×1 的改走 `linear!`（输出边框不碍事的那些），3×3 的想办法走快路。
+- [ ] U6c 注意力再抠：64² 自注意力 2.59 s 仍是单个最大的 kernel（0.18 TFLOPS；VU 每个分数十几条指令，带边框的 token 多算 34%、头维 40 补到 64）。
 - [ ] U7 ComfyUI：自定义 MODEL（把 `diffusion_model` 换成调 NPU 的，每步一次、CFG 两路同一次调用）⇒ 原生 KSampler 照用；再看要不要把去噪循环放进设备（D2 / D19）。
 
 之后：B2 CLIP（LLM 式模板现成：`layer_norm!`、`linear!`、`attention!(mask = full)`；新写 quick_gelu）⇒ B3 UNet 一次前向 ⇒ B4 去噪循环进设备（D2）⇒ B5 性能与多尺寸。

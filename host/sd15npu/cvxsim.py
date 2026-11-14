@@ -555,6 +555,10 @@ class Sim:
             out[:, h] = (s_ / s_.sum(1, keepdims=True)) @ vv[:, h]
         self._u16(o, t * hh * d)[:] = bf16.bits(out.ravel())
 
+    def _k_flash_attn(self, job, c, args):
+        """本仓 flash_attn!：语义同 attention!（mask = keys，K 按原样 [key, 头 · d]）；板上分数与 p 舍 bf16、exp 近似，这里在 f32 里算。"""
+        self._k_attention(job, {**c, "mask": "keys"}, args)
+
     def _k_ln_nhwc(self, job, c, args):
         """本仓 ln_nhwc!：每个内部像素沿前 C 个通道归一（两遍法）⇒ · w + b ⇒ 舍 bf16，只写内部。"""
         h, w, ch, p, eps = c["h"], c["w"], c["c"], c["p"], np.float64(c["eps"])

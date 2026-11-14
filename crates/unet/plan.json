@@ -1,5 +1,5 @@
 {
- "generated": "2026-11-14 19:21:21",
+ "generated": "2026-11-14 20:07:57",
  "nb": 20224,
  "toffs": [
   0,
@@ -6369,18 +6369,21 @@
    "units": [
     "time",
     "conv_in",
-    "down0.res0"
+    "down0.res0",
+    "down0.attn0",
+    "down0.attn0.cross"
    ],
    "in": {
     "sh": {
      "t0": 0
     },
     "br": {
-     "x9": 0
+     "x9": 0,
+     "ctx10": 311296
     },
     "br_base": 4096,
-    "br_stride": 311296,
-    "bytes": 626688
+    "br_stride": 507904,
+    "bytes": 1019904
    },
    "out": {
     "sh": {
@@ -6388,11 +6391,12 @@
     },
     "br": {
      "m11": 0,
-     "m15": 3112960
+     "m15": 3112960,
+     "m29": 6225920
     },
     "br_base": 81920,
-    "br_stride": 6225920,
-    "bytes": 12533760
+    "br_stride": 9338880,
+    "bytes": 18759680
    },
    "act": {
     "off": {
@@ -6405,12 +6409,25 @@
      "st8": 823296,
      "m12": 864256,
      "m13": 3977216,
-     "m14": 7090176
+     "m14": 7090176,
+     "m16": 10203136,
+     "m17": 13316096,
+     "m18": 16429056,
+     "m19": 19542016,
+     "m20": 24522752,
+     "m21": 29503488,
+     "m22": 34484224,
+     "m23": 39464960,
+     "m24": 42577920,
+     "m25": 45690880,
+     "k26": 50671616,
+     "v27": 50802688,
+     "m28": 50933760
     },
-    "bytes": 10207232
+    "bytes": 55918592
    },
    "w": {
-    "bytes": 60153856,
+    "bytes": 63954944,
     "entries": {
      "temb_fp": [
       0,
@@ -6483,6 +6500,90 @@
      "conv_b|down_blocks.0.resnets.0.conv2": [
       60149760,
       1280
+     ],
+     "norm_w|down_blocks.0.attentions.0.norm": [
+      60153856,
+      1280
+     ],
+     "norm_b|down_blocks.0.attentions.0.norm": [
+      60157952,
+      1280
+     ],
+     "lin_w|down_blocks.0.attentions.0.proj_in|plain": [
+      60162048,
+      204800
+     ],
+     "lin_b|down_blocks.0.attentions.0.proj_in|plain": [
+      60366848,
+      1280
+     ],
+     "norm_w|down_blocks.0.attentions.0.transformer_blocks.0.norm1": [
+      60370944,
+      1280
+     ],
+     "norm_b|down_blocks.0.attentions.0.transformer_blocks.0.norm1": [
+      60375040,
+      1280
+     ],
+     "lin_w|down_blocks.0.attentions.0.transformer_blocks.0.attn1.to_q|qkv": [
+      60379136,
+      327680
+     ],
+     "zero_b|512": [
+      60706816,
+      2048
+     ],
+     "lin_w|down_blocks.0.attentions.0.transformer_blocks.0.attn1.to_k|qkv": [
+      60710912,
+      327680
+     ],
+     "lin_w|down_blocks.0.attentions.0.transformer_blocks.0.attn1.to_v|qkv": [
+      61038592,
+      327680
+     ],
+     "amask|64": [
+      61366272,
+      9472
+     ],
+     "lin_w|down_blocks.0.attentions.0.transformer_blocks.0.attn1.to_out.0|out": [
+      61378560,
+      327680
+     ],
+     "lin_b|down_blocks.0.attentions.0.transformer_blocks.0.attn1.to_out.0|out": [
+      61706240,
+      1280
+     ],
+     "norm_w|down_blocks.0.attentions.0.transformer_blocks.0.norm2": [
+      61710336,
+      1280
+     ],
+     "norm_b|down_blocks.0.attentions.0.transformer_blocks.0.norm2": [
+      61714432,
+      1280
+     ],
+     "lin_w|down_blocks.0.attentions.0.transformer_blocks.0.attn2.to_q|qkv": [
+      61718528,
+      327680
+     ],
+     "kv_w|down_blocks.0.attentions.0.transformer_blocks.0.attn2.to_k": [
+      62046208,
+      786432
+     ],
+     "kv_w|down_blocks.0.attentions.0.transformer_blocks.0.attn2.to_v": [
+      62832640,
+      786432
+     ],
+     "amask|x": [
+      63619072,
+      256
+     ],
+     "lin_w|down_blocks.0.attentions.0.transformer_blocks.0.attn2.to_out.0|out": [
+      63623168,
+      327680
+     ],
+     "lin_b|down_blocks.0.attentions.0.transformer_blocks.0.attn2.to_out.0|out": [
+      63950848,
+      1280
      ]
     }
    }
@@ -6490,181 +6591,118 @@
   {
    "feature": "s2",
    "units": [
-    "down0.attn0"
+    "down0.attn0.ff",
+    "down0.res1"
    ],
    "in": {
-    "sh": {},
-    "br": {
-     "m15": 0,
-     "ctx10": 3112960
+    "sh": {
+     "tb7": 0
     },
-    "br_base": 0,
-    "br_stride": 3309568,
-    "bytes": 6619136
+    "br": {
+     "m29": 0,
+     "m15": 3112960
+    },
+    "br_base": 81920,
+    "br_stride": 6225920,
+    "bytes": 12533760
    },
    "out": {
     "sh": {},
     "br": {
-     "m35": 0
+     "m35": 0,
+     "m39": 3112960
     },
     "br_base": 0,
-    "br_stride": 3112960,
-    "bytes": 6225920
+    "br_stride": 6225920,
+    "bytes": 12451840
    },
    "act": {
     "off": {
-     "st8": 0,
-     "m16": 40960,
-     "m17": 3153920,
-     "m18": 6266880,
-     "m19": 9379840,
-     "m20": 14360576,
-     "m21": 19341312,
-     "m22": 24322048,
-     "m23": 29302784,
-     "m24": 32415744,
-     "m25": 35528704,
-     "k26": 40509440,
-     "v27": 40640512,
-     "m28": 40771584,
-     "m29": 45752320,
-     "m30": 48865280,
-     "m31": 51978240,
-     "m32": 64430080,
-     "m33": 76881920,
-     "m34": 89333760
+     "m30": 0,
+     "m31": 3112960,
+     "m32": 15564800,
+     "m33": 28016640,
+     "m34": 40468480,
+     "st8": 43581440,
+     "m36": 43622400,
+     "m37": 46735360,
+     "m38": 49848320
     },
-    "bytes": 92454912
+    "bytes": 52969472
    },
    "w": {
-    "bytes": 6537216,
+    "bytes": 6443008,
     "entries": {
-     "norm_w|down_blocks.0.attentions.0.norm": [
+     "norm_w|down_blocks.0.attentions.0.transformer_blocks.0.norm3": [
       0,
       1280
      ],
-     "norm_b|down_blocks.0.attentions.0.norm": [
+     "norm_b|down_blocks.0.attentions.0.transformer_blocks.0.norm3": [
       4096,
       1280
      ],
-     "gmask|320": [
-      8192,
-      40960
-     ],
-     "lin_w|down_blocks.0.attentions.0.proj_in|plain": [
-      49152,
-      204800
-     ],
-     "lin_b|down_blocks.0.attentions.0.proj_in|plain": [
-      253952,
-      1280
-     ],
-     "norm_w|down_blocks.0.attentions.0.transformer_blocks.0.norm1": [
-      258048,
-      1280
-     ],
-     "norm_b|down_blocks.0.attentions.0.transformer_blocks.0.norm1": [
-      262144,
-      1280
-     ],
-     "lin_w|down_blocks.0.attentions.0.transformer_blocks.0.attn1.to_q|qkv": [
-      266240,
-      327680
-     ],
-     "zero_b|512": [
-      593920,
-      2048
-     ],
-     "lin_w|down_blocks.0.attentions.0.transformer_blocks.0.attn1.to_k|qkv": [
-      598016,
-      327680
-     ],
-     "lin_w|down_blocks.0.attentions.0.transformer_blocks.0.attn1.to_v|qkv": [
-      925696,
-      327680
-     ],
-     "amask|64": [
-      1253376,
-      9472
-     ],
-     "lin_w|down_blocks.0.attentions.0.transformer_blocks.0.attn1.to_out.0|out": [
-      1265664,
-      327680
-     ],
-     "lin_b|down_blocks.0.attentions.0.transformer_blocks.0.attn1.to_out.0|out": [
-      1593344,
-      1280
-     ],
-     "norm_w|down_blocks.0.attentions.0.transformer_blocks.0.norm2": [
-      1597440,
-      1280
-     ],
-     "norm_b|down_blocks.0.attentions.0.transformer_blocks.0.norm2": [
-      1601536,
-      1280
-     ],
-     "lin_w|down_blocks.0.attentions.0.transformer_blocks.0.attn2.to_q|qkv": [
-      1605632,
-      327680
-     ],
-     "kv_w|down_blocks.0.attentions.0.transformer_blocks.0.attn2.to_k": [
-      1933312,
-      786432
-     ],
-     "kv_w|down_blocks.0.attentions.0.transformer_blocks.0.attn2.to_v": [
-      2719744,
-      786432
-     ],
-     "amask|x": [
-      3506176,
-      256
-     ],
-     "lin_w|down_blocks.0.attentions.0.transformer_blocks.0.attn2.to_out.0|out": [
-      3510272,
-      327680
-     ],
-     "lin_b|down_blocks.0.attentions.0.transformer_blocks.0.attn2.to_out.0|out": [
-      3837952,
-      1280
-     ],
-     "norm_w|down_blocks.0.attentions.0.transformer_blocks.0.norm3": [
-      3842048,
-      1280
-     ],
-     "norm_b|down_blocks.0.attentions.0.transformer_blocks.0.norm3": [
-      3846144,
-      1280
-     ],
      "lin_w|down_blocks.0.attentions.0.transformer_blocks.0.ff.net.0.proj|ff_h": [
-      3850240,
+      8192,
       819200
      ],
      "lin_b|down_blocks.0.attentions.0.transformer_blocks.0.ff.net.0.proj|ff_h": [
-      4669440,
+      827392,
       5120
      ],
      "lin_w|down_blocks.0.attentions.0.transformer_blocks.0.ff.net.0.proj|ff_g": [
-      4677632,
+      835584,
       819200
      ],
      "lin_b|down_blocks.0.attentions.0.transformer_blocks.0.ff.net.0.proj|ff_g": [
-      5496832,
+      1654784,
       5120
      ],
      "lin_w|down_blocks.0.attentions.0.transformer_blocks.0.ff.net.2|plain": [
-      5505024,
+      1662976,
       819200
      ],
      "lin_b|down_blocks.0.attentions.0.transformer_blocks.0.ff.net.2|plain": [
-      6324224,
+      2482176,
       1280
      ],
      "conv_w|down_blocks.0.attentions.0.proj_out": [
-      6328320,
+      2486272,
       204800
      ],
      "conv_b|down_blocks.0.attentions.0.proj_out": [
-      6533120,
+      2691072,
+      1280
+     ],
+     "norm_w|down_blocks.0.resnets.1.norm1": [
+      2695168,
+      1280
+     ],
+     "norm_b|down_blocks.0.resnets.1.norm1": [
+      2699264,
+      1280
+     ],
+     "gmask|320": [
+      2703360,
+      40960
+     ],
+     "conv_w|down_blocks.0.resnets.1.conv1": [
+      2744320,
+      1843200
+     ],
+     "norm_w|down_blocks.0.resnets.1.norm2": [
+      4587520,
+      1280
+     ],
+     "norm_b|down_blocks.0.resnets.1.norm2": [
+      4591616,
+      1280
+     ],
+     "conv_w|down_blocks.0.resnets.1.conv2": [
+      4595712,
+      1843200
+     ],
+     "conv_b|down_blocks.0.resnets.1.conv2": [
+      6438912,
       1280
      ]
     }
@@ -6673,80 +6711,9 @@
   {
    "feature": "s3",
    "units": [
-    "down0.res1"
-   ],
-   "in": {
-    "sh": {
-     "tb7": 0
-    },
-    "br": {
-     "m35": 0
-    },
-    "br_base": 81920,
-    "br_stride": 3112960,
-    "bytes": 6307840
-   },
-   "out": {
-    "sh": {},
-    "br": {
-     "m39": 0
-    },
-    "br_base": 0,
-    "br_stride": 3112960,
-    "bytes": 6225920
-   },
-   "act": {
-    "off": {
-     "st8": 0,
-     "m36": 40960,
-     "m37": 3153920,
-     "m38": 6266880
-    },
-    "bytes": 9388032
-   },
-   "w": {
-    "bytes": 3747840,
-    "entries": {
-     "norm_w|down_blocks.0.resnets.1.norm1": [
-      0,
-      1280
-     ],
-     "norm_b|down_blocks.0.resnets.1.norm1": [
-      4096,
-      1280
-     ],
-     "gmask|320": [
-      8192,
-      40960
-     ],
-     "conv_w|down_blocks.0.resnets.1.conv1": [
-      49152,
-      1843200
-     ],
-     "norm_w|down_blocks.0.resnets.1.norm2": [
-      1892352,
-      1280
-     ],
-     "norm_b|down_blocks.0.resnets.1.norm2": [
-      1896448,
-      1280
-     ],
-     "conv_w|down_blocks.0.resnets.1.conv2": [
-      1900544,
-      1843200
-     ],
-     "conv_b|down_blocks.0.resnets.1.conv2": [
-      3743744,
-      1280
-     ]
-    }
-   }
-  },
-  {
-   "feature": "s4",
-   "units": [
     "down0.attn1",
-    "down0.down"
+    "down0.attn1.cross",
+    "down0.attn1.ff"
    ],
    "in": {
     "sh": {},
@@ -6761,12 +6728,11 @@
    "out": {
     "sh": {},
     "br": {
-     "m59": 0,
-     "m60": 3112960
+     "m59": 0
     },
     "br_base": 0,
-    "br_stride": 4096000,
-    "bytes": 8192000
+    "br_stride": 3112960,
+    "bytes": 6225920
    },
    "act": {
     "off": {
@@ -6794,7 +6760,7 @@
     "bytes": 92454912
    },
    "w": {
-    "bytes": 8384512,
+    "bytes": 6537216,
     "entries": {
      "norm_w|down_blocks.0.attentions.1.norm": [
       0,
@@ -6923,25 +6889,22 @@
      "conv_b|down_blocks.0.attentions.1.proj_out": [
       6533120,
       1280
-     ],
-     "conv_w|down_blocks.0.downsamplers.0.conv": [
-      6537216,
-      1843200
-     ],
-     "conv_b|down_blocks.0.downsamplers.0.conv": [
-      8380416,
-      1280
      ]
     }
    }
   },
   {
-   "feature": "s5",
+   "feature": "s4",
    "units": [
+    "down0.down",
     "down1.res0",
     "down1.attn0",
+    "down1.attn0.cross",
+    "down1.attn0.ff",
     "down1.res1",
     "down1.attn1",
+    "down1.attn1.cross",
+    "down1.attn1.ff",
     "down1.down"
    ],
    "in": {
@@ -6949,23 +6912,24 @@
      "tb7": 0
     },
     "br": {
-     "m60": 0,
-     "ctx10": 983040
+     "m59": 0,
+     "ctx10": 3112960
     },
     "br_base": 81920,
-    "br_stride": 1179648,
-    "bytes": 2441216
+    "br_stride": 3309568,
+    "bytes": 6701056
    },
    "out": {
     "sh": {},
     "br": {
-     "m85": 0,
-     "m109": 1966080,
-     "m110": 3932160
+     "m60": 0,
+     "m85": 983040,
+     "m109": 2949120,
+     "m110": 4915200
     },
     "br_base": 0,
-    "br_stride": 4751360,
-    "bytes": 9502720
+    "br_stride": 5734400,
+    "bytes": 11468800
    },
    "act": {
     "off": {
@@ -7021,328 +6985,338 @@
     "bytes": 125288448
    },
    "w": {
-    "bytes": 73703424,
+    "bytes": 75550720,
     "entries": {
-     "norm_w|down_blocks.1.resnets.0.norm1": [
+     "conv_w|down_blocks.0.downsamplers.0.conv": [
       0,
+      1843200
+     ],
+     "conv_b|down_blocks.0.downsamplers.0.conv": [
+      1843200,
+      1280
+     ],
+     "norm_w|down_blocks.1.resnets.0.norm1": [
+      1847296,
       1280
      ],
      "norm_b|down_blocks.1.resnets.0.norm1": [
-      4096,
+      1851392,
       1280
      ],
      "gmask|320": [
-      8192,
+      1855488,
       40960
      ],
      "conv_w|down_blocks.1.resnets.0.conv1": [
-      49152,
+      1896448,
       3686400
      ],
      "norm_w|down_blocks.1.resnets.0.norm2": [
-      3735552,
+      5582848,
       2560
      ],
      "norm_b|down_blocks.1.resnets.0.norm2": [
-      3739648,
+      5586944,
       2560
      ],
      "gmask|640": [
-      3743744,
+      5591040,
       81920
      ],
      "conv_w|down_blocks.1.resnets.0.conv_shortcut": [
-      3825664,
+      5672960,
       409600
      ],
      "conv_b|down_blocks.1.resnets.0.conv_shortcut": [
-      4235264,
+      6082560,
       2560
      ],
      "conv_w|down_blocks.1.resnets.0.conv2": [
-      4239360,
+      6086656,
       7372800
      ],
      "conv_b|down_blocks.1.resnets.0.conv2": [
-      11612160,
+      13459456,
       2560
      ],
      "norm_w|down_blocks.1.attentions.0.norm": [
-      11616256,
+      13463552,
       2560
      ],
      "norm_b|down_blocks.1.attentions.0.norm": [
-      11620352,
+      13467648,
       2560
      ],
      "lin_w|down_blocks.1.attentions.0.proj_in|plain|hf": [
-      11624448,
+      13471744,
       819200
      ],
      "lin_b|down_blocks.1.attentions.0.proj_in|plain": [
-      12443648,
+      14290944,
       2560
      ],
      "norm_w|down_blocks.1.attentions.0.transformer_blocks.0.norm1": [
-      12447744,
+      14295040,
       2560
      ],
      "norm_b|down_blocks.1.attentions.0.transformer_blocks.0.norm1": [
-      12451840,
+      14299136,
       2560
      ],
      "lin_w|down_blocks.1.attentions.0.transformer_blocks.0.attn1.to_q|qkv|hf": [
-      12455936,
+      14303232,
       983040
      ],
      "lin_w|down_blocks.1.attentions.0.transformer_blocks.0.attn1.to_k|qkv|hf": [
-      13438976,
+      15286272,
       983040
      ],
      "lin_w|down_blocks.1.attentions.0.transformer_blocks.0.attn1.to_v|qkv|hf": [
-      14422016,
+      16269312,
       983040
      ],
      "amask|32": [
-      15405056,
+      17252352,
       2816
      ],
      "lin_w|down_blocks.1.attentions.0.transformer_blocks.0.attn1.to_out.0|out": [
-      15409152,
+      17256448,
       983040
      ],
      "lin_b|down_blocks.1.attentions.0.transformer_blocks.0.attn1.to_out.0|out": [
-      16392192,
+      18239488,
       2560
      ],
      "norm_w|down_blocks.1.attentions.0.transformer_blocks.0.norm2": [
-      16396288,
+      18243584,
       2560
      ],
      "norm_b|down_blocks.1.attentions.0.transformer_blocks.0.norm2": [
-      16400384,
+      18247680,
       2560
      ],
      "lin_w|down_blocks.1.attentions.0.transformer_blocks.0.attn2.to_q|qkv|hf": [
-      16404480,
+      18251776,
       983040
      ],
      "kv_w|down_blocks.1.attentions.0.transformer_blocks.0.attn2.to_k": [
-      17387520,
+      19234816,
       1179648
      ],
      "kv_w|down_blocks.1.attentions.0.transformer_blocks.0.attn2.to_v": [
-      18567168,
+      20414464,
       1179648
      ],
      "amask|x": [
-      19746816,
+      21594112,
       256
      ],
      "lin_w|down_blocks.1.attentions.0.transformer_blocks.0.attn2.to_out.0|out": [
-      19750912,
+      21598208,
       983040
      ],
      "lin_b|down_blocks.1.attentions.0.transformer_blocks.0.attn2.to_out.0|out": [
-      20733952,
+      22581248,
       2560
      ],
      "norm_w|down_blocks.1.attentions.0.transformer_blocks.0.norm3": [
-      20738048,
+      22585344,
       2560
      ],
      "norm_b|down_blocks.1.attentions.0.transformer_blocks.0.norm3": [
-      20742144,
+      22589440,
       2560
      ],
      "lin_w|down_blocks.1.attentions.0.transformer_blocks.0.ff.net.0.proj|ff_h|hf": [
-      20746240,
+      22593536,
       3276800
      ],
      "lin_b|down_blocks.1.attentions.0.transformer_blocks.0.ff.net.0.proj|ff_h": [
-      24023040,
+      25870336,
       10240
      ],
      "lin_w|down_blocks.1.attentions.0.transformer_blocks.0.ff.net.0.proj|ff_g|hf": [
-      24035328,
+      25882624,
       3276800
      ],
      "lin_b|down_blocks.1.attentions.0.transformer_blocks.0.ff.net.0.proj|ff_g": [
-      27312128,
+      29159424,
       10240
      ],
      "lin_w|down_blocks.1.attentions.0.transformer_blocks.0.ff.net.2|plain": [
-      27324416,
+      29171712,
       3276800
      ],
      "lin_b|down_blocks.1.attentions.0.transformer_blocks.0.ff.net.2|plain": [
-      30601216,
+      32448512,
       2560
      ],
      "conv_w|down_blocks.1.attentions.0.proj_out": [
-      30605312,
+      32452608,
       983040
      ],
      "conv_b|down_blocks.1.attentions.0.proj_out": [
-      31588352,
+      33435648,
       2560
      ],
      "norm_w|down_blocks.1.resnets.1.norm1": [
-      31592448,
+      33439744,
       2560
      ],
      "norm_b|down_blocks.1.resnets.1.norm1": [
-      31596544,
+      33443840,
       2560
      ],
      "conv_w|down_blocks.1.resnets.1.conv1": [
-      31600640,
+      33447936,
       7372800
      ],
      "norm_w|down_blocks.1.resnets.1.norm2": [
-      38973440,
+      40820736,
       2560
      ],
      "norm_b|down_blocks.1.resnets.1.norm2": [
-      38977536,
+      40824832,
       2560
      ],
      "conv_w|down_blocks.1.resnets.1.conv2": [
-      38981632,
+      40828928,
       7372800
      ],
      "conv_b|down_blocks.1.resnets.1.conv2": [
-      46354432,
+      48201728,
       2560
      ],
      "norm_w|down_blocks.1.attentions.1.norm": [
-      46358528,
+      48205824,
       2560
      ],
      "norm_b|down_blocks.1.attentions.1.norm": [
-      46362624,
+      48209920,
       2560
      ],
      "lin_w|down_blocks.1.attentions.1.proj_in|plain|hf": [
-      46366720,
+      48214016,
       819200
      ],
      "lin_b|down_blocks.1.attentions.1.proj_in|plain": [
-      47185920,
+      49033216,
       2560
      ],
      "norm_w|down_blocks.1.attentions.1.transformer_blocks.0.norm1": [
-      47190016,
+      49037312,
       2560
      ],
      "norm_b|down_blocks.1.attentions.1.transformer_blocks.0.norm1": [
-      47194112,
+      49041408,
       2560
      ],
      "lin_w|down_blocks.1.attentions.1.transformer_blocks.0.attn1.to_q|qkv|hf": [
-      47198208,
+      49045504,
       983040
      ],
      "lin_w|down_blocks.1.attentions.1.transformer_blocks.0.attn1.to_k|qkv|hf": [
-      48181248,
+      50028544,
       983040
      ],
      "lin_w|down_blocks.1.attentions.1.transformer_blocks.0.attn1.to_v|qkv|hf": [
-      49164288,
+      51011584,
       983040
      ],
      "lin_w|down_blocks.1.attentions.1.transformer_blocks.0.attn1.to_out.0|out": [
-      50147328,
+      51994624,
       983040
      ],
      "lin_b|down_blocks.1.attentions.1.transformer_blocks.0.attn1.to_out.0|out": [
-      51130368,
+      52977664,
       2560
      ],
      "norm_w|down_blocks.1.attentions.1.transformer_blocks.0.norm2": [
-      51134464,
+      52981760,
       2560
      ],
      "norm_b|down_blocks.1.attentions.1.transformer_blocks.0.norm2": [
-      51138560,
+      52985856,
       2560
      ],
      "lin_w|down_blocks.1.attentions.1.transformer_blocks.0.attn2.to_q|qkv|hf": [
-      51142656,
+      52989952,
       983040
      ],
      "kv_w|down_blocks.1.attentions.1.transformer_blocks.0.attn2.to_k": [
-      52125696,
+      53972992,
       1179648
      ],
      "kv_w|down_blocks.1.attentions.1.transformer_blocks.0.attn2.to_v": [
-      53305344,
+      55152640,
       1179648
      ],
      "lin_w|down_blocks.1.attentions.1.transformer_blocks.0.attn2.to_out.0|out": [
-      54484992,
+      56332288,
       983040
      ],
      "lin_b|down_blocks.1.attentions.1.transformer_blocks.0.attn2.to_out.0|out": [
-      55468032,
+      57315328,
       2560
      ],
      "norm_w|down_blocks.1.attentions.1.transformer_blocks.0.norm3": [
-      55472128,
+      57319424,
       2560
      ],
      "norm_b|down_blocks.1.attentions.1.transformer_blocks.0.norm3": [
-      55476224,
+      57323520,
       2560
      ],
      "lin_w|down_blocks.1.attentions.1.transformer_blocks.0.ff.net.0.proj|ff_h|hf": [
-      55480320,
+      57327616,
       3276800
      ],
      "lin_b|down_blocks.1.attentions.1.transformer_blocks.0.ff.net.0.proj|ff_h": [
-      58757120,
+      60604416,
       10240
      ],
      "lin_w|down_blocks.1.attentions.1.transformer_blocks.0.ff.net.0.proj|ff_g|hf": [
-      58769408,
+      60616704,
       3276800
      ],
      "lin_b|down_blocks.1.attentions.1.transformer_blocks.0.ff.net.0.proj|ff_g": [
-      62046208,
+      63893504,
       10240
      ],
      "lin_w|down_blocks.1.attentions.1.transformer_blocks.0.ff.net.2|plain": [
-      62058496,
+      63905792,
       3276800
      ],
      "lin_b|down_blocks.1.attentions.1.transformer_blocks.0.ff.net.2|plain": [
-      65335296,
+      67182592,
       2560
      ],
      "conv_w|down_blocks.1.attentions.1.proj_out": [
-      65339392,
+      67186688,
       983040
      ],
      "conv_b|down_blocks.1.attentions.1.proj_out": [
-      66322432,
+      68169728,
       2560
      ],
      "conv_w|down_blocks.1.downsamplers.0.conv": [
-      66326528,
+      68173824,
       7372800
      ],
      "conv_b|down_blocks.1.downsamplers.0.conv": [
-      73699328,
+      75546624,
       2560
      ]
     }
    }
   },
   {
-   "feature": "s6",
+   "feature": "s5",
    "units": [
     "down2.res0",
-    "down2.attn0"
+    "down2.attn0",
+    "down2.attn0.cross",
+    "down2.attn0.ff"
    ],
    "in": {
     "sh": {
@@ -7570,10 +7544,12 @@
    }
   },
   {
-   "feature": "s7",
+   "feature": "s6",
    "units": [
     "down2.res1",
-    "down2.attn1"
+    "down2.attn1",
+    "down2.attn1.cross",
+    "down2.attn1.ff"
    ],
    "in": {
     "sh": {
@@ -7788,13 +7764,15 @@
    }
   },
   {
-   "feature": "s8",
+   "feature": "s7",
    "units": [
     "down2.down",
     "down3.res0",
     "down3.res1",
     "mid.res0",
     "mid.attn",
+    "mid.attn.cross",
+    "mid.attn.ff",
     "mid.res1",
     "up0.res0",
     "up0.res1",
@@ -8248,10 +8226,12 @@
    }
   },
   {
-   "feature": "s9",
+   "feature": "s8",
    "units": [
     "up0.up",
-    "up1.res0"
+    "up1.res0",
+    "up1.attn0",
+    "up1.attn0.cross"
    ],
    "in": {
     "sh": {
@@ -8259,20 +8239,22 @@
     },
     "br": {
      "m214": 0,
-     "m159": 983040
+     "m159": 983040,
+     "ctx10": 2621440
     },
     "br_base": 81920,
-    "br_stride": 2621440,
-    "bytes": 5324800
+    "br_stride": 2818048,
+    "bytes": 5718016
    },
    "out": {
     "sh": {},
     "br": {
-     "m222": 0
+     "m222": 0,
+     "m236": 1638400
     },
     "br_base": 0,
-    "br_stride": 1638400,
-    "bytes": 3276800
+    "br_stride": 3276800,
+    "bytes": 6553600
    },
    "act": {
     "off": {
@@ -8283,12 +8265,25 @@
      "m218": 6594560,
      "m219": 9871360,
      "m220": 11509760,
-     "m221": 13148160
+     "m221": 13148160,
+     "m223": 14786560,
+     "m224": 16424960,
+     "m225": 18063360,
+     "m226": 19701760,
+     "m227": 21340160,
+     "m228": 22978560,
+     "m229": 24616960,
+     "m230": 26255360,
+     "m231": 27893760,
+     "m232": 29532160,
+     "k233": 31170560,
+     "v234": 31498240,
+     "m235": 31825920
     },
-    "bytes": 14794752
+    "bytes": 33472512
    },
    "w": {
-    "bytes": 125075456,
+    "bytes": 152035328,
     "entries": {
      "conv_w|up_blocks.0.upsamplers.0.conv": [
       0,
@@ -8341,29 +8336,116 @@
      "conv_b|up_blocks.1.resnets.0.conv2": [
       125067264,
       5120
+     ],
+     "norm_w|up_blocks.1.attentions.0.norm": [
+      125075456,
+      5120
+     ],
+     "norm_b|up_blocks.1.attentions.0.norm": [
+      125083648,
+      5120
+     ],
+     "lin_w|up_blocks.1.attentions.0.proj_in|plain": [
+      125091840,
+      3276800
+     ],
+     "lin_b|up_blocks.1.attentions.0.proj_in|plain": [
+      128368640,
+      5120
+     ],
+     "norm_w|up_blocks.1.attentions.0.transformer_blocks.0.norm1": [
+      128376832,
+      5120
+     ],
+     "norm_b|up_blocks.1.attentions.0.transformer_blocks.0.norm1": [
+      128385024,
+      5120
+     ],
+     "lin_w|up_blocks.1.attentions.0.transformer_blocks.0.attn1.to_q|qkv": [
+      128393216,
+      3276800
+     ],
+     "zero_b|1280": [
+      131670016,
+      5120
+     ],
+     "lin_w|up_blocks.1.attentions.0.transformer_blocks.0.attn1.to_k|qkv": [
+      131678208,
+      3276800
+     ],
+     "lin_w|up_blocks.1.attentions.0.transformer_blocks.0.attn1.to_v|qkv": [
+      134955008,
+      3276800
+     ],
+     "amask|16": [
+      138231808,
+      1024
+     ],
+     "lin_w|up_blocks.1.attentions.0.transformer_blocks.0.attn1.to_out.0|out": [
+      138235904,
+      3276800
+     ],
+     "lin_b|up_blocks.1.attentions.0.transformer_blocks.0.attn1.to_out.0|out": [
+      141512704,
+      5120
+     ],
+     "norm_w|up_blocks.1.attentions.0.transformer_blocks.0.norm2": [
+      141520896,
+      5120
+     ],
+     "norm_b|up_blocks.1.attentions.0.transformer_blocks.0.norm2": [
+      141529088,
+      5120
+     ],
+     "lin_w|up_blocks.1.attentions.0.transformer_blocks.0.attn2.to_q|qkv": [
+      141537280,
+      3276800
+     ],
+     "kv_w|up_blocks.1.attentions.0.transformer_blocks.0.attn2.to_k": [
+      144814080,
+      1966080
+     ],
+     "kv_w|up_blocks.1.attentions.0.transformer_blocks.0.attn2.to_v": [
+      146780160,
+      1966080
+     ],
+     "amask|x": [
+      148746240,
+      256
+     ],
+     "lin_w|up_blocks.1.attentions.0.transformer_blocks.0.attn2.to_out.0|out": [
+      148750336,
+      3276800
+     ],
+     "lin_b|up_blocks.1.attentions.0.transformer_blocks.0.attn2.to_out.0|out": [
+      152027136,
+      5120
      ]
     }
    }
   },
   {
-   "feature": "s10",
+   "feature": "s9",
    "units": [
-    "up1.attn0",
+    "up1.attn0.ff",
     "up1.res1",
-    "up1.attn1"
+    "up1.attn1",
+    "up1.attn1.cross",
+    "up1.attn1.ff"
    ],
    "in": {
     "sh": {
      "tb7": 0
     },
     "br": {
-     "m222": 0,
-     "ctx10": 1638400,
-     "m135": 1835008
+     "m236": 0,
+     "m222": 1638400,
+     "m135": 3276800,
+     "ctx10": 4915200
     },
     "br_base": 81920,
-    "br_stride": 3473408,
-    "bytes": 7028736
+    "br_stride": 5111808,
+    "bytes": 10305536
    },
    "out": {
     "sh": {},
@@ -8376,346 +8458,262 @@
    },
    "act": {
     "off": {
-     "st8": 0,
-     "m223": 40960,
-     "m224": 1679360,
-     "m225": 3317760,
-     "m226": 4956160,
-     "m227": 6594560,
-     "m228": 8232960,
-     "m229": 9871360,
-     "m230": 11509760,
-     "m231": 13148160,
-     "m232": 14786560,
-     "k233": 16424960,
-     "v234": 16752640,
-     "m235": 17080320,
-     "m236": 18718720,
-     "m237": 20357120,
-     "m238": 21995520,
-     "m239": 28549120,
-     "m240": 35102720,
-     "m241": 41656320,
-     "m242": 43294720,
-     "m243": 44933120,
-     "m244": 48209920,
-     "m245": 51486720,
-     "m246": 53125120,
-     "m247": 54763520,
-     "m248": 56401920,
-     "m249": 58040320,
-     "m250": 59678720,
-     "m251": 61317120,
-     "m252": 62955520,
-     "m253": 64593920,
-     "m254": 66232320,
-     "m255": 67870720,
-     "m256": 69509120,
-     "m257": 71147520,
-     "m258": 72785920,
-     "k259": 74424320,
-     "v260": 74752000,
-     "m261": 75079680,
-     "m262": 76718080,
-     "m263": 78356480,
-     "m264": 79994880,
-     "m265": 86548480,
-     "m266": 93102080,
-     "m267": 99655680
+     "m237": 0,
+     "m238": 1638400,
+     "m239": 8192000,
+     "m240": 14745600,
+     "m241": 21299200,
+     "m242": 22937600,
+     "m243": 24576000,
+     "st8": 27852800,
+     "m244": 27893760,
+     "m245": 31170560,
+     "m246": 32808960,
+     "m247": 34447360,
+     "m248": 36085760,
+     "m249": 37724160,
+     "m250": 39362560,
+     "m251": 41000960,
+     "m252": 42639360,
+     "m253": 44277760,
+     "m254": 45916160,
+     "m255": 47554560,
+     "m256": 49192960,
+     "m257": 50831360,
+     "m258": 52469760,
+     "k259": 54108160,
+     "v260": 54435840,
+     "m261": 54763520,
+     "m262": 56401920,
+     "m263": 58040320,
+     "m264": 59678720,
+     "m265": 66232320,
+     "m266": 72785920,
+     "m267": 79339520
     },
-    "bytes": 101302272
+    "bytes": 80986112
    },
    "w": {
-    "bytes": 234823680,
+    "bytes": 207880192,
     "entries": {
-     "norm_w|up_blocks.1.attentions.0.norm": [
+     "norm_w|up_blocks.1.attentions.0.transformer_blocks.0.norm3": [
       0,
       5120
      ],
-     "norm_b|up_blocks.1.attentions.0.norm": [
+     "norm_b|up_blocks.1.attentions.0.transformer_blocks.0.norm3": [
       8192,
       5120
      ],
-     "gmask|1280": [
-      16384,
-      163840
-     ],
-     "lin_w|up_blocks.1.attentions.0.proj_in|plain": [
-      180224,
-      3276800
-     ],
-     "lin_b|up_blocks.1.attentions.0.proj_in|plain": [
-      3457024,
-      5120
-     ],
-     "norm_w|up_blocks.1.attentions.0.transformer_blocks.0.norm1": [
-      3465216,
-      5120
-     ],
-     "norm_b|up_blocks.1.attentions.0.transformer_blocks.0.norm1": [
-      3473408,
-      5120
-     ],
-     "lin_w|up_blocks.1.attentions.0.transformer_blocks.0.attn1.to_q|qkv": [
-      3481600,
-      3276800
-     ],
-     "zero_b|1280": [
-      6758400,
-      5120
-     ],
-     "lin_w|up_blocks.1.attentions.0.transformer_blocks.0.attn1.to_k|qkv": [
-      6766592,
-      3276800
-     ],
-     "lin_w|up_blocks.1.attentions.0.transformer_blocks.0.attn1.to_v|qkv": [
-      10043392,
-      3276800
-     ],
-     "amask|16": [
-      13320192,
-      1024
-     ],
-     "lin_w|up_blocks.1.attentions.0.transformer_blocks.0.attn1.to_out.0|out": [
-      13324288,
-      3276800
-     ],
-     "lin_b|up_blocks.1.attentions.0.transformer_blocks.0.attn1.to_out.0|out": [
-      16601088,
-      5120
-     ],
-     "norm_w|up_blocks.1.attentions.0.transformer_blocks.0.norm2": [
-      16609280,
-      5120
-     ],
-     "norm_b|up_blocks.1.attentions.0.transformer_blocks.0.norm2": [
-      16617472,
-      5120
-     ],
-     "lin_w|up_blocks.1.attentions.0.transformer_blocks.0.attn2.to_q|qkv": [
-      16625664,
-      3276800
-     ],
-     "kv_w|up_blocks.1.attentions.0.transformer_blocks.0.attn2.to_k": [
-      19902464,
-      1966080
-     ],
-     "kv_w|up_blocks.1.attentions.0.transformer_blocks.0.attn2.to_v": [
-      21868544,
-      1966080
-     ],
-     "amask|x": [
-      23834624,
-      256
-     ],
-     "lin_w|up_blocks.1.attentions.0.transformer_blocks.0.attn2.to_out.0|out": [
-      23838720,
-      3276800
-     ],
-     "lin_b|up_blocks.1.attentions.0.transformer_blocks.0.attn2.to_out.0|out": [
-      27115520,
-      5120
-     ],
-     "norm_w|up_blocks.1.attentions.0.transformer_blocks.0.norm3": [
-      27123712,
-      5120
-     ],
-     "norm_b|up_blocks.1.attentions.0.transformer_blocks.0.norm3": [
-      27131904,
-      5120
-     ],
      "lin_w|up_blocks.1.attentions.0.transformer_blocks.0.ff.net.0.proj|ff_h": [
-      27140096,
+      16384,
       13107200
      ],
      "lin_b|up_blocks.1.attentions.0.transformer_blocks.0.ff.net.0.proj|ff_h": [
-      40247296,
+      13123584,
       20480
      ],
      "lin_w|up_blocks.1.attentions.0.transformer_blocks.0.ff.net.0.proj|ff_g": [
-      40267776,
+      13144064,
       13107200
      ],
      "lin_b|up_blocks.1.attentions.0.transformer_blocks.0.ff.net.0.proj|ff_g": [
-      53374976,
+      26251264,
       20480
      ],
      "lin_w|up_blocks.1.attentions.0.transformer_blocks.0.ff.net.2|plain": [
-      53395456,
+      26271744,
       13107200
      ],
      "lin_b|up_blocks.1.attentions.0.transformer_blocks.0.ff.net.2|plain": [
-      66502656,
+      39378944,
       5120
      ],
      "conv_w|up_blocks.1.attentions.0.proj_out": [
-      66510848,
+      39387136,
       3276800
      ],
      "conv_b|up_blocks.1.attentions.0.proj_out": [
-      69787648,
+      42663936,
       5120
      ],
      "norm_w|up_blocks.1.resnets.1.norm1": [
-      69795840,
+      42672128,
       10240
      ],
      "norm_b|up_blocks.1.resnets.1.norm1": [
-      69808128,
+      42684416,
       10240
      ],
      "gmask|2560": [
-      69820416,
+      42696704,
       327680
      ],
      "conv_w|up_blocks.1.resnets.1.conv1": [
-      70148096,
+      43024384,
       58982400
      ],
      "norm_w|up_blocks.1.resnets.1.norm2": [
-      129130496,
+      102006784,
       5120
      ],
      "norm_b|up_blocks.1.resnets.1.norm2": [
-      129138688,
+      102014976,
       5120
      ],
+     "gmask|1280": [
+      102023168,
+      163840
+     ],
      "conv_w|up_blocks.1.resnets.1.conv_shortcut": [
-      129146880,
+      102187008,
       6553600
      ],
      "conv_b|up_blocks.1.resnets.1.conv_shortcut": [
-      135700480,
+      108740608,
       5120
      ],
      "conv_w|up_blocks.1.resnets.1.conv2": [
-      135708672,
+      108748800,
       29491200
      ],
      "conv_b|up_blocks.1.resnets.1.conv2": [
-      165199872,
+      138240000,
       5120
      ],
      "norm_w|up_blocks.1.attentions.1.norm": [
-      165208064,
+      138248192,
       5120
      ],
      "norm_b|up_blocks.1.attentions.1.norm": [
-      165216256,
+      138256384,
       5120
      ],
      "lin_w|up_blocks.1.attentions.1.proj_in|plain": [
-      165224448,
+      138264576,
       3276800
      ],
      "lin_b|up_blocks.1.attentions.1.proj_in|plain": [
-      168501248,
+      141541376,
       5120
      ],
      "norm_w|up_blocks.1.attentions.1.transformer_blocks.0.norm1": [
-      168509440,
+      141549568,
       5120
      ],
      "norm_b|up_blocks.1.attentions.1.transformer_blocks.0.norm1": [
-      168517632,
+      141557760,
       5120
      ],
      "lin_w|up_blocks.1.attentions.1.transformer_blocks.0.attn1.to_q|qkv": [
-      168525824,
+      141565952,
       3276800
      ],
+     "zero_b|1280": [
+      144842752,
+      5120
+     ],
      "lin_w|up_blocks.1.attentions.1.transformer_blocks.0.attn1.to_k|qkv": [
-      171802624,
+      144850944,
       3276800
      ],
      "lin_w|up_blocks.1.attentions.1.transformer_blocks.0.attn1.to_v|qkv": [
-      175079424,
+      148127744,
       3276800
      ],
+     "amask|16": [
+      151404544,
+      1024
+     ],
      "lin_w|up_blocks.1.attentions.1.transformer_blocks.0.attn1.to_out.0|out": [
-      178356224,
+      151408640,
       3276800
      ],
      "lin_b|up_blocks.1.attentions.1.transformer_blocks.0.attn1.to_out.0|out": [
-      181633024,
+      154685440,
       5120
      ],
      "norm_w|up_blocks.1.attentions.1.transformer_blocks.0.norm2": [
-      181641216,
+      154693632,
       5120
      ],
      "norm_b|up_blocks.1.attentions.1.transformer_blocks.0.norm2": [
-      181649408,
+      154701824,
       5120
      ],
      "lin_w|up_blocks.1.attentions.1.transformer_blocks.0.attn2.to_q|qkv": [
-      181657600,
+      154710016,
       3276800
      ],
      "kv_w|up_blocks.1.attentions.1.transformer_blocks.0.attn2.to_k": [
-      184934400,
+      157986816,
       1966080
      ],
      "kv_w|up_blocks.1.attentions.1.transformer_blocks.0.attn2.to_v": [
-      186900480,
+      159952896,
       1966080
      ],
+     "amask|x": [
+      161918976,
+      256
+     ],
      "lin_w|up_blocks.1.attentions.1.transformer_blocks.0.attn2.to_out.0|out": [
-      188866560,
+      161923072,
       3276800
      ],
      "lin_b|up_blocks.1.attentions.1.transformer_blocks.0.attn2.to_out.0|out": [
-      192143360,
+      165199872,
       5120
      ],
      "norm_w|up_blocks.1.attentions.1.transformer_blocks.0.norm3": [
-      192151552,
+      165208064,
       5120
      ],
      "norm_b|up_blocks.1.attentions.1.transformer_blocks.0.norm3": [
-      192159744,
+      165216256,
       5120
      ],
      "lin_w|up_blocks.1.attentions.1.transformer_blocks.0.ff.net.0.proj|ff_h": [
-      192167936,
+      165224448,
       13107200
      ],
      "lin_b|up_blocks.1.attentions.1.transformer_blocks.0.ff.net.0.proj|ff_h": [
-      205275136,
+      178331648,
       20480
      ],
      "lin_w|up_blocks.1.attentions.1.transformer_blocks.0.ff.net.0.proj|ff_g": [
-      205295616,
+      178352128,
       13107200
      ],
      "lin_b|up_blocks.1.attentions.1.transformer_blocks.0.ff.net.0.proj|ff_g": [
-      218402816,
+      191459328,
       20480
      ],
      "lin_w|up_blocks.1.attentions.1.transformer_blocks.0.ff.net.2|plain": [
-      218423296,
+      191479808,
       13107200
      ],
      "lin_b|up_blocks.1.attentions.1.transformer_blocks.0.ff.net.2|plain": [
-      231530496,
+      204587008,
       5120
      ],
      "conv_w|up_blocks.1.attentions.1.proj_out": [
-      231538688,
+      204595200,
       3276800
      ],
      "conv_b|up_blocks.1.attentions.1.proj_out": [
-      234815488,
+      207872000,
       5120
      ]
     }
    }
   },
   {
-   "feature": "s11",
+   "feature": "s10",
    "units": [
     "up1.res2",
     "up1.attn2",
+    "up1.attn2.cross",
+    "up1.attn2.ff",
     "up1.up"
    ],
    "in": {
@@ -8956,9 +8954,11 @@
    }
   },
   {
-   "feature": "s12",
+   "feature": "s11",
    "units": [
-    "up2.res0"
+    "up2.res0",
+    "up2.attn0",
+    "up2.attn0.cross"
    ],
    "in": {
     "sh": {
@@ -8966,20 +8966,22 @@
     },
     "br": {
      "m296": 0,
-     "m109": 3932160
+     "m109": 3932160,
+     "ctx10": 5898240
     },
     "br_base": 81920,
-    "br_stride": 5898240,
-    "bytes": 11878400
+    "br_stride": 6094848,
+    "bytes": 12271616
    },
    "out": {
     "sh": {},
     "br": {
-     "m302": 0
+     "m302": 0,
+     "m316": 1966080
     },
     "br_base": 0,
-    "br_stride": 1966080,
-    "bytes": 3932160
+    "br_stride": 3932160,
+    "bytes": 7864320
    },
    "act": {
     "off": {
@@ -8988,12 +8990,25 @@
      "m298": 5939200,
      "m299": 11837440,
      "m300": 13803520,
-     "m301": 15769600
+     "m301": 15769600,
+     "m303": 17735680,
+     "m304": 19701760,
+     "m305": 21667840,
+     "m306": 23633920,
+     "m307": 25993216,
+     "m308": 28352512,
+     "m309": 30711808,
+     "m310": 33071104,
+     "m311": 35037184,
+     "m312": 37003264,
+     "k313": 39362560,
+     "v314": 39559168,
+     "m315": 39755776
     },
-    "bytes": 17743872
+    "bytes": 42123264
    },
    "w": {
-    "bytes": 32309248,
+    "bytes": 41431040,
     "entries": {
      "norm_w|up_blocks.2.resnets.0.norm1": [
       0,
@@ -9038,6 +9053,318 @@
      "conv_b|up_blocks.2.resnets.0.conv2": [
       32305152,
       2560
+     ],
+     "norm_w|up_blocks.2.attentions.0.norm": [
+      32309248,
+      2560
+     ],
+     "norm_b|up_blocks.2.attentions.0.norm": [
+      32313344,
+      2560
+     ],
+     "lin_w|up_blocks.2.attentions.0.proj_in|plain|hf": [
+      32317440,
+      819200
+     ],
+     "lin_b|up_blocks.2.attentions.0.proj_in|plain": [
+      33136640,
+      2560
+     ],
+     "norm_w|up_blocks.2.attentions.0.transformer_blocks.0.norm1": [
+      33140736,
+      2560
+     ],
+     "norm_b|up_blocks.2.attentions.0.transformer_blocks.0.norm1": [
+      33144832,
+      2560
+     ],
+     "lin_w|up_blocks.2.attentions.0.transformer_blocks.0.attn1.to_q|qkv|hf": [
+      33148928,
+      983040
+     ],
+     "lin_w|up_blocks.2.attentions.0.transformer_blocks.0.attn1.to_k|qkv|hf": [
+      34131968,
+      983040
+     ],
+     "lin_w|up_blocks.2.attentions.0.transformer_blocks.0.attn1.to_v|qkv|hf": [
+      35115008,
+      983040
+     ],
+     "amask|32": [
+      36098048,
+      2816
+     ],
+     "lin_w|up_blocks.2.attentions.0.transformer_blocks.0.attn1.to_out.0|out": [
+      36102144,
+      983040
+     ],
+     "lin_b|up_blocks.2.attentions.0.transformer_blocks.0.attn1.to_out.0|out": [
+      37085184,
+      2560
+     ],
+     "norm_w|up_blocks.2.attentions.0.transformer_blocks.0.norm2": [
+      37089280,
+      2560
+     ],
+     "norm_b|up_blocks.2.attentions.0.transformer_blocks.0.norm2": [
+      37093376,
+      2560
+     ],
+     "lin_w|up_blocks.2.attentions.0.transformer_blocks.0.attn2.to_q|qkv|hf": [
+      37097472,
+      983040
+     ],
+     "kv_w|up_blocks.2.attentions.0.transformer_blocks.0.attn2.to_k": [
+      38080512,
+      1179648
+     ],
+     "kv_w|up_blocks.2.attentions.0.transformer_blocks.0.attn2.to_v": [
+      39260160,
+      1179648
+     ],
+     "amask|x": [
+      40439808,
+      256
+     ],
+     "lin_w|up_blocks.2.attentions.0.transformer_blocks.0.attn2.to_out.0|out": [
+      40443904,
+      983040
+     ],
+     "lin_b|up_blocks.2.attentions.0.transformer_blocks.0.attn2.to_out.0|out": [
+      41426944,
+      2560
+     ]
+    }
+   }
+  },
+  {
+   "feature": "s12",
+   "units": [
+    "up2.attn0.ff",
+    "up2.res1",
+    "up2.attn1",
+    "up2.attn1.cross"
+   ],
+   "in": {
+    "sh": {
+     "tb7": 0
+    },
+    "br": {
+     "m316": 0,
+     "m302": 1966080,
+     "m85": 3932160,
+     "ctx10": 5898240
+    },
+    "br_base": 81920,
+    "br_stride": 6094848,
+    "bytes": 12271616
+   },
+   "out": {
+    "sh": {},
+    "br": {
+     "m328": 0,
+     "m342": 1966080
+    },
+    "br_base": 0,
+    "br_stride": 3932160,
+    "bytes": 7864320
+   },
+   "act": {
+    "off": {
+     "m317": 0,
+     "m318": 1966080,
+     "m319": 9830400,
+     "m320": 17694720,
+     "m321": 25559040,
+     "m322": 27918336,
+     "m323": 29884416,
+     "st8": 33816576,
+     "m324": 33857536,
+     "m325": 37789696,
+     "m326": 39755776,
+     "m327": 41721856,
+     "m329": 43687936,
+     "m330": 45654016,
+     "m331": 47620096,
+     "m332": 49586176,
+     "m333": 51945472,
+     "m334": 54304768,
+     "m335": 56664064,
+     "m336": 59023360,
+     "m337": 60989440,
+     "m338": 62955520,
+     "k339": 65314816,
+     "v340": 65511424,
+     "m341": 65708032
+    },
+    "bytes": 68075520
+   },
+   "w": {
+    "bytes": 44011520,
+    "entries": {
+     "norm_w|up_blocks.2.attentions.0.transformer_blocks.0.norm3": [
+      0,
+      2560
+     ],
+     "norm_b|up_blocks.2.attentions.0.transformer_blocks.0.norm3": [
+      4096,
+      2560
+     ],
+     "lin_w|up_blocks.2.attentions.0.transformer_blocks.0.ff.net.0.proj|ff_h|hf": [
+      8192,
+      3276800
+     ],
+     "lin_b|up_blocks.2.attentions.0.transformer_blocks.0.ff.net.0.proj|ff_h": [
+      3284992,
+      10240
+     ],
+     "lin_w|up_blocks.2.attentions.0.transformer_blocks.0.ff.net.0.proj|ff_g|hf": [
+      3297280,
+      3276800
+     ],
+     "lin_b|up_blocks.2.attentions.0.transformer_blocks.0.ff.net.0.proj|ff_g": [
+      6574080,
+      10240
+     ],
+     "lin_w|up_blocks.2.attentions.0.transformer_blocks.0.ff.net.2|plain": [
+      6586368,
+      3276800
+     ],
+     "lin_b|up_blocks.2.attentions.0.transformer_blocks.0.ff.net.2|plain": [
+      9863168,
+      2560
+     ],
+     "conv_w|up_blocks.2.attentions.0.proj_out": [
+      9867264,
+      983040
+     ],
+     "conv_b|up_blocks.2.attentions.0.proj_out": [
+      10850304,
+      2560
+     ],
+     "norm_w|up_blocks.2.resnets.1.norm1": [
+      10854400,
+      5120
+     ],
+     "norm_b|up_blocks.2.resnets.1.norm1": [
+      10862592,
+      5120
+     ],
+     "gmask|1280": [
+      10870784,
+      163840
+     ],
+     "conv_w|up_blocks.2.resnets.1.conv1": [
+      11034624,
+      14745600
+     ],
+     "norm_w|up_blocks.2.resnets.1.norm2": [
+      25780224,
+      2560
+     ],
+     "norm_b|up_blocks.2.resnets.1.norm2": [
+      25784320,
+      2560
+     ],
+     "gmask|640": [
+      25788416,
+      81920
+     ],
+     "conv_w|up_blocks.2.resnets.1.conv_shortcut": [
+      25870336,
+      1638400
+     ],
+     "conv_b|up_blocks.2.resnets.1.conv_shortcut": [
+      27508736,
+      2560
+     ],
+     "conv_w|up_blocks.2.resnets.1.conv2": [
+      27512832,
+      7372800
+     ],
+     "conv_b|up_blocks.2.resnets.1.conv2": [
+      34885632,
+      2560
+     ],
+     "norm_w|up_blocks.2.attentions.1.norm": [
+      34889728,
+      2560
+     ],
+     "norm_b|up_blocks.2.attentions.1.norm": [
+      34893824,
+      2560
+     ],
+     "lin_w|up_blocks.2.attentions.1.proj_in|plain|hf": [
+      34897920,
+      819200
+     ],
+     "lin_b|up_blocks.2.attentions.1.proj_in|plain": [
+      35717120,
+      2560
+     ],
+     "norm_w|up_blocks.2.attentions.1.transformer_blocks.0.norm1": [
+      35721216,
+      2560
+     ],
+     "norm_b|up_blocks.2.attentions.1.transformer_blocks.0.norm1": [
+      35725312,
+      2560
+     ],
+     "lin_w|up_blocks.2.attentions.1.transformer_blocks.0.attn1.to_q|qkv|hf": [
+      35729408,
+      983040
+     ],
+     "lin_w|up_blocks.2.attentions.1.transformer_blocks.0.attn1.to_k|qkv|hf": [
+      36712448,
+      983040
+     ],
+     "lin_w|up_blocks.2.attentions.1.transformer_blocks.0.attn1.to_v|qkv|hf": [
+      37695488,
+      983040
+     ],
+     "amask|32": [
+      38678528,
+      2816
+     ],
+     "lin_w|up_blocks.2.attentions.1.transformer_blocks.0.attn1.to_out.0|out": [
+      38682624,
+      983040
+     ],
+     "lin_b|up_blocks.2.attentions.1.transformer_blocks.0.attn1.to_out.0|out": [
+      39665664,
+      2560
+     ],
+     "norm_w|up_blocks.2.attentions.1.transformer_blocks.0.norm2": [
+      39669760,
+      2560
+     ],
+     "norm_b|up_blocks.2.attentions.1.transformer_blocks.0.norm2": [
+      39673856,
+      2560
+     ],
+     "lin_w|up_blocks.2.attentions.1.transformer_blocks.0.attn2.to_q|qkv|hf": [
+      39677952,
+      983040
+     ],
+     "kv_w|up_blocks.2.attentions.1.transformer_blocks.0.attn2.to_k": [
+      40660992,
+      1179648
+     ],
+     "kv_w|up_blocks.2.attentions.1.transformer_blocks.0.attn2.to_v": [
+      41840640,
+      1179648
+     ],
+     "amask|x": [
+      43020288,
+      256
+     ],
+     "lin_w|up_blocks.2.attentions.1.transformer_blocks.0.attn2.to_out.0|out": [
+      43024384,
+      983040
+     ],
+     "lin_b|up_blocks.2.attentions.1.transformer_blocks.0.attn2.to_out.0|out": [
+      44007424,
+      2560
      ]
     }
    }
@@ -9045,370 +9372,11 @@
   {
    "feature": "s13",
    "units": [
-    "up2.attn0",
-    "up2.res1",
-    "up2.attn1"
-   ],
-   "in": {
-    "sh": {
-     "tb7": 0
-    },
-    "br": {
-     "m302": 0,
-     "ctx10": 1966080,
-     "m85": 2162688
-    },
-    "br_base": 81920,
-    "br_stride": 4128768,
-    "bytes": 8339456
-   },
-   "out": {
-    "sh": {},
-    "br": {
-     "m348": 0
-    },
-    "br_base": 0,
-    "br_stride": 1966080,
-    "bytes": 3932160
-   },
-   "act": {
-    "off": {
-     "st8": 0,
-     "m303": 40960,
-     "m304": 2007040,
-     "m305": 3973120,
-     "m306": 5939200,
-     "m307": 8298496,
-     "m308": 10657792,
-     "m309": 13017088,
-     "m310": 15376384,
-     "m311": 17342464,
-     "m312": 19308544,
-     "k313": 21667840,
-     "v314": 21864448,
-     "m315": 22061056,
-     "m316": 24420352,
-     "m317": 26386432,
-     "m318": 28352512,
-     "m319": 36216832,
-     "m320": 44081152,
-     "m321": 51945472,
-     "m322": 54304768,
-     "m323": 56270848,
-     "m324": 60203008,
-     "m325": 64135168,
-     "m326": 66101248,
-     "m327": 68067328,
-     "m328": 70033408,
-     "m329": 71999488,
-     "m330": 73965568,
-     "m331": 75931648,
-     "m332": 77897728,
-     "m333": 80257024,
-     "m334": 82616320,
-     "m335": 84975616,
-     "m336": 87334912,
-     "m337": 89300992,
-     "m338": 91267072,
-     "k339": 93626368,
-     "v340": 93822976,
-     "m341": 94019584,
-     "m342": 96378880,
-     "m343": 98344960,
-     "m344": 100311040,
-     "m345": 108175360,
-     "m346": 116039680,
-     "m347": 123904000
-    },
-    "bytes": 126271488
-   },
-   "w": {
-    "bytes": 63979520,
-    "entries": {
-     "norm_w|up_blocks.2.attentions.0.norm": [
-      0,
-      2560
-     ],
-     "norm_b|up_blocks.2.attentions.0.norm": [
-      4096,
-      2560
-     ],
-     "gmask|640": [
-      8192,
-      81920
-     ],
-     "lin_w|up_blocks.2.attentions.0.proj_in|plain|hf": [
-      90112,
-      819200
-     ],
-     "lin_b|up_blocks.2.attentions.0.proj_in|plain": [
-      909312,
-      2560
-     ],
-     "norm_w|up_blocks.2.attentions.0.transformer_blocks.0.norm1": [
-      913408,
-      2560
-     ],
-     "norm_b|up_blocks.2.attentions.0.transformer_blocks.0.norm1": [
-      917504,
-      2560
-     ],
-     "lin_w|up_blocks.2.attentions.0.transformer_blocks.0.attn1.to_q|qkv|hf": [
-      921600,
-      983040
-     ],
-     "lin_w|up_blocks.2.attentions.0.transformer_blocks.0.attn1.to_k|qkv|hf": [
-      1904640,
-      983040
-     ],
-     "lin_w|up_blocks.2.attentions.0.transformer_blocks.0.attn1.to_v|qkv|hf": [
-      2887680,
-      983040
-     ],
-     "amask|32": [
-      3870720,
-      2816
-     ],
-     "lin_w|up_blocks.2.attentions.0.transformer_blocks.0.attn1.to_out.0|out": [
-      3874816,
-      983040
-     ],
-     "lin_b|up_blocks.2.attentions.0.transformer_blocks.0.attn1.to_out.0|out": [
-      4857856,
-      2560
-     ],
-     "norm_w|up_blocks.2.attentions.0.transformer_blocks.0.norm2": [
-      4861952,
-      2560
-     ],
-     "norm_b|up_blocks.2.attentions.0.transformer_blocks.0.norm2": [
-      4866048,
-      2560
-     ],
-     "lin_w|up_blocks.2.attentions.0.transformer_blocks.0.attn2.to_q|qkv|hf": [
-      4870144,
-      983040
-     ],
-     "kv_w|up_blocks.2.attentions.0.transformer_blocks.0.attn2.to_k": [
-      5853184,
-      1179648
-     ],
-     "kv_w|up_blocks.2.attentions.0.transformer_blocks.0.attn2.to_v": [
-      7032832,
-      1179648
-     ],
-     "amask|x": [
-      8212480,
-      256
-     ],
-     "lin_w|up_blocks.2.attentions.0.transformer_blocks.0.attn2.to_out.0|out": [
-      8216576,
-      983040
-     ],
-     "lin_b|up_blocks.2.attentions.0.transformer_blocks.0.attn2.to_out.0|out": [
-      9199616,
-      2560
-     ],
-     "norm_w|up_blocks.2.attentions.0.transformer_blocks.0.norm3": [
-      9203712,
-      2560
-     ],
-     "norm_b|up_blocks.2.attentions.0.transformer_blocks.0.norm3": [
-      9207808,
-      2560
-     ],
-     "lin_w|up_blocks.2.attentions.0.transformer_blocks.0.ff.net.0.proj|ff_h|hf": [
-      9211904,
-      3276800
-     ],
-     "lin_b|up_blocks.2.attentions.0.transformer_blocks.0.ff.net.0.proj|ff_h": [
-      12488704,
-      10240
-     ],
-     "lin_w|up_blocks.2.attentions.0.transformer_blocks.0.ff.net.0.proj|ff_g|hf": [
-      12500992,
-      3276800
-     ],
-     "lin_b|up_blocks.2.attentions.0.transformer_blocks.0.ff.net.0.proj|ff_g": [
-      15777792,
-      10240
-     ],
-     "lin_w|up_blocks.2.attentions.0.transformer_blocks.0.ff.net.2|plain": [
-      15790080,
-      3276800
-     ],
-     "lin_b|up_blocks.2.attentions.0.transformer_blocks.0.ff.net.2|plain": [
-      19066880,
-      2560
-     ],
-     "conv_w|up_blocks.2.attentions.0.proj_out": [
-      19070976,
-      983040
-     ],
-     "conv_b|up_blocks.2.attentions.0.proj_out": [
-      20054016,
-      2560
-     ],
-     "norm_w|up_blocks.2.resnets.1.norm1": [
-      20058112,
-      5120
-     ],
-     "norm_b|up_blocks.2.resnets.1.norm1": [
-      20066304,
-      5120
-     ],
-     "gmask|1280": [
-      20074496,
-      163840
-     ],
-     "conv_w|up_blocks.2.resnets.1.conv1": [
-      20238336,
-      14745600
-     ],
-     "norm_w|up_blocks.2.resnets.1.norm2": [
-      34983936,
-      2560
-     ],
-     "norm_b|up_blocks.2.resnets.1.norm2": [
-      34988032,
-      2560
-     ],
-     "conv_w|up_blocks.2.resnets.1.conv_shortcut": [
-      34992128,
-      1638400
-     ],
-     "conv_b|up_blocks.2.resnets.1.conv_shortcut": [
-      36630528,
-      2560
-     ],
-     "conv_w|up_blocks.2.resnets.1.conv2": [
-      36634624,
-      7372800
-     ],
-     "conv_b|up_blocks.2.resnets.1.conv2": [
-      44007424,
-      2560
-     ],
-     "norm_w|up_blocks.2.attentions.1.norm": [
-      44011520,
-      2560
-     ],
-     "norm_b|up_blocks.2.attentions.1.norm": [
-      44015616,
-      2560
-     ],
-     "lin_w|up_blocks.2.attentions.1.proj_in|plain|hf": [
-      44019712,
-      819200
-     ],
-     "lin_b|up_blocks.2.attentions.1.proj_in|plain": [
-      44838912,
-      2560
-     ],
-     "norm_w|up_blocks.2.attentions.1.transformer_blocks.0.norm1": [
-      44843008,
-      2560
-     ],
-     "norm_b|up_blocks.2.attentions.1.transformer_blocks.0.norm1": [
-      44847104,
-      2560
-     ],
-     "lin_w|up_blocks.2.attentions.1.transformer_blocks.0.attn1.to_q|qkv|hf": [
-      44851200,
-      983040
-     ],
-     "lin_w|up_blocks.2.attentions.1.transformer_blocks.0.attn1.to_k|qkv|hf": [
-      45834240,
-      983040
-     ],
-     "lin_w|up_blocks.2.attentions.1.transformer_blocks.0.attn1.to_v|qkv|hf": [
-      46817280,
-      983040
-     ],
-     "lin_w|up_blocks.2.attentions.1.transformer_blocks.0.attn1.to_out.0|out": [
-      47800320,
-      983040
-     ],
-     "lin_b|up_blocks.2.attentions.1.transformer_blocks.0.attn1.to_out.0|out": [
-      48783360,
-      2560
-     ],
-     "norm_w|up_blocks.2.attentions.1.transformer_blocks.0.norm2": [
-      48787456,
-      2560
-     ],
-     "norm_b|up_blocks.2.attentions.1.transformer_blocks.0.norm2": [
-      48791552,
-      2560
-     ],
-     "lin_w|up_blocks.2.attentions.1.transformer_blocks.0.attn2.to_q|qkv|hf": [
-      48795648,
-      983040
-     ],
-     "kv_w|up_blocks.2.attentions.1.transformer_blocks.0.attn2.to_k": [
-      49778688,
-      1179648
-     ],
-     "kv_w|up_blocks.2.attentions.1.transformer_blocks.0.attn2.to_v": [
-      50958336,
-      1179648
-     ],
-     "lin_w|up_blocks.2.attentions.1.transformer_blocks.0.attn2.to_out.0|out": [
-      52137984,
-      983040
-     ],
-     "lin_b|up_blocks.2.attentions.1.transformer_blocks.0.attn2.to_out.0|out": [
-      53121024,
-      2560
-     ],
-     "norm_w|up_blocks.2.attentions.1.transformer_blocks.0.norm3": [
-      53125120,
-      2560
-     ],
-     "norm_b|up_blocks.2.attentions.1.transformer_blocks.0.norm3": [
-      53129216,
-      2560
-     ],
-     "lin_w|up_blocks.2.attentions.1.transformer_blocks.0.ff.net.0.proj|ff_h|hf": [
-      53133312,
-      3276800
-     ],
-     "lin_b|up_blocks.2.attentions.1.transformer_blocks.0.ff.net.0.proj|ff_h": [
-      56410112,
-      10240
-     ],
-     "lin_w|up_blocks.2.attentions.1.transformer_blocks.0.ff.net.0.proj|ff_g|hf": [
-      56422400,
-      3276800
-     ],
-     "lin_b|up_blocks.2.attentions.1.transformer_blocks.0.ff.net.0.proj|ff_g": [
-      59699200,
-      10240
-     ],
-     "lin_w|up_blocks.2.attentions.1.transformer_blocks.0.ff.net.2|plain": [
-      59711488,
-      3276800
-     ],
-     "lin_b|up_blocks.2.attentions.1.transformer_blocks.0.ff.net.2|plain": [
-      62988288,
-      2560
-     ],
-     "conv_w|up_blocks.2.attentions.1.proj_out": [
-      62992384,
-      983040
-     ],
-     "conv_b|up_blocks.2.attentions.1.proj_out": [
-      63975424,
-      2560
-     ]
-    }
-   }
-  },
-  {
-   "feature": "s14",
-   "units": [
+    "up2.attn1.ff",
     "up2.res2",
     "up2.attn2",
+    "up2.attn2.cross",
+    "up2.attn2.ff",
     "up2.up"
    ],
    "in": {
@@ -9416,13 +9384,14 @@
      "tb7": 0
     },
     "br": {
-     "m348": 0,
-     "m60": 1966080,
-     "ctx10": 2949120
+     "m342": 0,
+     "m328": 1966080,
+     "m60": 3932160,
+     "ctx10": 4915200
     },
     "br_base": 81920,
-    "br_stride": 3145728,
-    "bytes": 6373376
+    "br_stride": 5111808,
+    "bytes": 10305536
    },
    "out": {
     "sh": {},
@@ -9435,219 +9404,267 @@
    },
    "act": {
     "off": {
-     "m349": 0,
-     "st8": 2949120,
-     "m350": 2990080,
-     "m351": 5939200,
-     "m352": 7905280,
-     "m353": 9871360,
-     "m354": 11837440,
-     "m355": 13803520,
-     "m356": 15769600,
-     "m357": 17735680,
-     "m358": 19701760,
-     "m359": 22061056,
-     "m360": 24420352,
-     "m361": 26779648,
-     "m362": 29138944,
-     "m363": 31105024,
-     "m364": 33071104,
-     "k365": 35430400,
-     "v366": 35627008,
-     "m367": 35823616,
-     "m368": 38182912,
-     "m369": 40148992,
-     "m370": 42115072,
-     "m371": 49979392,
-     "m372": 57843712,
-     "m373": 65708032,
-     "m374": 68067328,
-     "m375": 70033408
+     "m343": 0,
+     "m344": 1966080,
+     "m345": 9830400,
+     "m346": 17694720,
+     "m347": 25559040,
+     "m348": 27918336,
+     "m349": 29884416,
+     "st8": 32833536,
+     "m350": 32874496,
+     "m351": 35823616,
+     "m352": 37789696,
+     "m353": 39755776,
+     "m354": 41721856,
+     "m355": 43687936,
+     "m356": 45654016,
+     "m357": 47620096,
+     "m358": 49586176,
+     "m359": 51945472,
+     "m360": 54304768,
+     "m361": 56664064,
+     "m362": 59023360,
+     "m363": 60989440,
+     "m364": 62955520,
+     "k365": 65314816,
+     "v366": 65511424,
+     "m367": 65708032,
+     "m368": 68067328,
+     "m369": 70033408,
+     "m370": 71999488,
+     "m371": 79863808,
+     "m372": 87728128,
+     "m373": 95592448,
+     "m374": 97951744,
+     "m375": 99917824
     },
-    "bytes": 76267520
+    "bytes": 106151936
    },
    "w": {
-    "bytes": 47243264,
+    "bytes": 58097664,
     "entries": {
-     "norm_w|up_blocks.2.resnets.2.norm1": [
+     "norm_w|up_blocks.2.attentions.1.transformer_blocks.0.norm3": [
       0,
+      2560
+     ],
+     "norm_b|up_blocks.2.attentions.1.transformer_blocks.0.norm3": [
+      4096,
+      2560
+     ],
+     "lin_w|up_blocks.2.attentions.1.transformer_blocks.0.ff.net.0.proj|ff_h|hf": [
+      8192,
+      3276800
+     ],
+     "lin_b|up_blocks.2.attentions.1.transformer_blocks.0.ff.net.0.proj|ff_h": [
+      3284992,
+      10240
+     ],
+     "lin_w|up_blocks.2.attentions.1.transformer_blocks.0.ff.net.0.proj|ff_g|hf": [
+      3297280,
+      3276800
+     ],
+     "lin_b|up_blocks.2.attentions.1.transformer_blocks.0.ff.net.0.proj|ff_g": [
+      6574080,
+      10240
+     ],
+     "lin_w|up_blocks.2.attentions.1.transformer_blocks.0.ff.net.2|plain": [
+      6586368,
+      3276800
+     ],
+     "lin_b|up_blocks.2.attentions.1.transformer_blocks.0.ff.net.2|plain": [
+      9863168,
+      2560
+     ],
+     "conv_w|up_blocks.2.attentions.1.proj_out": [
+      9867264,
+      983040
+     ],
+     "conv_b|up_blocks.2.attentions.1.proj_out": [
+      10850304,
+      2560
+     ],
+     "norm_w|up_blocks.2.resnets.2.norm1": [
+      10854400,
       3840
      ],
      "norm_b|up_blocks.2.resnets.2.norm1": [
-      4096,
+      10858496,
       3840
      ],
      "gmask|960": [
-      8192,
+      10862592,
       122880
      ],
      "conv_w|up_blocks.2.resnets.2.conv1": [
-      131072,
+      10985472,
       11059200
      ],
      "norm_w|up_blocks.2.resnets.2.norm2": [
-      11190272,
+      22044672,
       2560
      ],
      "norm_b|up_blocks.2.resnets.2.norm2": [
-      11194368,
+      22048768,
       2560
      ],
      "gmask|640": [
-      11198464,
+      22052864,
       81920
      ],
      "conv_w|up_blocks.2.resnets.2.conv_shortcut": [
-      11280384,
+      22134784,
       1228800
      ],
      "conv_b|up_blocks.2.resnets.2.conv_shortcut": [
-      12509184,
+      23363584,
       2560
      ],
      "conv_w|up_blocks.2.resnets.2.conv2": [
-      12513280,
+      23367680,
       7372800
      ],
      "conv_b|up_blocks.2.resnets.2.conv2": [
-      19886080,
+      30740480,
       2560
      ],
      "norm_w|up_blocks.2.attentions.2.norm": [
-      19890176,
+      30744576,
       2560
      ],
      "norm_b|up_blocks.2.attentions.2.norm": [
-      19894272,
+      30748672,
       2560
      ],
      "lin_w|up_blocks.2.attentions.2.proj_in|plain|hf": [
-      19898368,
+      30752768,
       819200
      ],
      "lin_b|up_blocks.2.attentions.2.proj_in|plain": [
-      20717568,
+      31571968,
       2560
      ],
      "norm_w|up_blocks.2.attentions.2.transformer_blocks.0.norm1": [
-      20721664,
+      31576064,
       2560
      ],
      "norm_b|up_blocks.2.attentions.2.transformer_blocks.0.norm1": [
-      20725760,
+      31580160,
       2560
      ],
      "lin_w|up_blocks.2.attentions.2.transformer_blocks.0.attn1.to_q|qkv|hf": [
-      20729856,
+      31584256,
       983040
      ],
      "lin_w|up_blocks.2.attentions.2.transformer_blocks.0.attn1.to_k|qkv|hf": [
-      21712896,
+      32567296,
       983040
      ],
      "lin_w|up_blocks.2.attentions.2.transformer_blocks.0.attn1.to_v|qkv|hf": [
-      22695936,
+      33550336,
       983040
      ],
      "amask|32": [
-      23678976,
+      34533376,
       2816
      ],
      "lin_w|up_blocks.2.attentions.2.transformer_blocks.0.attn1.to_out.0|out": [
-      23683072,
+      34537472,
       983040
      ],
      "lin_b|up_blocks.2.attentions.2.transformer_blocks.0.attn1.to_out.0|out": [
-      24666112,
+      35520512,
       2560
      ],
      "norm_w|up_blocks.2.attentions.2.transformer_blocks.0.norm2": [
-      24670208,
+      35524608,
       2560
      ],
      "norm_b|up_blocks.2.attentions.2.transformer_blocks.0.norm2": [
-      24674304,
+      35528704,
       2560
      ],
      "lin_w|up_blocks.2.attentions.2.transformer_blocks.0.attn2.to_q|qkv|hf": [
-      24678400,
+      35532800,
       983040
      ],
      "kv_w|up_blocks.2.attentions.2.transformer_blocks.0.attn2.to_k": [
-      25661440,
+      36515840,
       1179648
      ],
      "kv_w|up_blocks.2.attentions.2.transformer_blocks.0.attn2.to_v": [
-      26841088,
+      37695488,
       1179648
      ],
      "amask|x": [
-      28020736,
+      38875136,
       256
      ],
      "lin_w|up_blocks.2.attentions.2.transformer_blocks.0.attn2.to_out.0|out": [
-      28024832,
-      983040
-     ],
-     "lin_b|up_blocks.2.attentions.2.transformer_blocks.0.attn2.to_out.0|out": [
-      29007872,
-      2560
-     ],
-     "norm_w|up_blocks.2.attentions.2.transformer_blocks.0.norm3": [
-      29011968,
-      2560
-     ],
-     "norm_b|up_blocks.2.attentions.2.transformer_blocks.0.norm3": [
-      29016064,
-      2560
-     ],
-     "lin_w|up_blocks.2.attentions.2.transformer_blocks.0.ff.net.0.proj|ff_h|hf": [
-      29020160,
-      3276800
-     ],
-     "lin_b|up_blocks.2.attentions.2.transformer_blocks.0.ff.net.0.proj|ff_h": [
-      32296960,
-      10240
-     ],
-     "lin_w|up_blocks.2.attentions.2.transformer_blocks.0.ff.net.0.proj|ff_g|hf": [
-      32309248,
-      3276800
-     ],
-     "lin_b|up_blocks.2.attentions.2.transformer_blocks.0.ff.net.0.proj|ff_g": [
-      35586048,
-      10240
-     ],
-     "lin_w|up_blocks.2.attentions.2.transformer_blocks.0.ff.net.2|plain": [
-      35598336,
-      3276800
-     ],
-     "lin_b|up_blocks.2.attentions.2.transformer_blocks.0.ff.net.2|plain": [
-      38875136,
-      2560
-     ],
-     "conv_w|up_blocks.2.attentions.2.proj_out": [
       38879232,
       983040
      ],
-     "conv_b|up_blocks.2.attentions.2.proj_out": [
+     "lin_b|up_blocks.2.attentions.2.transformer_blocks.0.attn2.to_out.0|out": [
       39862272,
       2560
      ],
-     "conv_w|up_blocks.2.upsamplers.0.conv": [
+     "norm_w|up_blocks.2.attentions.2.transformer_blocks.0.norm3": [
       39866368,
+      2560
+     ],
+     "norm_b|up_blocks.2.attentions.2.transformer_blocks.0.norm3": [
+      39870464,
+      2560
+     ],
+     "lin_w|up_blocks.2.attentions.2.transformer_blocks.0.ff.net.0.proj|ff_h|hf": [
+      39874560,
+      3276800
+     ],
+     "lin_b|up_blocks.2.attentions.2.transformer_blocks.0.ff.net.0.proj|ff_h": [
+      43151360,
+      10240
+     ],
+     "lin_w|up_blocks.2.attentions.2.transformer_blocks.0.ff.net.0.proj|ff_g|hf": [
+      43163648,
+      3276800
+     ],
+     "lin_b|up_blocks.2.attentions.2.transformer_blocks.0.ff.net.0.proj|ff_g": [
+      46440448,
+      10240
+     ],
+     "lin_w|up_blocks.2.attentions.2.transformer_blocks.0.ff.net.2|plain": [
+      46452736,
+      3276800
+     ],
+     "lin_b|up_blocks.2.attentions.2.transformer_blocks.0.ff.net.2|plain": [
+      49729536,
+      2560
+     ],
+     "conv_w|up_blocks.2.attentions.2.proj_out": [
+      49733632,
+      983040
+     ],
+     "conv_b|up_blocks.2.attentions.2.proj_out": [
+      50716672,
+      2560
+     ],
+     "conv_w|up_blocks.2.upsamplers.0.conv": [
+      50720768,
       7372800
      ],
      "conv_b|up_blocks.2.upsamplers.0.conv": [
-      47239168,
+      58093568,
       2560
      ]
     }
    }
   },
   {
-   "feature": "s15",
+   "feature": "s14",
    "units": [
-    "up3.res0"
+    "up3.res0",
+    "up3.attn0",
+    "up3.attn0.cross"
    ],
    "in": {
     "sh": {
@@ -9655,20 +9672,22 @@
     },
     "br": {
      "m376": 0,
-     "m59": 6225920
+     "m59": 6225920,
+     "ctx10": 9338880
     },
     "br_base": 81920,
-    "br_stride": 9338880,
-    "bytes": 18759680
+    "br_stride": 9535488,
+    "bytes": 19152896
    },
    "out": {
     "sh": {},
     "br": {
-     "m382": 0
+     "m382": 0,
+     "m396": 3112960
     },
     "br_base": 0,
-    "br_stride": 3112960,
-    "bytes": 6225920
+    "br_stride": 6225920,
+    "bytes": 12451840
    },
    "act": {
     "off": {
@@ -9677,12 +9696,25 @@
      "m378": 9379840,
      "m379": 18718720,
      "m380": 21831680,
-     "m381": 24944640
+     "m381": 24944640,
+     "m383": 28057600,
+     "m384": 31170560,
+     "m385": 34283520,
+     "m386": 37396480,
+     "m387": 42377216,
+     "m388": 47357952,
+     "m389": 52338688,
+     "m390": 57319424,
+     "m391": 60432384,
+     "m392": 63545344,
+     "k393": 68526080,
+     "v394": 68657152,
+     "m395": 68788224
     },
-    "bytes": 28065792
+    "bytes": 73777152
    },
    "w": {
-    "bytes": 8175616,
+    "bytes": 11976704,
     "entries": {
      "norm_w|up_blocks.3.resnets.0.norm1": [
       0,
@@ -9727,196 +9759,98 @@
      "conv_b|up_blocks.3.resnets.0.conv2": [
       8171520,
       1280
-     ]
-    }
-   }
-  },
-  {
-   "feature": "s16",
-   "units": [
-    "up3.attn0"
-   ],
-   "in": {
-    "sh": {},
-    "br": {
-     "m382": 0,
-     "ctx10": 3112960
-    },
-    "br_base": 0,
-    "br_stride": 3309568,
-    "bytes": 6619136
-   },
-   "out": {
-    "sh": {},
-    "br": {
-     "m402": 0
-    },
-    "br_base": 0,
-    "br_stride": 3112960,
-    "bytes": 6225920
-   },
-   "act": {
-    "off": {
-     "st8": 0,
-     "m383": 40960,
-     "m384": 3153920,
-     "m385": 6266880,
-     "m386": 9379840,
-     "m387": 14360576,
-     "m388": 19341312,
-     "m389": 24322048,
-     "m390": 29302784,
-     "m391": 32415744,
-     "m392": 35528704,
-     "k393": 40509440,
-     "v394": 40640512,
-     "m395": 40771584,
-     "m396": 45752320,
-     "m397": 48865280,
-     "m398": 51978240,
-     "m399": 64430080,
-     "m400": 76881920,
-     "m401": 89333760
-    },
-    "bytes": 92454912
-   },
-   "w": {
-    "bytes": 6537216,
-    "entries": {
+     ],
      "norm_w|up_blocks.3.attentions.0.norm": [
-      0,
+      8175616,
       1280
      ],
      "norm_b|up_blocks.3.attentions.0.norm": [
-      4096,
+      8179712,
       1280
      ],
-     "gmask|320": [
-      8192,
-      40960
-     ],
      "lin_w|up_blocks.3.attentions.0.proj_in|plain": [
-      49152,
+      8183808,
       204800
      ],
      "lin_b|up_blocks.3.attentions.0.proj_in|plain": [
-      253952,
+      8388608,
       1280
      ],
      "norm_w|up_blocks.3.attentions.0.transformer_blocks.0.norm1": [
-      258048,
+      8392704,
       1280
      ],
      "norm_b|up_blocks.3.attentions.0.transformer_blocks.0.norm1": [
-      262144,
+      8396800,
       1280
      ],
      "lin_w|up_blocks.3.attentions.0.transformer_blocks.0.attn1.to_q|qkv": [
-      266240,
+      8400896,
       327680
      ],
      "zero_b|512": [
-      593920,
+      8728576,
       2048
      ],
      "lin_w|up_blocks.3.attentions.0.transformer_blocks.0.attn1.to_k|qkv": [
-      598016,
+      8732672,
       327680
      ],
      "lin_w|up_blocks.3.attentions.0.transformer_blocks.0.attn1.to_v|qkv": [
-      925696,
+      9060352,
       327680
      ],
      "amask|64": [
-      1253376,
+      9388032,
       9472
      ],
      "lin_w|up_blocks.3.attentions.0.transformer_blocks.0.attn1.to_out.0|out": [
-      1265664,
+      9400320,
       327680
      ],
      "lin_b|up_blocks.3.attentions.0.transformer_blocks.0.attn1.to_out.0|out": [
-      1593344,
+      9728000,
       1280
      ],
      "norm_w|up_blocks.3.attentions.0.transformer_blocks.0.norm2": [
-      1597440,
+      9732096,
       1280
      ],
      "norm_b|up_blocks.3.attentions.0.transformer_blocks.0.norm2": [
-      1601536,
+      9736192,
       1280
      ],
      "lin_w|up_blocks.3.attentions.0.transformer_blocks.0.attn2.to_q|qkv": [
-      1605632,
+      9740288,
       327680
      ],
      "kv_w|up_blocks.3.attentions.0.transformer_blocks.0.attn2.to_k": [
-      1933312,
+      10067968,
       786432
      ],
      "kv_w|up_blocks.3.attentions.0.transformer_blocks.0.attn2.to_v": [
-      2719744,
+      10854400,
       786432
      ],
      "amask|x": [
-      3506176,
+      11640832,
       256
      ],
      "lin_w|up_blocks.3.attentions.0.transformer_blocks.0.attn2.to_out.0|out": [
-      3510272,
+      11644928,
       327680
      ],
      "lin_b|up_blocks.3.attentions.0.transformer_blocks.0.attn2.to_out.0|out": [
-      3837952,
-      1280
-     ],
-     "norm_w|up_blocks.3.attentions.0.transformer_blocks.0.norm3": [
-      3842048,
-      1280
-     ],
-     "norm_b|up_blocks.3.attentions.0.transformer_blocks.0.norm3": [
-      3846144,
-      1280
-     ],
-     "lin_w|up_blocks.3.attentions.0.transformer_blocks.0.ff.net.0.proj|ff_h": [
-      3850240,
-      819200
-     ],
-     "lin_b|up_blocks.3.attentions.0.transformer_blocks.0.ff.net.0.proj|ff_h": [
-      4669440,
-      5120
-     ],
-     "lin_w|up_blocks.3.attentions.0.transformer_blocks.0.ff.net.0.proj|ff_g": [
-      4677632,
-      819200
-     ],
-     "lin_b|up_blocks.3.attentions.0.transformer_blocks.0.ff.net.0.proj|ff_g": [
-      5496832,
-      5120
-     ],
-     "lin_w|up_blocks.3.attentions.0.transformer_blocks.0.ff.net.2|plain": [
-      5505024,
-      819200
-     ],
-     "lin_b|up_blocks.3.attentions.0.transformer_blocks.0.ff.net.2|plain": [
-      6324224,
-      1280
-     ],
-     "conv_w|up_blocks.3.attentions.0.proj_out": [
-      6328320,
-      204800
-     ],
-     "conv_b|up_blocks.3.attentions.0.proj_out": [
-      6533120,
+      11972608,
       1280
      ]
     }
    }
   },
   {
-   "feature": "s17",
+   "feature": "s15",
    "units": [
+    "up3.attn0.ff",
     "up3.res1"
    ],
    "in": {
@@ -9924,12 +9858,13 @@
      "tb7": 0
     },
     "br": {
-     "m402": 0,
-     "m35": 3112960
+     "m396": 0,
+     "m382": 3112960,
+     "m35": 6225920
     },
     "br_base": 81920,
-    "br_stride": 6225920,
-    "bytes": 12533760
+    "br_stride": 9338880,
+    "bytes": 18759680
    },
    "out": {
     "sh": {},
@@ -9942,69 +9877,117 @@
    },
    "act": {
     "off": {
-     "m403": 0,
-     "st8": 6225920,
-     "m404": 6266880,
-     "m405": 12492800,
-     "m406": 15605760,
-     "m407": 18718720
+     "m397": 0,
+     "m398": 3112960,
+     "m399": 15564800,
+     "m400": 28016640,
+     "m401": 40468480,
+     "m402": 43581440,
+     "m403": 46694400,
+     "st8": 52920320,
+     "m404": 52961280,
+     "m405": 59187200,
+     "m406": 62300160,
+     "m407": 65413120
     },
-    "bytes": 21839872
+    "bytes": 68534272
    },
    "w": {
-    "bytes": 6086656,
+    "bytes": 8781824,
     "entries": {
-     "norm_w|up_blocks.3.resnets.1.norm1": [
+     "norm_w|up_blocks.3.attentions.0.transformer_blocks.0.norm3": [
       0,
+      1280
+     ],
+     "norm_b|up_blocks.3.attentions.0.transformer_blocks.0.norm3": [
+      4096,
+      1280
+     ],
+     "lin_w|up_blocks.3.attentions.0.transformer_blocks.0.ff.net.0.proj|ff_h": [
+      8192,
+      819200
+     ],
+     "lin_b|up_blocks.3.attentions.0.transformer_blocks.0.ff.net.0.proj|ff_h": [
+      827392,
+      5120
+     ],
+     "lin_w|up_blocks.3.attentions.0.transformer_blocks.0.ff.net.0.proj|ff_g": [
+      835584,
+      819200
+     ],
+     "lin_b|up_blocks.3.attentions.0.transformer_blocks.0.ff.net.0.proj|ff_g": [
+      1654784,
+      5120
+     ],
+     "lin_w|up_blocks.3.attentions.0.transformer_blocks.0.ff.net.2|plain": [
+      1662976,
+      819200
+     ],
+     "lin_b|up_blocks.3.attentions.0.transformer_blocks.0.ff.net.2|plain": [
+      2482176,
+      1280
+     ],
+     "conv_w|up_blocks.3.attentions.0.proj_out": [
+      2486272,
+      204800
+     ],
+     "conv_b|up_blocks.3.attentions.0.proj_out": [
+      2691072,
+      1280
+     ],
+     "norm_w|up_blocks.3.resnets.1.norm1": [
+      2695168,
       2560
      ],
      "norm_b|up_blocks.3.resnets.1.norm1": [
-      4096,
+      2699264,
       2560
      ],
      "gmask|640": [
-      8192,
+      2703360,
       81920
      ],
      "conv_w|up_blocks.3.resnets.1.conv1": [
-      90112,
+      2785280,
       3686400
      ],
      "norm_w|up_blocks.3.resnets.1.norm2": [
-      3776512,
+      6471680,
       1280
      ],
      "norm_b|up_blocks.3.resnets.1.norm2": [
-      3780608,
+      6475776,
       1280
      ],
      "gmask|320": [
-      3784704,
+      6479872,
       40960
      ],
      "conv_w|up_blocks.3.resnets.1.conv_shortcut": [
-      3825664,
+      6520832,
       409600
      ],
      "conv_b|up_blocks.3.resnets.1.conv_shortcut": [
-      4235264,
+      6930432,
       1280
      ],
      "conv_w|up_blocks.3.resnets.1.conv2": [
-      4239360,
+      6934528,
       1843200
      ],
      "conv_b|up_blocks.3.resnets.1.conv2": [
-      6082560,
+      8777728,
       1280
      ]
     }
    }
   },
   {
-   "feature": "s18",
+   "feature": "s16",
    "units": [
-    "up3.attn1"
+    "up3.attn1",
+    "up3.attn1.cross",
+    "up3.attn1.ff"
    ],
    "in": {
     "sh": {},
@@ -10185,9 +10168,11 @@
    }
   },
   {
-   "feature": "s19",
+   "feature": "s17",
    "units": [
-    "up3.res2"
+    "up3.res2",
+    "up3.attn2",
+    "up3.attn2.cross"
    ],
    "in": {
     "sh": {
@@ -10195,20 +10180,22 @@
     },
     "br": {
      "m428": 0,
-     "m11": 3112960
+     "m11": 3112960,
+     "ctx10": 6225920
     },
     "br_base": 81920,
-    "br_stride": 6225920,
-    "bytes": 12533760
+    "br_stride": 6422528,
+    "bytes": 12926976
    },
    "out": {
     "sh": {},
     "br": {
-     "m434": 0
+     "m434": 0,
+     "m448": 3112960
     },
     "br_base": 0,
-    "br_stride": 3112960,
-    "bytes": 6225920
+    "br_stride": 6225920,
+    "bytes": 12451840
    },
    "act": {
     "off": {
@@ -10217,12 +10204,25 @@
      "m430": 6266880,
      "m431": 12492800,
      "m432": 15605760,
-     "m433": 18718720
+     "m433": 18718720,
+     "m435": 21831680,
+     "m436": 24944640,
+     "m437": 28057600,
+     "m438": 31170560,
+     "m439": 36151296,
+     "m440": 41132032,
+     "m441": 46112768,
+     "m442": 51093504,
+     "m443": 54206464,
+     "m444": 57319424,
+     "k445": 62300160,
+     "v446": 62431232,
+     "m447": 62562304
     },
-    "bytes": 21839872
+    "bytes": 67551232
    },
    "w": {
-    "bytes": 6086656,
+    "bytes": 9887744,
     "entries": {
      "norm_w|up_blocks.3.resnets.2.norm1": [
       0,
@@ -10267,25 +10267,109 @@
      "conv_b|up_blocks.3.resnets.2.conv2": [
       6082560,
       1280
+     ],
+     "norm_w|up_blocks.3.attentions.2.norm": [
+      6086656,
+      1280
+     ],
+     "norm_b|up_blocks.3.attentions.2.norm": [
+      6090752,
+      1280
+     ],
+     "lin_w|up_blocks.3.attentions.2.proj_in|plain": [
+      6094848,
+      204800
+     ],
+     "lin_b|up_blocks.3.attentions.2.proj_in|plain": [
+      6299648,
+      1280
+     ],
+     "norm_w|up_blocks.3.attentions.2.transformer_blocks.0.norm1": [
+      6303744,
+      1280
+     ],
+     "norm_b|up_blocks.3.attentions.2.transformer_blocks.0.norm1": [
+      6307840,
+      1280
+     ],
+     "lin_w|up_blocks.3.attentions.2.transformer_blocks.0.attn1.to_q|qkv": [
+      6311936,
+      327680
+     ],
+     "zero_b|512": [
+      6639616,
+      2048
+     ],
+     "lin_w|up_blocks.3.attentions.2.transformer_blocks.0.attn1.to_k|qkv": [
+      6643712,
+      327680
+     ],
+     "lin_w|up_blocks.3.attentions.2.transformer_blocks.0.attn1.to_v|qkv": [
+      6971392,
+      327680
+     ],
+     "amask|64": [
+      7299072,
+      9472
+     ],
+     "lin_w|up_blocks.3.attentions.2.transformer_blocks.0.attn1.to_out.0|out": [
+      7311360,
+      327680
+     ],
+     "lin_b|up_blocks.3.attentions.2.transformer_blocks.0.attn1.to_out.0|out": [
+      7639040,
+      1280
+     ],
+     "norm_w|up_blocks.3.attentions.2.transformer_blocks.0.norm2": [
+      7643136,
+      1280
+     ],
+     "norm_b|up_blocks.3.attentions.2.transformer_blocks.0.norm2": [
+      7647232,
+      1280
+     ],
+     "lin_w|up_blocks.3.attentions.2.transformer_blocks.0.attn2.to_q|qkv": [
+      7651328,
+      327680
+     ],
+     "kv_w|up_blocks.3.attentions.2.transformer_blocks.0.attn2.to_k": [
+      7979008,
+      786432
+     ],
+     "kv_w|up_blocks.3.attentions.2.transformer_blocks.0.attn2.to_v": [
+      8765440,
+      786432
+     ],
+     "amask|x": [
+      9551872,
+      256
+     ],
+     "lin_w|up_blocks.3.attentions.2.transformer_blocks.0.attn2.to_out.0|out": [
+      9555968,
+      327680
+     ],
+     "lin_b|up_blocks.3.attentions.2.transformer_blocks.0.attn2.to_out.0|out": [
+      9883648,
+      1280
      ]
     }
    }
   },
   {
-   "feature": "s20",
+   "feature": "s18",
    "units": [
-    "up3.attn2",
+    "up3.attn2.ff",
     "out"
    ],
    "in": {
     "sh": {},
     "br": {
-     "m434": 0,
-     "ctx10": 3112960
+     "m448": 0,
+     "m434": 3112960
     },
     "br_base": 0,
-    "br_stride": 3309568,
-    "bytes": 6619136
+    "br_stride": 6225920,
+    "bytes": 12451840
    },
    "out": {
     "sh": {},
@@ -10298,176 +10382,78 @@
    },
    "act": {
     "off": {
-     "st8": 0,
-     "m435": 40960,
-     "m436": 3153920,
-     "m437": 6266880,
-     "m438": 9379840,
-     "m439": 14360576,
-     "m440": 19341312,
-     "m441": 24322048,
-     "m442": 29302784,
-     "m443": 32415744,
-     "m444": 35528704,
-     "k445": 40509440,
-     "v446": 40640512,
-     "m447": 40771584,
-     "m448": 45752320,
-     "m449": 48865280,
-     "m450": 51978240,
-     "m451": 64430080,
-     "m452": 76881920,
-     "m453": 89333760,
-     "m454": 92446720,
-     "m455": 95559680
+     "m449": 0,
+     "m450": 3112960,
+     "m451": 15564800,
+     "m452": 28016640,
+     "m453": 40468480,
+     "m454": 43581440,
+     "st8": 46694400,
+     "m455": 46735360
     },
-    "bytes": 98680832
+    "bytes": 49856512
    },
    "w": {
-    "bytes": 6733824,
+    "bytes": 2932736,
     "entries": {
-     "norm_w|up_blocks.3.attentions.2.norm": [
+     "norm_w|up_blocks.3.attentions.2.transformer_blocks.0.norm3": [
       0,
       1280
      ],
-     "norm_b|up_blocks.3.attentions.2.norm": [
+     "norm_b|up_blocks.3.attentions.2.transformer_blocks.0.norm3": [
       4096,
       1280
      ],
-     "gmask|320": [
-      8192,
-      40960
-     ],
-     "lin_w|up_blocks.3.attentions.2.proj_in|plain": [
-      49152,
-      204800
-     ],
-     "lin_b|up_blocks.3.attentions.2.proj_in|plain": [
-      253952,
-      1280
-     ],
-     "norm_w|up_blocks.3.attentions.2.transformer_blocks.0.norm1": [
-      258048,
-      1280
-     ],
-     "norm_b|up_blocks.3.attentions.2.transformer_blocks.0.norm1": [
-      262144,
-      1280
-     ],
-     "lin_w|up_blocks.3.attentions.2.transformer_blocks.0.attn1.to_q|qkv": [
-      266240,
-      327680
-     ],
-     "zero_b|512": [
-      593920,
-      2048
-     ],
-     "lin_w|up_blocks.3.attentions.2.transformer_blocks.0.attn1.to_k|qkv": [
-      598016,
-      327680
-     ],
-     "lin_w|up_blocks.3.attentions.2.transformer_blocks.0.attn1.to_v|qkv": [
-      925696,
-      327680
-     ],
-     "amask|64": [
-      1253376,
-      9472
-     ],
-     "lin_w|up_blocks.3.attentions.2.transformer_blocks.0.attn1.to_out.0|out": [
-      1265664,
-      327680
-     ],
-     "lin_b|up_blocks.3.attentions.2.transformer_blocks.0.attn1.to_out.0|out": [
-      1593344,
-      1280
-     ],
-     "norm_w|up_blocks.3.attentions.2.transformer_blocks.0.norm2": [
-      1597440,
-      1280
-     ],
-     "norm_b|up_blocks.3.attentions.2.transformer_blocks.0.norm2": [
-      1601536,
-      1280
-     ],
-     "lin_w|up_blocks.3.attentions.2.transformer_blocks.0.attn2.to_q|qkv": [
-      1605632,
-      327680
-     ],
-     "kv_w|up_blocks.3.attentions.2.transformer_blocks.0.attn2.to_k": [
-      1933312,
-      786432
-     ],
-     "kv_w|up_blocks.3.attentions.2.transformer_blocks.0.attn2.to_v": [
-      2719744,
-      786432
-     ],
-     "amask|x": [
-      3506176,
-      256
-     ],
-     "lin_w|up_blocks.3.attentions.2.transformer_blocks.0.attn2.to_out.0|out": [
-      3510272,
-      327680
-     ],
-     "lin_b|up_blocks.3.attentions.2.transformer_blocks.0.attn2.to_out.0|out": [
-      3837952,
-      1280
-     ],
-     "norm_w|up_blocks.3.attentions.2.transformer_blocks.0.norm3": [
-      3842048,
-      1280
-     ],
-     "norm_b|up_blocks.3.attentions.2.transformer_blocks.0.norm3": [
-      3846144,
-      1280
-     ],
      "lin_w|up_blocks.3.attentions.2.transformer_blocks.0.ff.net.0.proj|ff_h": [
-      3850240,
+      8192,
       819200
      ],
      "lin_b|up_blocks.3.attentions.2.transformer_blocks.0.ff.net.0.proj|ff_h": [
-      4669440,
+      827392,
       5120
      ],
      "lin_w|up_blocks.3.attentions.2.transformer_blocks.0.ff.net.0.proj|ff_g": [
-      4677632,
+      835584,
       819200
      ],
      "lin_b|up_blocks.3.attentions.2.transformer_blocks.0.ff.net.0.proj|ff_g": [
-      5496832,
+      1654784,
       5120
      ],
      "lin_w|up_blocks.3.attentions.2.transformer_blocks.0.ff.net.2|plain": [
-      5505024,
+      1662976,
       819200
      ],
      "lin_b|up_blocks.3.attentions.2.transformer_blocks.0.ff.net.2|plain": [
-      6324224,
+      2482176,
       1280
      ],
      "conv_w|up_blocks.3.attentions.2.proj_out": [
-      6328320,
+      2486272,
       204800
      ],
      "conv_b|up_blocks.3.attentions.2.proj_out": [
-      6533120,
+      2691072,
       1280
      ],
      "norm_w|conv_norm_out": [
-      6537216,
+      2695168,
       1280
      ],
      "norm_b|conv_norm_out": [
-      6541312,
+      2699264,
       1280
      ],
+     "gmask|320": [
+      2703360,
+      40960
+     ],
      "conv_w|conv_out": [
-      6545408,
+      2744320,
       184320
      ],
      "conv_b|conv_out": [
-      6729728,
+      2928640,
       128
      ]
     }

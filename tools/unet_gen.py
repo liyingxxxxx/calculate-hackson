@@ -108,14 +108,17 @@ class Kernels:
                         f"sd_kernels::ln_nhwc!(pub un_ln_{h}_{c}: h = {h}, w = {h}, c = {c}, p = {c}, eps = {EPS_LN:g}f32);")
 
     def attn(self, h, c, cross):
-        """calblas attention!（K 按 [key, 头 · d] 原样给）。2026-11-14 真卡：64² 的自注意力一次 625 ms（0.07 TFLOPS），是 UNet 的大头；
-        先把 K 用 transpose2d! 转好（`k = transposed`）再算也是 627 ms ⇒ 慢在每 16 行 q 把 128 个 key 的 K / V 块各从 DDR 读一遍（DESIGN F27），
-        要换成「一块 K / V 给多块 q 用」的写法（下一步）。"""
+        """本仓 flash_attn!（DESIGN D21）：一块 K / V 给 64 行 q 用（两遍法，数值同 calblas attention!；K 按原样 [key, 头 · d] 读）。
+        calblas attention! 每 16 行 q 把每块 key 走一串指令，64² 的自注意力一次 625 ms（0.07 TFLOPS，DESIGN F27）。"""
         t, d = tpad(h), DP[c]
+        tk = CTX_ROWS if cross else t
         name = f"un_at_{h}_{'x' if cross else 's'}"
-        keys = f"keys = {CTX_ROWS}, " if cross else ""
-        return self.add(name, "attention", {"h": h, "c": c, "cross": cross},
-                        f"calblas::attention!(pub {name}: rows = {t}, {keys}heads = {HEADS}, head = {d}, scale = {c // HEADS}, cores = 2, mask = keys);")
+        return self.add(name, "flash_attn", {"h": h, "c": c, "cross": cross},
+                        f"sd_kernels::flash_attn!(pub {name}: rows = {t}, keys = {tk}, heads = {HEADS}, head = {d}, scale = {c // HEADS});")
+
+    def tr(self, rows, cols):
+        name = f"un_tr_{rows}_{cols}"
+        return self.add(name, "transpose2d", {"rows": rows, "cols": cols}, f"calblas::transpose2d!(pub {name}: rows = {rows}, cols = {cols});")
 
     def kv(self, n):
         return self.add(f"un_kv_{n}", "linear", {"rows": CTX_ROWS, "k": CTX_DIM, "n": n, "bias": False},
@@ -321,18 +324,21 @@ def build(unet):
         g.op(K, K.attn(h, c, cross), [b(q), b(k), b(v), mk, b(o)])
         return o
 
-    def block(blk, x, ctx):
+    def block(blk, x, ctx, name):
+        """BasicTransformerBlock。拆成三个单元（自注意力 / 交叉注意力 / 前馈）：64² 的一个 Transformer 代码量超过一段（flash_attn! 约 350 KB）。"""
         h, c = hw(x)
         n1 = g.map(h, c)
         ln(blk.norm1, x, n1)
         o = attention(blk.attn1, n1, ctx, False)
         x1 = g.map(h, c)
         lin(blk.attn1.to_out[0], o, x1, "out", res=x)
+        g.unit(f"{name}.cross")
         n2 = g.map(h, c)
         ln(blk.norm2, x1, n2)
         o2 = attention(blk.attn2, n2, ctx, True)
         x2 = g.map(h, c)
         lin(blk.attn2.to_out[0], o2, x2, "out", res=x1)
+        g.unit(f"{name}.ff")
         n3 = g.map(h, c)
         ln(blk.norm3, x2, n3)
         hh, gg, yy = g.map(h, 4 * c), g.map(h, 4 * c), g.map(h, 4 * c)
@@ -345,14 +351,14 @@ def build(unet):
         lin(blk.ff.net[2], yy, x3, "plain", res=x2)
         return x3
 
-    def t2d(t, x, ctx):
+    def t2d(t, x, ctx, name):
         assert not t.use_linear_projection and len(t.transformer_blocks) == 1
         h, c = hw(x)
         a = g.map(h, c)
         gn(t.norm, x, a, "none")
         p = g.map(h, c)
         lin(t.proj_in, a, p, "plain")  # 1×1 的 Conv2d：同 Linear（32² 时走 linear!）
-        y = block(t.transformer_blocks[0], p, ctx)
+        y = block(t.transformer_blocks[0], p, ctx, name)
         o = g.map(h, c)
         conv(t.proj_out, y, o, res=x)
         return o
@@ -389,7 +395,7 @@ def build(unet):
             x = resnet(r, next(rs), x)
             if atts is not None:
                 g.unit(f"down{i}.attn{j}")
-                x = t2d(atts[j], x, ctx)
+                x = t2d(atts[j], x, ctx, f"down{i}.attn{j}")
             skips.append(x)
         if blk.downsamplers is not None:
             g.unit(f"down{i}.down")
@@ -402,7 +408,7 @@ def build(unet):
     g.unit("mid.res0")
     x = resnet(mb.resnets[0], next(rs), x)
     g.unit("mid.attn")
-    x = t2d(mb.attentions[0], x, ctx)
+    x = t2d(mb.attentions[0], x, ctx, "mid.attn")
     g.unit("mid.res1")
     x = resnet(mb.resnets[1], next(rs), x)
     for i, blk in enumerate(unet.up_blocks):
@@ -413,7 +419,7 @@ def build(unet):
             x = resnet(r, next(rs), x)
             if atts is not None:
                 g.unit(f"up{i}.attn{j}")
-                x = t2d(atts[j], x, ctx)
+                x = t2d(atts[j], x, ctx, f"up{i}.attn{j}")
         if blk.upsamplers is not None:
             g.unit(f"up{i}.up")
             u = upsample(x)
@@ -442,7 +448,7 @@ def load_unet():
 
 # ───────────────────────── kernels.rs ─────────────────────────
 
-KIND_ORDER = ["conv2d", "gn_stats", "gn_apply", "ln_nhwc", "attention", "transpose2d", "linear", "geglu", "upsample2", "copy_win",
+KIND_ORDER = ["conv2d", "gn_stats", "gn_apply", "ln_nhwc", "flash_attn", "transpose2d", "linear", "geglu", "upsample2", "copy_win",
               "timestep_embed", "unary", "bias_fold", "fill16k"]
 
 
@@ -530,8 +536,8 @@ def kernel_code(syms: dict, entry: str = "step") -> dict:
     return out
 
 
-GUESS = {"conv2d": 120_000, "attention": 120_000, "gn_stats": 30_000, "gn_apply": 30_000, "ln_nhwc": 40_000}
-NARGS = {"gn_stats": 2, "gn_apply": 6, "ln_nhwc": 4, "attention": 5, "transpose2d": 2, "geglu": 3, "upsample2": 2, "copy_win": 2,
+GUESS = {"conv2d": 120_000, "flash_attn": 120_000, "gn_stats": 30_000, "gn_apply": 30_000, "ln_nhwc": 40_000}
+NARGS = {"gn_stats": 2, "gn_apply": 6, "ln_nhwc": 4, "flash_attn": 5, "transpose2d": 2, "geglu": 3, "upsample2": 2, "copy_win": 2,
          "timestep_embed": 3, "unary": 2, "bias_fold": 3}
 
 

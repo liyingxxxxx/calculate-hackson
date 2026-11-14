@@ -115,9 +115,25 @@ docc 每核的代码放不下整个解码器，所以分段：每段一次 `dort
 | 其余（卷积为主） | | | 约 4 s | 输入 ≥ 1280 通道的卷积走原路，0.1–0.2 TFLOPS |
 | 按种类 | | | 注意力 7.19 s、卷积 4.03 s、linear 0.14 s、geglu 0.10 s、LayerNorm 0.06 s、GroupNorm 0.07 s | |
 
-注意力慢在读 K / V 的次数：kernel 每 16 行 q 把每块 128 个 key 的 K、V 各从 DDR 读一遍。先用 `transpose2d!` 把 K 转好再算（`k = transposed`）也是 627 ms
-（`prof_attention_k_transposed.json`），说明慢的不是读的方式。下一步换成「一块 K / V 给多块 q 用」的写法（PROGRESS U6）。
-每段的时间、部署与参数块大小在 `results/npu3-20261114/unet/breakdown.json`。
+注意力慢在指令条数：kernel 每 16 行 q、每块 128 个 key 走一串十来条指令。先用 `transpose2d!` 把 K 转好再算（`k = transposed`）也是 627 ms
+（`prof_attention_k_transposed.json`），说明慢的不是读的方式。每段的时间、部署与参数块大小在 `results/npu3-20261114/unet/breakdown.json`。
+
+### 优化 1：注意力换成本仓的 `flash_attn!`（真机实测，结果在 `results/npu3-20261114/unet-attn/`）
+
+每次取 64 行 q，每块 K / V 读一次给 64 行用，数值口径同 calblas（DESIGN D21）。
+
+| 项 | 第一版 | 优化 1 |
+| --- | --- | --- |
+| 64² 自注意力一次 | 625 ms | **259 ms** |
+| 32² 自注意力一次 | 58 ms | **26 ms** |
+| 段数 | 20 | 18 |
+| **一步（CFG 两路）整次墙钟** | 12.35 s | **8.19 s**（只部署 0.57 s） |
+| 对 bf16 参照（有提示词 / 空提示词） | 49.8 / 50.1 dB | 49.8 / 50.1 dB（2 遍逐字节一致） |
+| 按种类（逐 kernel 计时，一步合计） | 注意力 7.19 s、卷积 4.03 s | **卷积 4.03 s**、注意力 3.0 s、其余 0.4 s |
+
+第一版的 `flash_attn!` 模拟过了、上真卡却算错（10.7 dB）：单 kernel 上板二分查到是 docc 的问题（DESIGN F28，
+`unet-attn/flash_attn_single_kernel.md`），改掉之后单 kernel 对 numpy 的相对误差 0.9–1.5%（和 calblas 一样）。
+下一个大头是小图上宽通道的卷积（PROGRESS U6b）。
 
 ## 2. 单 kernel（7 个 kernel、20 个用例，各调一次 dort）
 

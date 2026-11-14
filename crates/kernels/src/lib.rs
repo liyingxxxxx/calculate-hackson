@@ -13,6 +13,7 @@
 //! | [`copy_win!`] | 带边框图的内部拷进另一张图的通道窗口（UNet 跳连拼接） | 新写 |
 //! | [`bias_fold!`] | f32 bias + bf16 时间步投影 ⇒ f32（UNet 各 conv1 的 bias） | 新写 |
 //! | [`attn_wide!`] | 头维宽（> 256）的自注意力，头维按 128 一段切（正式 VAE 中间块：单头 512 维） | 抄 calblas `attention!` / `spatial_attn!` 改（VENDORED.md，DESIGN D14） |
+//! | [`flash_attn!`] | 注意力（mask = keys）：每块 K / V 给 64 行 q 用，数值口径同 calblas（UNet 的自 / 交叉注意力，DESIGN D21） | 寻址抄 calblas `attention!`，按 64 行分块是本仓写的（VENDORED.md） |
 //!
 //! 宏里经 `$crate::calblas::…` 用 calblas 的片段（`halves!`、`rd!`、`Cols`……），所以调用方只要依赖 `npu`（`#[npu::kernel]` 展开成 `::npu::…`）和本 crate。
 #![no_std]

@@ -98,15 +98,15 @@ sd_kernels::ln_nhwc!(pub un_ln_32_640: h = 32, w = 32, c = 640, p = 640, eps = 1
 sd_kernels::ln_nhwc!(pub un_ln_16_1280: h = 16, w = 16, c = 1280, p = 1280, eps = 1e-05f32);
 sd_kernels::ln_nhwc!(pub un_ln_8_1280: h = 8, w = 8, c = 1280, p = 1280, eps = 1e-05f32);
 
-// ── attention（8 个）──
-calblas::attention!(pub un_at_64_s: rows = 4736, heads = 8, head = 64, scale = 40, cores = 2, mask = keys);
-calblas::attention!(pub un_at_64_x: rows = 4736, keys = 128, heads = 8, head = 64, scale = 40, cores = 2, mask = keys);
-calblas::attention!(pub un_at_32_s: rows = 1408, heads = 8, head = 96, scale = 80, cores = 2, mask = keys);
-calblas::attention!(pub un_at_32_x: rows = 1408, keys = 128, heads = 8, head = 96, scale = 80, cores = 2, mask = keys);
-calblas::attention!(pub un_at_16_s: rows = 512, heads = 8, head = 160, scale = 160, cores = 2, mask = keys);
-calblas::attention!(pub un_at_16_x: rows = 512, keys = 128, heads = 8, head = 160, scale = 160, cores = 2, mask = keys);
-calblas::attention!(pub un_at_8_s: rows = 256, heads = 8, head = 160, scale = 160, cores = 2, mask = keys);
-calblas::attention!(pub un_at_8_x: rows = 256, keys = 128, heads = 8, head = 160, scale = 160, cores = 2, mask = keys);
+// ── flash_attn（8 个）──
+sd_kernels::flash_attn!(pub un_at_64_s: rows = 4736, keys = 4736, heads = 8, head = 64, scale = 40);
+sd_kernels::flash_attn!(pub un_at_64_x: rows = 4736, keys = 128, heads = 8, head = 64, scale = 40);
+sd_kernels::flash_attn!(pub un_at_32_s: rows = 1408, keys = 1408, heads = 8, head = 96, scale = 80);
+sd_kernels::flash_attn!(pub un_at_32_x: rows = 1408, keys = 128, heads = 8, head = 96, scale = 80);
+sd_kernels::flash_attn!(pub un_at_16_s: rows = 512, keys = 512, heads = 8, head = 160, scale = 160);
+sd_kernels::flash_attn!(pub un_at_16_x: rows = 512, keys = 128, heads = 8, head = 160, scale = 160);
+sd_kernels::flash_attn!(pub un_at_8_s: rows = 256, keys = 256, heads = 8, head = 160, scale = 160);
+sd_kernels::flash_attn!(pub un_at_8_x: rows = 256, keys = 128, heads = 8, head = 160, scale = 160);
 
 // ── linear（9 个）──
 calblas::linear!(pub un_l16_384_1280: rows = 16, k = 384, n = 1280, w = hf, cores = 2, bias = f32);
