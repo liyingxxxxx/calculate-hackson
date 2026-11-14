@@ -94,8 +94,20 @@ def plan(kind: str, c: dict) -> dict:
     if kind == "linear":
         r, k, n = c["rows"], c["k"], c["n"]
         bias = c.get("bias") == "f32"
-        return {"act": {"x": r * k * 2, "y": r * n * 2}, "w": {"w": n * k * 2, **({"b": n * 4} if bias else {})},
-                "args": ["act:x", "w:w"] + (["w:b"] if bias else []) + ["act:y"], "flop": 2 * r * k * n, "bytes": None}
+        st = cvxsim.parse_specs  # noqa: F841（分段的阶段名在 c["stage_name"]）
+        stage = c.get("stage_name")
+        act = {"x": r * k * 2, "y": r * n * 2, "p": r * n * 4}
+        if stage in ("first", "mid"):
+            args = ["act:x", "w:w", "act:p"]
+        elif stage == "last":
+            args = ["act:x", "w:w"] + (["w:b"] if bias else []) + ["act:p", "act:y"]
+        else:
+            args = ["act:x", "w:w"] + (["w:b"] if bias else []) + ["act:y"]
+        return {"act": act, "w": {"w": n * k * 2, **({"b": n * 4} if bias else {})}, "args": args, "flop": 2 * r * k * n, "bytes": None}
+    if kind == "res_add":
+        h, ch = c["h"], c["c"]
+        return {"act": {"a": img(h, c["pa"]), "r": img(h, c["pr"]), "y": img(h, c["py"])}, "w": {}, "args": ["act:a", "act:r", "act:y"],
+                "flop": None, "bytes": 3 * h * c["w"] * ch * 2}
     if kind in ("attention", "flash_attn"):
         t, hh, d = c["rows"], c["heads"], c["head"]
         tk = c.get("keys", t)

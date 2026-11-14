@@ -41,7 +41,8 @@ TAESD 3 遍逐字节一致、对 bf16 参照约 60 dB、对 fp32 约 56 dB；7 �
   - **正式 VAE 解码器**（分段程序，现在 3 段）：3 遍逐字节一致，对 bf16 参照 58.3 dB；ComfyUI 节点 SD15 NPU · VAE Decode 出的图和自带 VAEDecode 相比 55.6 dB。
     按真卡逐 kernel 计时优化后 **0.98 s**（第一版 5.18 s），比同机 CPU fp32（1.71 s）快约 1.75 倍（`test/PERF.md`）。
   - **UNet 一次前向（CFG 两路）**：2 遍逐字节一致，对 bf16 参照 49.8 / 50.1 dB、对 fp32 49.4 / 48.0 dB；第一版一步 12.35 s，
-    注意力换成本仓的 `flash_attn!`（DESIGN D21）之后 **8.19 s**（18 段，只部署 0.57 s），**还比 CPU（约 2 s）慢**；现在的大头是宽通道小图卷积（约 4 s）和 64² 自注意力（2.59 s），`test/PERF.md` 1c。
+    注意力换成本仓的 `flash_attn!`（DESIGN D21）8.19 s，宽通道卷积改走 `linear!`（D22）**5.16 s**（10 段，只部署 0.52 s），**还比 CPU（约 2 s）慢**；
+    现在的大头是 64² 自注意力（一步 2.58 s）和 kernel 之外的约 1 s，`test/PERF.md` 1c。
   - 结果与图在 `test/results/npu3-20261114/`；性能全表在 `test/PERF.md`（TAESD 整次中位数 0.113 s，比同机 CPU fp32 快约 1.6 倍）。
 - 编译链：赛方工具链装在隔离目录，经赛方 cargo 源依赖 calblas；整步程序 ⇒ CalVX ⇒ docc 出 calbin，doctor 拒收 0 条。
 - B1 的 TAESD 解码器：整步程序在 `crates/taesd`，有带真权重的 calbin。numpy 模拟器照编出来的 `.cvx` 重放，查接线；对两份独立参照是 60.6 / 55.9 dB。
@@ -167,13 +168,13 @@ npu3 上的实测：一次 `dort calbin run`，小 kernel 约 2 ms，TAESD 整�
 | A1 | 新算子 | 时间步嵌入真机实测过；quick_gelu、NHWC GroupNorm 未写 |
 | B1 | TAESD 解码上 NPU + ComfyUI 节点 | ✅ **真机跑通**（2026-11-14 npu3） |
 | B1b | 正式 VAE 解码器上 NPU | ✅ **真机跑通**（3 段，58.3 dB，0.98 s，比 CPU 快约 1.75 倍；ComfyUI 节点 0.99 s）；单 kernel 测试待补（V2b） |
-| B3 | UNet 一次前向 | **真机跑通**（49.8 / 50.1 dB），一步 12.35 ⇒ 8.19 s（注意力优化），正在优化卷积（U6b）；接 ComfyUI（U7）未做 |
+| B3 | UNet 一次前向 | **真机跑通**（约 50 dB），一步 12.35 ⇒ 8.19 ⇒ 5.16 s（注意力、宽通道卷积），接着抠注意力（U6c）；接 ComfyUI（U7）未做 |
 | B2、B4、B5 | CLIP、去噪循环进设备、性能与多尺寸 | 未开始 |
 
 接着做什么：
 
 0. **UNet 提速（PROGRESS U6）**：① 注意力已换成本仓的 `flash_attn!`（U6a，DESIGN D21；⛔ 别在 VB 里对 [N, 1] 的向量按行切了再 bcast，docc 收但真卡算错，F28）；
-   ② 下一步：小图宽通道的卷积（约 4 s）：1×1 的改走 `linear!`（生成器里 `lin()` 已经有这条路，按「输出边框读不读」挑），3×3 的想办法走快路；改完 `tools/unet_gen.py kernels && probe && program`，
+   ② 宽通道的卷积已改走 `linear!`（U6b，DESIGN D22）；③ 下一步：64² 自注意力（一步 2.58 s）、kernel 之外的约 1 s；改完 `tools/unet_gen.py kernels && probe && program`，
    `tools/unet.py sim` 对参照，`tools/prof.py --model unet gen/build/board` 量 kernel，`tools/unet.py board` 量整步。然后 U7 接 ComfyUI。
 1. **正式 VAE 还能抠的**（PROGRESS「B1b」的 V8）：GroupNorm 统计那一遍、`attn_wide!`、把注意力那一段也并进去。量性能用 `tools/prof.py`（真卡上逐个 kernel 计时）。
    正式 VAE 已经真机跑通，下面是当时的做法，留作写 UNet 的参考：

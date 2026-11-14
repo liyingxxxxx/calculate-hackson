@@ -1,0 +1,78 @@
+{
+ "t": 500.0,
+ "sim_s": 17.1,
+ "stages": {
+  "s1": "55 个作业（fill16k 4 次、timestep_embed 1 次、linear 7 次、unary 2 次、bias_fold 1 次、conv2d 20 次、gn_stats 6 次、gn_apply 6 次、ln_nhwc 4 次、flash_attn 4 次），52 条屏障；接线检查全过；numpy 用时 1.6 s",
+  "s2": "30 个作业（fill16k 4 次、ln_nhwc 2 次、conv2d 10 次、geglu 2 次、linear 2 次、res_add 2 次、gn_stats 4 次、gn_apply 4 次），27 条屏障；接线检查全过；numpy 用时 0.7 s",
+  "s3": "50 个作业（fill16k 4 次、gn_stats 2 次、gn_apply 2 次、conv2d 22 次、ln_nhwc 6 次、flash_attn 4 次、linear 6 次、geglu 2 次、res_add 2 次），47 条屏障；接线检查全过；numpy 用时 1.8 s",
+  "s4": "298 个作业（fill16k 4 次、gn_stats 24 次、gn_apply 24 次、conv2d 28 次、linear 146 次、ln_nhwc 24 次、flash_attn 16 次、geglu 8 次、res_add 24 次），295 条屏障；接线检查全过；numpy 用时 1.5 s",
+  "s5": "792 个作业（fill16k 4 次、conv2d 4 次、gn_stats 52 次、gn_apply 52 次、linear 532 次、res_add 52 次、ln_nhwc 24 次、flash_attn 16 次、geglu 8 次、copy_win 28 次、upsample2 20 次），789 条屏障；接线检查全过；numpy 用时 2.0 s",
+  "s6": "214 个作业（fill16k 4 次、gn_stats 18 次、gn_apply 18 次、linear 80 次、ln_nhwc 18 次、flash_attn 12 次、conv2d 34 次、geglu 6 次、res_add 6 次、copy_win 12 次、upsample2 6 次），211 条屏障；接线检查全过；numpy 用时 1.9 s",
+  "s7": "48 个作业（fill16k 4 次、gn_stats 2 次、gn_apply 2 次、conv2d 20 次、ln_nhwc 6 次、flash_attn 4 次、linear 6 次、geglu 2 次、res_add 2 次），45 条屏障；接线检查全过；numpy 用时 1.9 s",
+  "s8": "52 个作业（fill16k 4 次、copy_win 4 次、gn_stats 6 次、gn_apply 6 次、conv2d 20 次、ln_nhwc 4 次、flash_attn 4 次、linear 4 次），49 条屏障；接线检查全过；numpy 用时 1.7 s",
+  "s9": "36 个作业（fill16k 4 次、ln_nhwc 2 次、conv2d 12 次、geglu 2 次、linear 2 次、res_add 2 次、copy_win 4 次、gn_stats 4 次、gn_apply 4 次），33 条屏障；接线检查全过；numpy 用时 0.8 s",
+  "s10": "54 个作业（fill16k 4 次、gn_stats 4 次、gn_apply 4 次、conv2d 22 次、ln_nhwc 6 次、flash_attn 4 次、linear 6 次、geglu 2 次、res_add 2 次），51 条屏障；接线检查全过；numpy 用时 2.0 s"
+ },
+ "cond": {
+  "vs_bf16": {
+   "max_abs": 0.015625,
+   "rms": 0.0019194476388108147,
+   "cos": 0.9999978563548793,
+   "snr_db": 53.67465753309563,
+   "finite": true
+  },
+  "vs_fp32": {
+   "max_abs": 0.01702404022216797,
+   "rms": 0.0025221175891442147,
+   "cos": 0.9999963746524154,
+   "snr_db": 51.30577063916252,
+   "finite": true
+  },
+  "ref_bf16_vs_fp32": {
+   "max_abs": 0.016937732696533203,
+   "rms": 0.0025353211739067316,
+   "cos": 0.9999963137842792,
+   "snr_db": 51.260417587545646,
+   "finite": true
+  }
+ },
+ "uncond": {
+  "vs_bf16": {
+   "max_abs": 0.015625,
+   "rms": 0.00204419918628237,
+   "cos": 0.9999976008204403,
+   "snr_db": 53.18268679633277,
+   "finite": true
+  },
+  "vs_fp32": {
+   "max_abs": 0.018128633499145508,
+   "rms": 0.0027442409462906277,
+   "cos": 0.9999958765142087,
+   "snr_db": 50.6309521996694,
+   "finite": true
+  },
+  "ref_bf16_vs_fp32": {
+   "max_abs": 0.018128633499145508,
+   "rms": 0.0029191970225052,
+   "cos": 0.9999953622333361,
+   "snr_db": 50.094128853296425,
+   "finite": true
+  }
+ },
+ "cfg": {
+  "vs_bf16": {
+   "max_abs": 0.21875,
+   "rms": 0.01956684903389892,
+   "cos": 0.9997657976922764,
+   "snr_db": 33.29229964605358,
+   "finite": true
+  },
+  "vs_fp32": {
+   "max_abs": 0.1293928623199463,
+   "rms": 0.018650690348358145,
+   "cos": 0.9997871801179878,
+   "snr_db": 33.69355390985985,
+   "finite": true
+  }
+ }
+}

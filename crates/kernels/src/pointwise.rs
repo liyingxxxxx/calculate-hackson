@@ -153,3 +153,38 @@ macro_rules! bias_fold {
         }
     };
 }
+
+/// 残差加到图的内部：y = bf16(a + r)，三张都是带边框的图（`[H + 4][W + 4][P]`，行距各自给），只读写内部的 c 个通道，边框不动（还是 0）。
+/// UNet 里宽通道（Cin > 1024）的卷积改走 calblas `linear!`（DESIGN D22）：`linear!` 按稠密行算、整行写（边框那几列也写），
+/// 带残差的那些先写进临时图 a，再用这一个把残差加上、只写内部 ⇒ 输出图的边框仍是 0（后面的 3×3 卷积要读它）。
+/// 数值同卷积的 `res = …`：卷积出口先舍一次 bf16（a 就是），加残差再舍一次。每颗核加自己那一半的行（单核 kernel、按 num_cores() 分行 ⇒ 两核都调）。
+#[macro_export]
+macro_rules! res_add {
+    ($vis:vis $name:ident: h = $h:expr, w = $w:expr, c = $c:expr, pa = $pa:expr, pr = $pr:expr, py = $py:expr) => {
+        #[npu::kernel]
+        $vis fn $name(a: npu::Ptr<npu::Ddr, npu::bf16>, r: npu::Ptr<npu::Ddr, npu::bf16>, y: npu::Ptr<npu::Ddr, npu::bf16>) {
+            use npu::prelude::*;
+            const B: usize = $crate::calblas::kernels::BORDER;
+            const H: usize = $h;
+            const W: usize = $w;
+            const C: usize = $c;
+            const PA: usize = $pa;
+            const PR: usize = $pr;
+            const PY: usize = $py;
+            const WI: usize = W + 2 * B;
+            const _: () = assert!(C % 32 == 0 && C <= PA && C <= PR && C <= PY && W * C * 2 <= 128 * 1024, "res_add：通道数是 32 的倍数、一行放得进 VB");
+            let ga = a.add((B * WI + B) * PA * 2).bind_strided::<npu::Read, 2>([H * WI, C], [PA, 1]);
+            let gr = r.add((B * WI + B) * PR * 2).bind_strided::<npu::Read, 2>([H * WI, C], [PR, 1]);
+            let gy = y.add((B * WI + B) * PY * 2).bind_strided::<npu::Write, 2>([H * WI, C], [PY, 1]);
+            let (va, vr) = (vcache::<bf16, _>([W, C]), vcache::<bf16, _>([W, C]));
+            let (h0, hn) = $crate::calblas::halves!(H);
+            for i in 0..hn {
+                let oy = h0 + i;
+                va.load(ga.sub([oy * WI, 0], [W, C]));
+                vr.load(gr.sub([oy * WI, 0], [W, C]));
+                va.add(va, vr);
+                va.store(gy.sub([oy * WI, 0], [W, C]));
+            }
+        }
+    };
+}

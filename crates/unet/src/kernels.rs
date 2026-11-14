@@ -3,7 +3,7 @@
 //! 卷积全是 `act = none`（SiLU 在 GroupNorm 那一步做）；投影（q / k / v、to_out、前馈）当 1×1 卷积；注意力头维补零（40 ⇒ 64、80 ⇒ 96），
 //! `scale` 给真头维；交叉注意力的 key 是上下文的 128 行（77 行有用，补的用掩码去掉）。
 
-// ── conv2d（51 个）──
+// ── conv2d（26 个）──
 sd_kernels::conv2d!(pub un_c3_64_32_320: h = 64, w = 64, cin = 32, cout = 320, k = 3, s = 1, pin = (32, 0), pout = (320, 0), act = none);
 sd_kernels::conv2d!(pub un_c3_64_320_320: h = 64, w = 64, cin = 320, cout = 320, k = 3, s = 1, pin = (320, 0), pout = (320, 0), act = none);
 sd_kernels::conv2d!(pub un_c3_64_320_320_r: h = 64, w = 64, cin = 320, cout = 320, k = 3, s = 1, pin = (320, 0), pout = (320, 0), act = none, res = (320, 0));
@@ -11,42 +11,17 @@ sd_kernels::conv2d!(pub un_c1_64_320_320: h = 64, w = 64, cin = 320, cout = 320,
 sd_kernels::conv2d!(pub un_c1_64_320_512: h = 64, w = 64, cin = 320, cout = 512, k = 1, s = 1, pin = (320, 0), pout = (512, 0), act = none);
 sd_kernels::conv2d!(pub un_c1_64_512_320_r: h = 64, w = 64, cin = 512, cout = 320, k = 1, s = 1, pin = (512, 0), pout = (320, 0), act = none, res = (320, 0));
 sd_kernels::conv2d!(pub un_c1_64_320_1280: h = 64, w = 64, cin = 320, cout = 1280, k = 1, s = 1, pin = (320, 0), pout = (1280, 0), act = none);
-sd_kernels::conv2d!(pub un_c1_64_1280_320_r: h = 64, w = 64, cin = 1280, cout = 320, k = 1, s = 1, pin = (1280, 0), pout = (320, 0), act = none, res = (320, 0));
 sd_kernels::conv2d!(pub un_c1_64_320_320_r: h = 64, w = 64, cin = 320, cout = 320, k = 1, s = 1, pin = (320, 0), pout = (320, 0), act = none, res = (320, 0));
 sd_kernels::conv2d!(pub un_c3_32_320_320_s2: h = 32, w = 32, cin = 320, cout = 320, k = 3, s = 2, pin = (320, 0), pout = (320, 0), act = none);
 sd_kernels::conv2d!(pub un_c3_32_320_640: h = 32, w = 32, cin = 320, cout = 640, k = 3, s = 1, pin = (320, 0), pout = (640, 0), act = none);
 sd_kernels::conv2d!(pub un_c1_32_320_640: h = 32, w = 32, cin = 320, cout = 640, k = 1, s = 1, pin = (320, 0), pout = (640, 0), act = none);
 sd_kernels::conv2d!(pub un_c3_32_640_640_r: h = 32, w = 32, cin = 640, cout = 640, k = 3, s = 1, pin = (640, 0), pout = (640, 0), act = none, res = (640, 0));
 sd_kernels::conv2d!(pub un_c1_32_768_640_r: h = 32, w = 32, cin = 768, cout = 640, k = 1, s = 1, pin = (768, 0), pout = (640, 0), act = none, res = (640, 0));
-sd_kernels::conv2d!(pub un_c1_32_2560_640_r_o768_q640: h = 32, w = 32, cin = 2560, cout = 640, k = 1, s = 1, pin = (2560, 0), pout = (768, 0), act = none, res = (640, 0));
 sd_kernels::conv2d!(pub un_c3_32_640_640: h = 32, w = 32, cin = 640, cout = 640, k = 3, s = 1, pin = (640, 0), pout = (640, 0), act = none);
 sd_kernels::conv2d!(pub un_c3_16_640_640_s2: h = 16, w = 16, cin = 640, cout = 640, k = 3, s = 2, pin = (640, 0), pout = (640, 0), act = none);
 sd_kernels::conv2d!(pub un_c3_16_640_1280: h = 16, w = 16, cin = 640, cout = 1280, k = 3, s = 1, pin = (640, 0), pout = (1280, 0), act = none);
 sd_kernels::conv2d!(pub un_c1_16_640_1280: h = 16, w = 16, cin = 640, cout = 1280, k = 1, s = 1, pin = (640, 0), pout = (1280, 0), act = none);
-sd_kernels::conv2d!(pub un_c3_16_1280_1280_r: h = 16, w = 16, cin = 1280, cout = 1280, k = 3, s = 1, pin = (1280, 0), pout = (1280, 0), act = none, res = (1280, 0));
-sd_kernels::conv2d!(pub un_c1_16_1280_1280: h = 16, w = 16, cin = 1280, cout = 1280, k = 1, s = 1, pin = (1280, 0), pout = (1280, 0), act = none);
-sd_kernels::conv2d!(pub un_c1_16_1280_1280_r: h = 16, w = 16, cin = 1280, cout = 1280, k = 1, s = 1, pin = (1280, 0), pout = (1280, 0), act = none, res = (1280, 0));
-sd_kernels::conv2d!(pub un_c1_16_1280_5120: h = 16, w = 16, cin = 1280, cout = 5120, k = 1, s = 1, pin = (1280, 0), pout = (5120, 0), act = none);
-sd_kernels::conv2d!(pub un_c1_16_5120_1280_r: h = 16, w = 16, cin = 5120, cout = 1280, k = 1, s = 1, pin = (5120, 0), pout = (1280, 0), act = none, res = (1280, 0));
-sd_kernels::conv2d!(pub un_c3_16_1280_1280: h = 16, w = 16, cin = 1280, cout = 1280, k = 3, s = 1, pin = (1280, 0), pout = (1280, 0), act = none);
 sd_kernels::conv2d!(pub un_c3_8_1280_1280_s2: h = 8, w = 8, cin = 1280, cout = 1280, k = 3, s = 2, pin = (1280, 0), pout = (1280, 0), act = none);
-sd_kernels::conv2d!(pub un_c3_8_1280_1280: h = 8, w = 8, cin = 1280, cout = 1280, k = 3, s = 1, pin = (1280, 0), pout = (1280, 0), act = none);
-sd_kernels::conv2d!(pub un_c3_8_1280_1280_r: h = 8, w = 8, cin = 1280, cout = 1280, k = 3, s = 1, pin = (1280, 0), pout = (1280, 0), act = none, res = (1280, 0));
-sd_kernels::conv2d!(pub un_c1_8_1280_1280: h = 8, w = 8, cin = 1280, cout = 1280, k = 1, s = 1, pin = (1280, 0), pout = (1280, 0), act = none);
-sd_kernels::conv2d!(pub un_c1_8_1280_1280_r: h = 8, w = 8, cin = 1280, cout = 1280, k = 1, s = 1, pin = (1280, 0), pout = (1280, 0), act = none, res = (1280, 0));
-sd_kernels::conv2d!(pub un_c1_8_1280_5120: h = 8, w = 8, cin = 1280, cout = 5120, k = 1, s = 1, pin = (1280, 0), pout = (5120, 0), act = none);
-sd_kernels::conv2d!(pub un_c1_8_5120_1280_r: h = 8, w = 8, cin = 5120, cout = 1280, k = 1, s = 1, pin = (5120, 0), pout = (1280, 0), act = none, res = (1280, 0));
-sd_kernels::conv2d!(pub un_c3_8_2560_1280: h = 8, w = 8, cin = 2560, cout = 1280, k = 3, s = 1, pin = (2560, 0), pout = (1280, 0), act = none);
-sd_kernels::conv2d!(pub un_c1_8_2560_1280: h = 8, w = 8, cin = 2560, cout = 1280, k = 1, s = 1, pin = (2560, 0), pout = (1280, 0), act = none);
-sd_kernels::conv2d!(pub un_c3_16_2560_1280: h = 16, w = 16, cin = 2560, cout = 1280, k = 3, s = 1, pin = (2560, 0), pout = (1280, 0), act = none);
-sd_kernels::conv2d!(pub un_c1_16_2560_1280: h = 16, w = 16, cin = 2560, cout = 1280, k = 1, s = 1, pin = (2560, 0), pout = (1280, 0), act = none);
-sd_kernels::conv2d!(pub un_c3_16_1920_1280: h = 16, w = 16, cin = 1920, cout = 1280, k = 3, s = 1, pin = (1920, 0), pout = (1280, 0), act = none);
-sd_kernels::conv2d!(pub un_c1_16_1920_1280: h = 16, w = 16, cin = 1920, cout = 1280, k = 1, s = 1, pin = (1920, 0), pout = (1280, 0), act = none);
-sd_kernels::conv2d!(pub un_c3_32_1280_1280: h = 32, w = 32, cin = 1280, cout = 1280, k = 3, s = 1, pin = (1280, 0), pout = (1280, 0), act = none);
-sd_kernels::conv2d!(pub un_c3_32_1920_640: h = 32, w = 32, cin = 1920, cout = 640, k = 3, s = 1, pin = (1920, 0), pout = (640, 0), act = none);
-sd_kernels::conv2d!(pub un_c1_32_1920_640: h = 32, w = 32, cin = 1920, cout = 640, k = 1, s = 1, pin = (1920, 0), pout = (640, 0), act = none);
-sd_kernels::conv2d!(pub un_c3_32_1280_640: h = 32, w = 32, cin = 1280, cout = 640, k = 3, s = 1, pin = (1280, 0), pout = (640, 0), act = none);
-sd_kernels::conv2d!(pub un_c1_32_1280_640: h = 32, w = 32, cin = 1280, cout = 640, k = 1, s = 1, pin = (1280, 0), pout = (640, 0), act = none);
 sd_kernels::conv2d!(pub un_c3_32_960_640: h = 32, w = 32, cin = 960, cout = 640, k = 3, s = 1, pin = (960, 0), pout = (640, 0), act = none);
 sd_kernels::conv2d!(pub un_c1_32_960_640: h = 32, w = 32, cin = 960, cout = 640, k = 1, s = 1, pin = (960, 0), pout = (640, 0), act = none);
 sd_kernels::conv2d!(pub un_c3_64_640_640: h = 64, w = 64, cin = 640, cout = 640, k = 3, s = 1, pin = (640, 0), pout = (640, 0), act = none);
@@ -108,16 +83,61 @@ sd_kernels::flash_attn!(pub un_at_16_x: rows = 512, keys = 128, heads = 8, head 
 sd_kernels::flash_attn!(pub un_at_8_s: rows = 256, keys = 256, heads = 8, head = 160, scale = 160);
 sd_kernels::flash_attn!(pub un_at_8_x: rows = 256, keys = 128, heads = 8, head = 160, scale = 160);
 
-// ── linear（9 个）──
+// ── linear（48 个）──
 calblas::linear!(pub un_l16_384_1280: rows = 16, k = 384, n = 1280, w = hf, cores = 2, bias = f32);
 calblas::linear!(pub un_l16_1280_1280: rows = 16, k = 1280, n = 1280, w = hf, cores = 2, bias = f32);
 calblas::linear!(pub un_l16_1280_20224: rows = 16, k = 1280, n = 20224, w = hf, cores = 2, bias = f32);
 calblas::linear!(pub un_kv_512: rows = 128, k = 768, n = 512, w = hf, cores = 2);
-calblas::linear!(pub un_lr_32_640_640_b: rows = 1408, k = 640, n = 640, w = hf, cores = 2, bias = f32);
-calblas::linear!(pub un_lr_32_640_768: rows = 1408, k = 640, n = 768, w = hf, cores = 2);
+calblas::linear!(pub un_lr_64_1280_384_b: rows = 4352, k = 1280, n = 384, w = hf, cores = 2, bias = f32);
+calblas::linear!(pub un_lr_32_640_640_b: rows = 1152, k = 640, n = 640, w = hf, cores = 2, bias = f32);
+calblas::linear!(pub un_lr_32_640_768: rows = 1152, k = 640, n = 768, w = hf, cores = 2);
 calblas::linear!(pub un_kv_768: rows = 128, k = 768, n = 768, w = hf, cores = 2);
-calblas::linear!(pub un_lr_32_640_2560_b: rows = 1408, k = 640, n = 2560, w = hf, cores = 2, bias = f32);
+calblas::linear!(pub un_lr_32_640_2560_b: rows = 1152, k = 640, n = 2560, w = hf, cores = 2, bias = f32);
+calblas::linear!(pub un_lr_32_2560_640_b: rows = 1152, k = 2560, n = 640, w = hf, cores = 2, bias = f32);
+calblas::linear!(pub un_lr_16_1280_1280_first: rows = 320, k = 1280, n = 1280, w = hf, cores = 2, ks = [0, 1280], first);
+calblas::linear!(pub un_lr_16_1280_1280_mid: rows = 320, k = 1280, n = 1280, w = hf, cores = 2, ks = [0, 1280], mid);
+calblas::linear!(pub un_lr_16_1280_1280_b_last: rows = 320, k = 1280, n = 1280, w = hf, cores = 2, bias = f32, ks = [0, 1280], last);
+calblas::linear!(pub un_lr_16_1280_1280_b: rows = 320, k = 1280, n = 1280, w = hf, cores = 2, bias = f32);
+calblas::linear!(pub un_lr_16_1280_1280: rows = 320, k = 1280, n = 1280, w = hf, cores = 2);
 calblas::linear!(pub un_kv_1280: rows = 128, k = 768, n = 1280, w = hf, cores = 2);
+calblas::linear!(pub un_lr_16_1280_5120_b: rows = 320, k = 1280, n = 5120, w = hf, cores = 2, bias = f32);
+calblas::linear!(pub un_lr_16_5120_1280_b: rows = 320, k = 5120, n = 1280, w = hf, cores = 2, bias = f32);
+calblas::linear!(pub un_lr_8_1280_1280_first: rows = 96, k = 1280, n = 1280, w = hf, cores = 2, ks = [0, 1280], first);
+calblas::linear!(pub un_lr_8_1280_1280_mid: rows = 96, k = 1280, n = 1280, w = hf, cores = 2, ks = [0, 1280], mid);
+calblas::linear!(pub un_lr_8_1280_1280_b_last: rows = 96, k = 1280, n = 1280, w = hf, cores = 2, bias = f32, ks = [0, 1280], last);
+calblas::linear!(pub un_lr_8_1280_1280_b: rows = 96, k = 1280, n = 1280, w = hf, cores = 2, bias = f32);
+calblas::linear!(pub un_lr_8_1280_1280: rows = 96, k = 1280, n = 1280, w = hf, cores = 2);
+calblas::linear!(pub un_lr_8_1280_5120_b: rows = 96, k = 1280, n = 5120, w = hf, cores = 2, bias = f32);
+calblas::linear!(pub un_lr_8_5120_1280_b: rows = 96, k = 5120, n = 1280, w = hf, cores = 2, bias = f32);
+calblas::linear!(pub un_lr_8_2560_1280_first: rows = 96, k = 2560, n = 1280, w = hf, cores = 2, ks = [0, 2560], first);
+calblas::linear!(pub un_lr_8_2560_1280_mid: rows = 96, k = 2560, n = 1280, w = hf, cores = 2, ks = [0, 2560], mid);
+calblas::linear!(pub un_lr_8_2560_1280_b_last: rows = 96, k = 2560, n = 1280, w = hf, cores = 2, bias = f32, ks = [0, 2560], last);
+calblas::linear!(pub un_lr_8_2560_1280_b: rows = 96, k = 2560, n = 1280, w = hf, cores = 2, bias = f32);
+calblas::linear!(pub un_lr_16_2560_1280_first: rows = 320, k = 2560, n = 1280, w = hf, cores = 2, ks = [0, 2560], first);
+calblas::linear!(pub un_lr_16_2560_1280_mid: rows = 320, k = 2560, n = 1280, w = hf, cores = 2, ks = [0, 2560], mid);
+calblas::linear!(pub un_lr_16_2560_1280_b_last: rows = 320, k = 2560, n = 1280, w = hf, cores = 2, bias = f32, ks = [0, 2560], last);
+calblas::linear!(pub un_lr_16_2560_1280_b: rows = 320, k = 2560, n = 1280, w = hf, cores = 2, bias = f32);
+calblas::linear!(pub un_lr_16_1920_1280_first: rows = 320, k = 1920, n = 1280, w = hf, cores = 2, ks = [0, 1920], first);
+calblas::linear!(pub un_lr_16_1920_1280_mid: rows = 320, k = 1920, n = 1280, w = hf, cores = 2, ks = [0, 1920], mid);
+calblas::linear!(pub un_lr_16_1920_1280_b_last: rows = 320, k = 1920, n = 1280, w = hf, cores = 2, bias = f32, ks = [0, 1920], last);
+calblas::linear!(pub un_lr_16_1920_1280_b: rows = 320, k = 1920, n = 1280, w = hf, cores = 2, bias = f32);
+calblas::linear!(pub un_lr_32_1280_1280_first: rows = 1152, k = 1280, n = 1280, w = hf, cores = 2, ks = [0, 1280], first);
+calblas::linear!(pub un_lr_32_1280_1280_mid: rows = 1152, k = 1280, n = 1280, w = hf, cores = 2, ks = [0, 1280], mid);
+calblas::linear!(pub un_lr_32_1280_1280_b_last: rows = 1152, k = 1280, n = 1280, w = hf, cores = 2, bias = f32, ks = [0, 1280], last);
+calblas::linear!(pub un_lr_32_1920_640_first: rows = 1152, k = 1920, n = 640, w = hf, cores = 2, ks = [0, 1920], first);
+calblas::linear!(pub un_lr_32_1920_640_mid: rows = 1152, k = 1920, n = 640, w = hf, cores = 2, ks = [0, 1920], mid);
+calblas::linear!(pub un_lr_32_1920_640_b_last: rows = 1152, k = 1920, n = 640, w = hf, cores = 2, bias = f32, ks = [0, 1920], last);
+calblas::linear!(pub un_lr_32_1920_640_b: rows = 1152, k = 1920, n = 640, w = hf, cores = 2, bias = f32);
+calblas::linear!(pub un_lr_32_1280_640_first: rows = 1152, k = 1280, n = 640, w = hf, cores = 2, ks = [0, 1280], first);
+calblas::linear!(pub un_lr_32_1280_640_mid: rows = 1152, k = 1280, n = 640, w = hf, cores = 2, ks = [0, 1280], mid);
+calblas::linear!(pub un_lr_32_1280_640_b_last: rows = 1152, k = 1280, n = 640, w = hf, cores = 2, bias = f32, ks = [0, 1280], last);
+calblas::linear!(pub un_lr_32_1280_640_b: rows = 1152, k = 1280, n = 640, w = hf, cores = 2, bias = f32);
+
+// ── res_add（4 个）──
+sd_kernels::res_add!(pub un_ra_64_320_384_320_320: h = 64, w = 64, c = 320, pa = 384, pr = 320, py = 320);
+sd_kernels::res_add!(pub un_ra_32_640_640_640_768: h = 32, w = 32, c = 640, pa = 640, pr = 640, py = 768);
+sd_kernels::res_add!(pub un_ra_16_1280_1280_1280_1280: h = 16, w = 16, c = 1280, pa = 1280, pr = 1280, py = 1280);
+sd_kernels::res_add!(pub un_ra_8_1280_1280_1280_1280: h = 8, w = 8, c = 1280, pa = 1280, pr = 1280, py = 1280);
 
 // ── geglu（4 个）──
 sd_kernels::geglu!(pub un_gg_64: n = 5918720);

@@ -8,7 +8,7 @@
 | A1 | 新写的算子（quick_gelu、erf-GELU / GEGLU、时间步嵌入、NHWC GroupNorm+SiLU……），各配独立参照与边界测试 | 进行中：时间步嵌入**真机实测**过了（2026-11-14 npu3；cos_approx 分辨率 1/128，DESIGN F19）；quick_gelu、NHWC GroupNorm 未写 |
 | B1 | VAE 解码上 NPU（先 TAESD，再正式 VAE），接进 ComfyUI | ✅ 2026-11-14：TAESD 与正式 VAE 都**真机跑通**、ComfyUI 解码走 npu；正式 VAE 优化后 0.98 s，比 CPU 快约 1.75 倍（V7） |
 | B2 | CLIP 文本编码器上 NPU | |
-| B3 | UNet 一次前向对 diffusers | 进行中：**真机跑通**（2026-11-14 npu3：CFG 两路一次调用，对 bf16 参照 49.8 / 50.1 dB，2 遍逐字节一致）；一步 12.35 s ⇒ 注意力优化后 **8.19 s**（18 段），还比 CPU 慢，正在优化；还没接进 ComfyUI |
+| B3 | UNet 一次前向对 diffusers | 进行中：**真机跑通**（2026-11-14 npu3：CFG 两路一次调用，对 bf16 参照约 50 dB，2 遍逐字节一致）；一步 12.35 ⇒ 8.19（注意力）⇒ **5.16 s**（宽通道卷积走 linear!，10 段），还比 CPU（约 2 s）慢，正在优化；还没接进 ComfyUI |
 | B4 | ComfyUI 原生工作流 512² 出图（去噪循环在设备上，见 DESIGN D2） | |
 | B5 | 性能、多尺寸档位、一键拉起、文档 | |
 
@@ -183,9 +183,12 @@ UNet（B3）几乎全要用 ⇒ 先在一个「只跑一次前向、好对 diffu
       Transformer 拆成三个单元，18 段。第一版在真卡上算错（模拟过了），单 kernel 上板二分查到是 docc 的问题（`bcast` 按行切的 [N, 1] 向量，DESIGN F28），
       改成整块除之后单 kernel 对 numpy 0.9–1.5%（同 calblas），整条 **一步 8.19 s**（只部署 0.57 s），对 bf16 参照 49.8 / 50.1 dB、2 遍逐字节一致。
       新的逐 kernel 计时：卷积 4.03 s、注意力 3.0 s（64² 自注意力 2.59 s）。结果在 `test/results/npu3-20261114/unet-attn/`。
-- [ ] U6b 卷积（现在最大的一类，约 4 s）：输入 ≥ 1280 通道的卷积在 8²–32² 走原路（Cin 分段，每个输出行把权重重读一遍）0.1–0.2 TFLOPS；
-      1×1 的改走 `linear!`（输出边框不碍事的那些），3×3 的想办法走快路。
-- [ ] U6c 注意力再抠：64² 自注意力 2.59 s 仍是单个最大的 kernel（0.18 TFLOPS；VU 每个分数十几条指令，带边框的 token 多算 34%、头维 40 补到 64）。
+- [x] 2026-11-14 U6b 宽通道卷积（DESIGN D22）：Cin > 1024 的卷积与投影改走 calblas `linear!`（3×3 = 9 个抽头、f32 部分和用 K 分段接着加；
+      带残差的用新写的 `res_add!` 只写内部）。单 kernel 真卡 1.0–2.3 TFLOPS（原来 0.1–0.2）；代码 5.2 ⇒ 2.75 MB、18 ⇒ 10 段。
+      整条（真机实测）：**一步 5.16 s**（只部署 0.52 s），对 bf16 参照 49.6 / 49.8 dB、2 遍逐字节一致；模拟 53.7 / 53.2 dB。
+      逐 kernel 计时：注意力 2.99 s（64² 自注意力 2.58 s）、linear 0.61 s、卷积 0.44 s、其余约 0.15 s；结果在 `test/results/npu3-20261114/unet-wide/`。
+- [ ] U6c 注意力再抠（现在的大头）：64² 自注意力 2.58 s（0.18 TFLOPS；VU 每个分数十几条指令，带边框的 token 多算 34%、头维 40 补到 64）。
+- [ ] U6d 段间与固定开销：整次 5.16 s 里 kernel 合计约 4.1 s，其余是部署（0.52 s）、清零、段间经主机转手的读写。
 - [ ] U7 ComfyUI：自定义 MODEL（把 `diffusion_model` 换成调 NPU 的，每步一次、CFG 两路同一次调用）⇒ 原生 KSampler 照用；再看要不要把去噪循环放进设备（D2 / D19）。
 
 之后：B2 CLIP（LLM 式模板现成：`layer_norm!`、`linear!`、`attention!(mask = full)`；新写 quick_gelu）⇒ B3 UNet 一次前向 ⇒ B4 去噪循环进设备（D2）⇒ B5 性能与多尺寸。

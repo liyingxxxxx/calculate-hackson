@@ -78,12 +78,16 @@ class Packer:
         if kind == "conv_w":
             w = m.weight.detach().numpy()
             co, ci, k, _ = w.shape
+            if meta.get("hf"):  # 宽通道走 linear!（DESIGN D22）：每个抽头一块 HF 原样 [N][Cin]，抽头按 ky·k + kx 排；补的输出通道是 0
+                out = np.zeros((k * k, meta["n"], meta["cin"]), np.float32)
+                out[:, :co, :ci] = w.transpose(2, 3, 0, 1).reshape(k * k, co, ci)
+                return _bf(out)
             out = np.zeros((k, k, meta["cin"], meta["cout"]), np.float32)  # 补的输入 / 输出通道是 0（conv_in 4 ⇒ 32、conv_out 4 ⇒ 32、x3 640 ⇒ 768）
             out[:, :, :ci, :co] = w.transpose(2, 3, 1, 0)
             return _bf(out)
         if kind == "conv_b":
             b = m.bias.detach().numpy()
-            out = np.zeros(meta["cout"], np.float32)
+            out = np.zeros(meta.get("n", meta["cout"]), np.float32)
             out[:b.size] = b
             return _f32(out)
         if kind in ("lin_w", "lin_b"):
@@ -97,14 +101,16 @@ class Packer:
                 sl = slice(0, n // 2) if mode == "ff_h" else slice(n // 2, n)
                 w, b = w[sl], (b[sl] if b is not None else None)
             if kind == "lin_b":
-                return _f32(b)
+                out = np.zeros(meta.get("n", b.size), np.float32)  # linear! 的 N 补到 128 的倍数时补 0
+                out[:b.size] = b
+                return _f32(out)
             if mode == "qkv":
                 kn = self._head_rows(w, w.shape[0]).T  # [K][H·Dp]
             elif mode == "out":
                 kn = self._head_rows(w.T, w.shape[1])  # [H·Dp][N]
             else:
                 kn = w.T
-            full = np.zeros((meta["cin"], meta["cout"]), np.float32)  # 补的输入通道（行）是 0
+            full = np.zeros((meta["cin"], meta.get("n", meta["cout"])), np.float32)  # 补的输入通道（行）、补的输出通道（列）是 0
             full[:kn.shape[0], :kn.shape[1]] = kn
             # 1×1 卷积要 [K][N]；calblas linear! 的 `w = hf` 要 HF 原样 [N][K]
             return _bf(full.T if meta.get("hf") else full)

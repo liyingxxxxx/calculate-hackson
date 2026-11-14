@@ -89,12 +89,20 @@ class Kernels:
                         f"sd_kernels::conv2d!(pub {name}: h = {h}, w = {h}, cin = {cin}, cout = {cout}, k = {k}, s = {s}, "
                         f"pin = ({cin}, 0), pout = ({pout}, 0), act = none{r});")
 
-    def lin_rows(self, h, k, n, bias):
-        """带边框的图整张当稠密的行（tpad(h) 行）过 calblas linear!（w = hf）：边框行也算（无 bias 时输入边框是 0 ⇒ 输出边框还是 0）。"""
-        t = tpad(h)
-        name = f"un_lr_{h}_{k}_{n}" + ("_b" if bias else "")
-        return self.add(name, "linear", {"rows": t, "k": k, "n": n, "bias": bias},
-                        f"calblas::linear!(pub {name}: rows = {t}, k = {k}, n = {n}, w = hf, cores = 2{', bias = f32' if bias else ''});")
+    def lin_rows(self, h, k, n, bias, stage=None):
+        """带边框的图从第一条内部行起、h 行 × (h + 4) 个像素当稠密的行，过 calblas linear!（w = hf，DESIGN D22）：
+        每行两边的边框像素也算（输出在那里是垃圾，卷积要的话再由 res_add! 只写内部）。stage = first / mid / last：3×3 卷积按抽头分段，
+        f32 的部分和在 p 里接着加（calblas 的 `ks`）。"""
+        r = h * (h + 2 * B)
+        name = f"un_lr_{h}_{k}_{n}" + ("_b" if bias else "") + (f"_{stage}" if stage else "")
+        ks = f", ks = [0, {k}], {stage}" if stage else ""
+        return self.add(name, "linear", {"rows": r, "k": k, "n": n, "bias": bias, "stage": stage},
+                        f"calblas::linear!(pub {name}: rows = {r}, k = {k}, n = {n}, w = hf, cores = 2{', bias = f32' if bias else ''}{ks});")
+
+    def res_add(self, h, c, pa, pr, py):
+        name = f"un_ra_{h}_{c}_{pa}_{pr}_{py}"
+        return self.add(name, "res_add", {"h": h, "c": c, "pa": pa, "pr": pr, "py": py},
+                        f"sd_kernels::res_add!(pub {name}: h = {h}, w = {h}, c = {c}, pa = {pa}, pr = {pr}, py = {py});")
 
     def gn(self, h, c, act):
         eps = EPS_RES if act == "silu" else EPS_T2D
@@ -246,10 +254,49 @@ def build(unet):
 
     pp = lambda name: g.bufs[name]["p"]  # noqa: E731
 
+    def wide(x, y, res, k, wkey, wmeta, bias):
+        """宽通道（Cin > 1024）的卷积 / 投影改走 calblas linear!（DESIGN D22）：卷积在这些形状上 Cin 要分段、只能走原路，
+        每个输出行把权重重读一遍，真卡 0.1–0.2 TFLOPS；linear! 约 1.2 TFLOPS。
+        行 = 第一条内部行起 h 行 × (h + 4) 个像素（每行两边的边框像素也算，输出在那里是垃圾）；3×3 = 9 个抽头各一次 linear!，
+        输入按抽头错开 (ky − 1)·(h + 4) + (kx − 1) 个像素（就是指针偏移），f32 的部分和在 p 里接着加（first / mid / last）。
+        输出：不带残差、通道对得上的直接写进 y（后面只读内部的才走这里）；带残差的先写临时图，再 res_add! 加残差、只写内部（边框还是 0）。
+        bias：None（q / k / v）或 ("w", 条目) / ("b", tb, 偏移)（conv1 折了时间步）。"""
+        h, cy = hw(y)
+        cx = pp(x)
+        n = -(-cy // 128) * 128  # linear! 的 N 要 128 的倍数（64² 的前馈出口 320 ⇒ 384，补的输出通道权重是 0）
+        assert cx % 128 == 0, (cx, "linear! 的 K 要 128 的倍数")
+        s0 = B * (h + 2 * B)  # 第一条内部行的第一个像素（行号）
+        direct = res is None and n == cy and pp(y) == cy
+        out = y if direct else g.map(h, n)
+        wv = g.w(wkey, k * k * n * cx * 2, **{**wmeta, "cin": cx, "cout": cy, "n": n, "k": k, "hf": True})
+        if k == 1:
+            name = K.lin_rows(h, cx, n, bias=bias is not None)
+            g.op(K, name, [b(x, s0 * cx * 2), wv] + ([bias] if bias is not None else []) + [b(out, s0 * n * 2)])
+        else:
+            p32 = g.dense(h * (h + 2 * B) * n * 4, "p")  # f32 的部分和 [行, N]
+            for t in range(k * k):
+                ky, kx = divmod(t, k)
+                off = (ky - 1) * (h + 2 * B) + (kx - 1)
+                xt = b(x, (s0 + off) * cx * 2)
+                wt = ("w", wv[1], t * n * cx * 2)
+                stage = "first" if t == 0 else ("last" if t == k * k - 1 else "mid")
+                last = stage == "last"
+                name = K.lin_rows(h, cx, n, bias=last and bias is not None, stage=stage)
+                args = [xt, wt] + ([bias] if last and bias is not None else []) + [b(p32)] + ([b(out, s0 * n * 2)] if last else [])
+                g.op(K, name, args)
+        if res is not None:
+            g.op(K, K.res_add(h, cy, n, pp(res), pp(y)), [b(out), b(res), b(y)])
+        else:
+            assert direct, "不带残差、通道又对不上的宽卷积：还没写"
+
     def conv(m, x, y, res=None, bias=None, s=1):
         k = m.kernel_size[0]
         cx = pp(x)  # 输入的补齐通道也乘（权重补 0）
         hy, cy = hw(y)
+        if cx > 1024 and s == 1:
+            n = -(-cy // 128) * 128
+            wide(x, y, res, k, f"conv_w|{m._sdk}", {}, bias or g.w(f"conv_b|{m._sdk}", n * 4, cout=cy, n=n))
+            return
         name = K.conv(hy, cx, cy, k, s=s, res=res is not None, pout=pp(y), pres=pp(res) if res else None)
         args = [b(x), g.w(f"conv_w|{m._sdk}", k * k * cx * cy * 2, cin=cx, cout=cy, k=k), bias or g.w(f"conv_b|{m._sdk}", cy * 4, cout=cy)]
         if res is not None:
@@ -259,18 +306,15 @@ def build(unet):
     def lin(m, x, y, mode, res=None):
         """Linear（或 1×1 的 Conv2d）当 1×1 卷积。mode：plain / qkv（输出按头补零，无 bias）/ out（输入按头补零）/ ff_h、ff_g（GEGLU 投影的两半）。
         32² × 640 通道输入、不带残差的走 calblas linear!（整张带边框的图当稠密行，DESIGN F26）：输出的边框行是 bias（qkv 无 bias ⇒ 还是 0），
-        这几张图（proj_in 的输出、q / k / v、前馈的两半）只有 LayerNorm、注意力、geglu、1×1 卷积读，边框不碍事。"""
+        这几张图（proj_in 的输出、q / k / v、前馈的两半）只有 LayerNorm、注意力、geglu、1×1 卷积读，边框不碍事。
+        输入超过 1024 通道的也走 linear!（`wide`，DESIGN D22）。"""
         cx = pp(x)
         hy, cy = hw(y)
-        rows = hy == 32 and cx == 640 and res is None
-        meta = {"cin": cx, "cout": cy, "mode": mode, "hf": rows}
-        if rows:
-            assert pp(y) == cy
-            name = K.lin_rows(hy, cx, cy, bias=mode != "qkv")
-            args = [b(x), g.w(f"lin_w|{m._sdk}|{mode}|hf", cx * cy * 2, **meta)]
-            if mode != "qkv":
-                args.append(g.w(f"lin_b|{m._sdk}|{mode}", cy * 4, mode=mode))
-            g.op(K, name, args + [b(y)])
+        meta = {"cin": cx, "cout": cy, "mode": mode, "hf": False}
+        if cx > 1024 or (hy == 32 and cx == 640 and res is None):
+            n = -(-cy // 128) * 128
+            bias = None if mode == "qkv" else g.w(f"lin_b|{m._sdk}|{mode}", n * 4, mode=mode, n=n)
+            wide(x, y, res, 1, f"lin_w|{m._sdk}|{mode}|hf", {"mode": mode}, bias)
             return
         name = K.conv(hy, cx, cy, 1, res=res is not None, pout=pp(y), pres=pp(res) if res else None)
         bias = g.w(f"zero_b|{cy}", cy * 4) if mode == "qkv" else g.w(f"lin_b|{m._sdk}|{mode}", cy * 4, mode=mode)
@@ -448,7 +492,7 @@ def load_unet():
 
 # ───────────────────────── kernels.rs ─────────────────────────
 
-KIND_ORDER = ["conv2d", "gn_stats", "gn_apply", "ln_nhwc", "flash_attn", "transpose2d", "linear", "geglu", "upsample2", "copy_win",
+KIND_ORDER = ["conv2d", "gn_stats", "gn_apply", "ln_nhwc", "flash_attn", "transpose2d", "linear", "res_add", "geglu", "upsample2", "copy_win",
               "timestep_embed", "unary", "bias_fold", "fill16k"]
 
 
@@ -537,7 +581,7 @@ def kernel_code(syms: dict, entry: str = "step") -> dict:
 
 
 GUESS = {"conv2d": 120_000, "flash_attn": 120_000, "gn_stats": 30_000, "gn_apply": 30_000, "ln_nhwc": 40_000}
-NARGS = {"gn_stats": 2, "gn_apply": 6, "ln_nhwc": 4, "flash_attn": 5, "transpose2d": 2, "geglu": 3, "upsample2": 2, "copy_win": 2,
+NARGS = {"gn_stats": 2, "gn_apply": 6, "ln_nhwc": 4, "flash_attn": 5, "transpose2d": 2, "res_add": 3, "geglu": 3, "upsample2": 2, "copy_win": 2,
          "timestep_embed": 3, "unary": 2, "bias_fold": 3}
 
 
@@ -564,7 +608,8 @@ def probe_program(feature: str, kernels: list[str], K: Kernels) -> str:
         if kind == "conv2d":
             na = 5 if sp["res"] else 4
         elif kind == "linear":
-            na = 4 if sp["bias"] else 3
+            st = sp.get("stage")
+            na = {None: 4 if sp["bias"] else 3, "first": 3, "mid": 3, "last": 5 if sp["bias"] else 4}[st]
         else:
             na = NARGS[kind]
         args = ", ".join(f"act().at({i * 33554432}).cast()" for i in range(na))
@@ -737,7 +782,7 @@ def emit_stage(L: dict, g: Graph, unit_ids: list[int]) -> list[str]:
         args = []
         for x in o["args"]:
             if x[0] == "w":
-                args.append(f"w().at({L['w']['entries'][x[1]][0]}).cast()")
+                args.append(f"w().at({L['w']['entries'][x[1]][0] + (x[2] if len(x) > 2 else 0)}).cast()")
             else:
                 d, off = loc(L, x[1], br)
                 args.append(f"{d}().at({off + x[2]}).cast()")

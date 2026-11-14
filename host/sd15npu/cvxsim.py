@@ -139,10 +139,13 @@ def parse_specs(kernels_rs: str, consts: dict) -> dict:
             v = re.sub(r"(\d)f32\b", r"\1", v).replace(" / ", " // ")
             try:
                 kv[k] = eval(v, {"__builtins__": {}}, ns)  # noqa: S307（本仓自己的源码，不是外部输入）
-            except NameError:
+            except (NameError, SyntaxError):
                 kv[k] = v  # 标识符形式的选项（linear! 的 `w = hf`、`bias = f32`）：原样留字符串
         if kind == "unary":  # 第一个位置参数是函数名（`unary!(pub 名字: silu, n = …)`）
             kv["f"] = body.split(",")[0].strip()
+        if m2 := re.search(r"ks = \[(\d+), (\d+)\], (\w+)", body):  # linear! 的 K 分段：`ks = [k0, k1], first | mid | last`
+            kv["ks"] = [int(m2.group(1)), int(m2.group(2))]
+            kv["stage_name"] = m2.group(3)
         specs[name] = (kind, kv)
     return specs
 
@@ -178,6 +181,7 @@ class Job:
     reads: list  # [(decl, 起, 止)]
     writes: list
     seconds: float = 0.0
+    rmw: list = field(default_factory=list)  # 按设计就地读改写的区（calblas linear! 的 K 分段 mid：部分和 p 每块读、加、写回同一块）
 
 
 class Sim:
@@ -299,6 +303,8 @@ class Sim:
         job.seconds = time.time() - t
         # 原地
         for d, a0, a1 in job.writes:
+            if (d, a0, a1) in job.rmw:
+                continue
             for e, b0, b1 in job.reads:
                 if d == e and a0 < b1 and b0 < a1:
                     raise SimError(f"作业 {job.idx} @{name}：输出 @{d}[{a0}, {a1}) 和输入 [{b0}, {b1}) 重叠（不能原地）")
@@ -496,18 +502,44 @@ class Sim:
         self._u16(y, r * cl)[:] = np.ascontiguousarray(self._u16(x, r * cl).reshape(r, cl).T).ravel()
 
     def _k_linear(self, job, c, args):
-        if c.get("w") != "hf" or c.get("bias") not in (None, "f32") or c.get("act") or c.get("parts") or c.get("ks"):
-            raise SimError(f"{job.kernel}：模拟器只写了 linear! 的多行 w = hf（可带 f32 bias）")
+        if c.get("w") != "hf" or c.get("bias") not in (None, "f32") or c.get("act") or c.get("parts"):
+            raise SimError(f"{job.kernel}：模拟器只写了 linear! 的多行 w = hf（可带 f32 bias、K 分段）")
         r, k, n = c["rows"], c["k"], c["n"]
-        if c.get("bias"):
-            x, wp, bp, y = args
+        stage = None
+        if c.get("ks"):  # `ks = [k0, k1], first | mid | last`：parse_specs 把它读成 "[0, K]" 与阶段名两个值之一，这里从宏参数重新认
+            stage = c["stage_name"]
+        if stage in ("first", "mid"):
+            x, wp, pp_ = args
+            if c["ks"] != [0, k]:
+                raise SimError(f"{job.kernel}：模拟器只写了 ks = [0, K]")
+            job.reads.append(self._check(job.kernel, "x", x, r * k * 2))
+            job.reads.append(self._check(job.kernel, "w", wp, n * k * 2))
+            part = bf16.from_bits(self._u16(x, r * k)).reshape(r, k) @ bf16.from_bits(self._u16(wp, n * k)).reshape(n, k).T
+            if stage == "mid":
+                job.reads.append(self._check(job.kernel, "p", pp_, r * n * 4))
+                part = part + self._f32(pp_, r * n).reshape(r, n)
+            job.writes.append(self._check(job.kernel, "p", pp_, r * n * 4))
+            if stage == "mid":  # 就地加进 p 是 calblas 的设计（每块读自己那块、加、写回），不算「原地」违规
+                job.rmw.append(job.writes[-1])
+            self._f32(pp_, r * n)[:] = part.astype(np.float32).ravel()
+            return
+        if stage == "last":
+            if c.get("bias"):
+                x, wp, bp, pp_, y = args
+            else:
+                (x, wp, pp_, y), bp = args, None
+        elif c.get("bias"):
+            (x, wp, bp, y), pp_ = args, None
         else:
-            (x, wp, y), bp = args, None
+            (x, wp, y), bp, pp_ = args, None, None
         job.reads.append(self._check(job.kernel, "x", x, r * k * 2))
         job.reads.append(self._check(job.kernel, "w", wp, n * k * 2))
         xv = bf16.from_bits(self._u16(x, r * k)).reshape(r, k)
         wv = bf16.from_bits(self._u16(wp, n * k)).reshape(n, k)
         out = xv @ wv.T
+        if pp_ is not None:
+            job.reads.append(self._check(job.kernel, "p", pp_, r * n * 4))
+            out = out + self._f32(pp_, r * n).reshape(r, n)
         if bp is not None:
             job.reads.append(self._check(job.kernel, "b", bp, n * 4))
             out = out + self._f32(bp, n)
@@ -608,6 +640,20 @@ class Sim:
         yr = self._check(job.kernel, "y", y, ny)
         job.writes.append((yr[0], yr[1] + (B * wo + B) * po * 2, yr[2]))
         dst[:] = src
+
+    def _k_res_add(self, job, c, args):
+        """本仓 res_add!：y 的内部 = 舍(a + r)（三张带边框的图，只读写内部的 c 个通道）。"""
+        h, w, ch = c["h"], c["w"], c["c"]
+        a, r, y = args
+        wo = w + 2 * B
+        va, na = self._win(a, h, w, ch, c["pa"])
+        vr, nr = self._win(r, h, w, ch, c["pr"])
+        vy, ny = self._win(y, h, w, ch, c["py"])
+        job.reads.append(self._check(job.kernel, "a", a, na))
+        job.reads.append(self._check(job.kernel, "r", r, nr))
+        yr = self._check(job.kernel, "y", y, ny)
+        job.writes.append((yr[0], yr[1] + (B * wo + B) * c["py"] * 2, yr[2]))
+        vy[:] = bf16.bits(bf16.from_bits(va) + bf16.from_bits(vr))
 
     def _k_unary(self, job, c, args):
         if c.get("f") != "silu":

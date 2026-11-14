@@ -1,0 +1,1399 @@
+{
+ "measured": "真机实测（逐 kernel：每个 kernel 单独一个程序在卡上连调 4 遍，扣掉固定开销；tools/prof.py --model unet；小于固定开销的记 0）",
+ "date": "2026-11-14 20:31:31",
+ "per_step_by_kind_s": {
+  "flash_attn": 2.985,
+  "linear": 0.615,
+  "conv2d": 0.444,
+  "geglu": 0.095,
+  "ln_nhwc": 0.037,
+  "gn_apply": 0.019,
+  "gn_stats": 0.006,
+  "timestep_embed": 0,
+  "unary": 0,
+  "bias_fold": 0,
+  "res_add": 0,
+  "copy_win": 0,
+  "upsample2": 0
+ },
+ "per_step_kernel_sum_s": 4.2,
+ "kernels": [
+  {
+   "kernel": "un_at_64_s",
+   "kind": "flash_attn",
+   "calls_per_step": 10,
+   "ms_per_call": 258.43,
+   "s_per_step": 2.5843,
+   "tflops": 0.17775061269599093,
+   "gbps": null
+  },
+  {
+   "kernel": "un_at_32_s",
+   "kind": "flash_attn",
+   "calls_per_step": 10,
+   "ms_per_call": 25.595,
+   "s_per_step": 0.2559,
+   "tflops": 0.23794372871141364,
+   "gbps": null
+  },
+  {
+   "kernel": "un_at_64_x",
+   "kind": "flash_attn",
+   "calls_per_step": 10,
+   "ms_per_call": 7.617,
+   "s_per_step": 0.0762,
+   "tflops": 0.1629849315058807,
+   "gbps": null
+  },
+  {
+   "kernel": "un_lr_16_1280_1280_mid",
+   "kind": "linear",
+   "calls_per_step": 98,
+   "ms_per_call": 0.708,
+   "s_per_step": 0.0694,
+   "tflops": 1.4804498901301018,
+   "gbps": null
+  },
+  {
+   "kernel": "un_lr_16_1280_5120_b",
+   "kind": "linear",
+   "calls_per_step": 20,
+   "ms_per_call": 3.178,
+   "s_per_step": 0.0636,
+   "tflops": 1.3196448911871577,
+   "gbps": null
+  },
+  {
+   "kernel": "un_c1_64_320_1280",
+   "kind": "conv2d",
+   "calls_per_step": 20,
+   "ms_per_call": 3.129,
+   "s_per_step": 0.0626,
+   "tflops": 1.0724899093566622,
+   "gbps": null
+  },
+  {
+   "kernel": "un_lr_32_640_2560_b",
+   "kind": "linear",
+   "calls_per_step": 20,
+   "ms_per_call": 2.792,
+   "s_per_step": 0.0558,
+   "tflops": 1.3520894483325705,
+   "gbps": null
+  },
+  {
+   "kernel": "un_gg_64",
+   "kind": "geglu",
+   "calls_per_step": 10,
+   "ms_per_call": 5.504,
+   "s_per_step": 0.055,
+   "tflops": null,
+   "gbps": 6.452428206473245
+  },
+  {
+   "kernel": "un_c3_32_640_640_r",
+   "kind": "conv2d",
+   "calls_per_step": 10,
+   "ms_per_call": 5.37,
+   "s_per_step": 0.0537,
+   "tflops": 1.4058596792323297,
+   "gbps": null
+  },
+  {
+   "kernel": "un_c1_64_320_512",
+   "kind": "conv2d",
+   "calls_per_step": 40,
+   "ms_per_call": 1.092,
+   "s_per_step": 0.0437,
+   "tflops": 1.2291483699155283,
+   "gbps": null
+  },
+  {
+   "kernel": "un_lr_32_1280_1280_mid",
+   "kind": "linear",
+   "calls_per_step": 14,
+   "ms_per_call": 3.049,
+   "s_per_step": 0.0427,
+   "tflops": 1.2381839285205498,
+   "gbps": null
+  },
+  {
+   "kernel": "un_lr_16_2560_1280_mid",
+   "kind": "linear",
+   "calls_per_step": 28,
+   "ms_per_call": 1.417,
+   "s_per_step": 0.0397,
+   "tflops": 1.47976498670278,
+   "gbps": null
+  },
+  {
+   "kernel": "un_c1_32_768_640_r",
+   "kind": "conv2d",
+   "calls_per_step": 30,
+   "ms_per_call": 1.287,
+   "s_per_step": 0.0386,
+   "tflops": 0.7820921831360267,
+   "gbps": null
+  },
+  {
+   "kernel": "un_at_16_s",
+   "kind": "flash_attn",
+   "calls_per_step": 10,
+   "ms_per_call": 3.803,
+   "s_per_step": 0.038,
+   "tflops": 0.35296880896690197,
+   "gbps": null
+  },
+  {
+   "kernel": "un_c3_8_1280_1280_s2",
+   "kind": "conv2d",
+   "calls_per_step": 2,
+   "ms_per_call": 18.161,
+   "s_per_step": 0.0363,
+   "tflops": 0.10392564073262313,
+   "gbps": null
+  },
+  {
+   "kernel": "un_c3_64_640_640",
+   "kind": "conv2d",
+   "calls_per_step": 2,
+   "ms_per_call": 18.039,
+   "s_per_step": 0.0361,
+   "tflops": 1.67410103018798,
+   "gbps": null
+  },
+  {
+   "kernel": "un_c3_64_640_320",
+   "kind": "conv2d",
+   "calls_per_step": 4,
+   "ms_per_call": 8.824,
+   "s_per_step": 0.0353,
+   "tflops": 1.7112212257553105,
+   "gbps": null
+  },
+  {
+   "kernel": "un_lr_16_5120_1280_b",
+   "kind": "linear",
+   "calls_per_step": 10,
+   "ms_per_call": 3.317,
+   "s_per_step": 0.0332,
+   "tflops": 1.2645559361270868,
+   "gbps": null
+  },
+  {
+   "kernel": "un_lr_64_1280_384_b",
+   "kind": "linear",
+   "calls_per_step": 10,
+   "ms_per_call": 3.28,
+   "s_per_step": 0.0328,
+   "tflops": 1.3043089053464887,
+   "gbps": null
+  },
+  {
+   "kernel": "un_lr_32_640_768",
+   "kind": "linear",
+   "calls_per_step": 40,
+   "ms_per_call": 0.766,
+   "s_per_step": 0.0306,
+   "tflops": 1.4784499982856805,
+   "gbps": null
+  },
+  {
+   "kernel": "un_lr_32_1920_640_mid",
+   "kind": "linear",
+   "calls_per_step": 14,
+   "ms_per_call": 2.161,
+   "s_per_step": 0.0303,
+   "tflops": 1.3099170546847356,
+   "gbps": null
+  },
+  {
+   "kernel": "un_lr_32_2560_640_b",
+   "kind": "linear",
+   "calls_per_step": 10,
+   "ms_per_call": 2.918,
+   "s_per_step": 0.0292,
+   "tflops": 1.2935695124471005,
+   "gbps": null
+  },
+  {
+   "kernel": "un_lr_16_1280_1280_b",
+   "kind": "linear",
+   "calls_per_step": 40,
+   "ms_per_call": 0.684,
+   "s_per_step": 0.0274,
+   "tflops": 1.5321534614541021,
+   "gbps": null
+  },
+  {
+   "kernel": "un_lr_16_1280_1280",
+   "kind": "linear",
+   "calls_per_step": 40,
+   "ms_per_call": 0.629,
+   "s_per_step": 0.0252,
+   "tflops": 1.6671897312752084,
+   "gbps": null
+  },
+  {
+   "kernel": "un_ln_64_320",
+   "kind": "ln_nhwc",
+   "calls_per_step": 30,
+   "ms_per_call": 0.827,
+   "s_per_step": 0.0248,
+   "tflops": null,
+   "gbps": 6.336329795568362
+  },
+  {
+   "kernel": "un_gg_32",
+   "kind": "geglu",
+   "calls_per_step": 10,
+   "ms_per_call": 2.392,
+   "s_per_step": 0.0239,
+   "tflops": null,
+   "gbps": 8.323613222434453
+  },
+  {
+   "kernel": "un_c3_64_320_320_r",
+   "kind": "conv2d",
+   "calls_per_step": 10,
+   "ms_per_call": 2.152,
+   "s_per_step": 0.0215,
+   "tflops": 3.50869084542369,
+   "gbps": null
+  },
+  {
+   "kernel": "un_at_32_x",
+   "kind": "flash_attn",
+   "calls_per_step": 10,
+   "ms_per_call": 2.035,
+   "s_per_step": 0.0204,
+   "tflops": 0.27199631717281547,
+   "gbps": null
+  },
+  {
+   "kernel": "un_lr_32_1280_640_mid",
+   "kind": "linear",
+   "calls_per_step": 14,
+   "ms_per_call": 1.459,
+   "s_per_step": 0.0204,
+   "tflops": 1.2940717155679935,
+   "gbps": null
+  },
+  {
+   "kernel": "un_c3_64_960_320",
+   "kind": "conv2d",
+   "calls_per_step": 2,
+   "ms_per_call": 9.001,
+   "s_per_step": 0.018,
+   "tflops": 2.5163148284521366,
+   "gbps": null
+  },
+  {
+   "kernel": "un_c1_64_512_320_r",
+   "kind": "conv2d",
+   "calls_per_step": 20,
+   "ms_per_call": 0.768,
+   "s_per_step": 0.0154,
+   "tflops": 1.748156054409788,
+   "gbps": null
+  },
+  {
+   "kernel": "un_gg_16",
+   "kind": "geglu",
+   "calls_per_step": 10,
+   "ms_per_call": 1.503,
+   "s_per_step": 0.015,
+   "tflops": null,
+   "gbps": 8.17699627986673
+  },
+  {
+   "kernel": "un_c3_32_960_640",
+   "kind": "conv2d",
+   "calls_per_step": 2,
+   "ms_per_call": 7.487,
+   "s_per_step": 0.015,
+   "tflops": 1.5126075511089485,
+   "gbps": null
+  },
+  {
+   "kernel": "un_lr_16_1920_1280_mid",
+   "kind": "linear",
+   "calls_per_step": 14,
+   "ms_per_call": 1.046,
+   "s_per_step": 0.0146,
+   "tflops": 1.5041198738385775,
+   "gbps": null
+  },
+  {
+   "kernel": "un_c3_32_640_640",
+   "kind": "conv2d",
+   "calls_per_step": 2,
+   "ms_per_call": 5.427,
+   "s_per_step": 0.0109,
+   "tflops": 1.391236539692843,
+   "gbps": null
+  },
+  {
+   "kernel": "un_lr_16_1280_1280_b_last",
+   "kind": "linear",
+   "calls_per_step": 14,
+   "ms_per_call": 0.75,
+   "s_per_step": 0.0105,
+   "tflops": 1.398091555623937,
+   "gbps": null
+  },
+  {
+   "kernel": "un_c1_64_640_320",
+   "kind": "conv2d",
+   "calls_per_step": 4,
+   "ms_per_call": 2.622,
+   "s_per_step": 0.0105,
+   "tflops": 0.6398612791785769,
+   "gbps": null
+  },
+  {
+   "kernel": "un_ln_32_640",
+   "kind": "ln_nhwc",
+   "calls_per_step": 30,
+   "ms_per_call": 0.313,
+   "s_per_step": 0.0094,
+   "tflops": null,
+   "gbps": 8.375636090466578
+  },
+  {
+   "kernel": "un_lr_16_1280_1280_first",
+   "kind": "linear",
+   "calls_per_step": 14,
+   "ms_per_call": 0.659,
+   "s_per_step": 0.0092,
+   "tflops": 1.5910451337990412,
+   "gbps": null
+  },
+  {
+   "kernel": "un_lr_8_2560_1280_mid",
+   "kind": "linear",
+   "calls_per_step": 42,
+   "ms_per_call": 0.196,
+   "s_per_step": 0.0082,
+   "tflops": 3.205378568675858,
+   "gbps": null
+  },
+  {
+   "kernel": "un_c3_64_320_320",
+   "kind": "conv2d",
+   "calls_per_step": 4,
+   "ms_per_call": 1.99,
+   "s_per_step": 0.008,
+   "tflops": 3.793463297987278,
+   "gbps": null
+  },
+  {
+   "kernel": "un_at_16_x",
+   "kind": "flash_attn",
+   "calls_per_step": 10,
+   "ms_per_call": 0.776,
+   "s_per_step": 0.0078,
+   "tflops": 0.432207257905038,
+   "gbps": null
+  },
+  {
+   "kernel": "un_c1_64_320_320_r",
+   "kind": "conv2d",
+   "calls_per_step": 10,
+   "ms_per_call": 0.706,
+   "s_per_step": 0.0071,
+   "tflops": 1.1876581295808268,
+   "gbps": null
+  },
+  {
+   "kernel": "un_c1_64_320_320",
+   "kind": "conv2d",
+   "calls_per_step": 10,
+   "ms_per_call": 0.617,
+   "s_per_step": 0.0062,
+   "tflops": 1.359782496186744,
+   "gbps": null
+  },
+  {
+   "kernel": "un_c3_16_640_1280",
+   "kind": "conv2d",
+   "calls_per_step": 2,
+   "ms_per_call": 3.08,
+   "s_per_step": 0.0062,
+   "tflops": 1.2256753258094018,
+   "gbps": null
+  },
+  {
+   "kernel": "un_lr_16_2560_1280_b",
+   "kind": "linear",
+   "calls_per_step": 4,
+   "ms_per_call": 1.526,
+   "s_per_step": 0.0061,
+   "tflops": 1.37417481990439,
+   "gbps": null
+  },
+  {
+   "kernel": "un_lr_16_2560_1280_b_last",
+   "kind": "linear",
+   "calls_per_step": 4,
+   "ms_per_call": 1.477,
+   "s_per_step": 0.0059,
+   "tflops": 1.4198697372410007,
+   "gbps": null
+  },
+  {
+   "kernel": "un_lr_32_1280_1280_first",
+   "kind": "linear",
+   "calls_per_step": 2,
+   "ms_per_call": 2.951,
+   "s_per_step": 0.0059,
+   "tflops": 1.2792766484849836,
+   "gbps": null
+  },
+  {
+   "kernel": "un_lr_32_1280_1280_b_last",
+   "kind": "linear",
+   "calls_per_step": 2,
+   "ms_per_call": 2.97,
+   "s_per_step": 0.0059,
+   "tflops": 1.2711117084115608,
+   "gbps": null
+  },
+  {
+   "kernel": "un_lr_32_640_640_b",
+   "kind": "linear",
+   "calls_per_step": 10,
+   "ms_per_call": 0.562,
+   "s_per_step": 0.0056,
+   "tflops": 1.6784657521440052,
+   "gbps": null
+  },
+  {
+   "kernel": "un_lr_16_2560_1280_first",
+   "kind": "linear",
+   "calls_per_step": 4,
+   "ms_per_call": 1.403,
+   "s_per_step": 0.0056,
+   "tflops": 1.4945997234115798,
+   "gbps": null
+  },
+  {
+   "kernel": "un_c1_64_960_320",
+   "kind": "conv2d",
+   "calls_per_step": 2,
+   "ms_per_call": 2.746,
+   "s_per_step": 0.0055,
+   "tflops": 0.9165779460445989,
+   "gbps": null
+  },
+  {
+   "kernel": "un_c3_16_640_640_s2",
+   "kind": "conv2d",
+   "calls_per_step": 2,
+   "ms_per_call": 2.429,
+   "s_per_step": 0.0049,
+   "tflops": 0.777097226433748,
+   "gbps": null
+  },
+  {
+   "kernel": "un_lr_32_1920_640_b_last",
+   "kind": "linear",
+   "calls_per_step": 2,
+   "ms_per_call": 2.373,
+   "s_per_step": 0.0047,
+   "tflops": 1.193020101469915,
+   "gbps": null
+  },
+  {
+   "kernel": "un_gs_64_320",
+   "kind": "gn_stats",
+   "calls_per_step": 26,
+   "ms_per_call": 0.16,
+   "s_per_step": 0.0042,
+   "tflops": null,
+   "gbps": 16.367869412370673
+  },
+  {
+   "kernel": "un_lr_32_1920_640_first",
+   "kind": "linear",
+   "calls_per_step": 2,
+   "ms_per_call": 2.113,
+   "s_per_step": 0.0042,
+   "tflops": 1.3396954539535524,
+   "gbps": null
+  },
+  {
+   "kernel": "un_lr_32_1920_640_b",
+   "kind": "linear",
+   "calls_per_step": 2,
+   "ms_per_call": 2.071,
+   "s_per_step": 0.0041,
+   "tflops": 1.3669929006798631,
+   "gbps": null
+  },
+  {
+   "kernel": "un_ga_8_1280_silu",
+   "kind": "gn_apply",
+   "calls_per_step": 22,
+   "ms_per_call": 0.162,
+   "s_per_step": 0.0036,
+   "tflops": null,
+   "gbps": 2.0167124500660307
+  },
+  {
+   "kernel": "un_c1_32_960_640",
+   "kind": "conv2d",
+   "calls_per_step": 2,
+   "ms_per_call": 1.619,
+   "s_per_step": 0.0032,
+   "tflops": 0.7772116653154849,
+   "gbps": null
+  },
+  {
+   "kernel": "un_lr_32_1280_640_first",
+   "kind": "linear",
+   "calls_per_step": 2,
+   "ms_per_call": 1.527,
+   "s_per_step": 0.0031,
+   "tflops": 1.2363227610958811,
+   "gbps": null
+  },
+  {
+   "kernel": "un_lr_32_1280_640_b_last",
+   "kind": "linear",
+   "calls_per_step": 2,
+   "ms_per_call": 1.53,
+   "s_per_step": 0.0031,
+   "tflops": 1.234010166398379,
+   "gbps": null
+  },
+  {
+   "kernel": "un_ga_8_2560_silu",
+   "kind": "gn_apply",
+   "calls_per_step": 6,
+   "ms_per_call": 0.493,
+   "s_per_step": 0.003,
+   "tflops": null,
+   "gbps": 1.3282334232616575
+  },
+  {
+   "kernel": "un_lr_8_1280_5120_b",
+   "kind": "linear",
+   "calls_per_step": 4,
+   "ms_per_call": 0.674,
+   "s_per_step": 0.0027,
+   "tflops": 1.8662149269182462,
+   "gbps": null
+  },
+  {
+   "kernel": "un_ln_16_1280",
+   "kind": "ln_nhwc",
+   "calls_per_step": 30,
+   "ms_per_call": 0.087,
+   "s_per_step": 0.0026,
+   "tflops": null,
+   "gbps": 15.10318170021978
+  },
+  {
+   "kernel": "un_c3_32_320_320_s2",
+   "kind": "conv2d",
+   "calls_per_step": 2,
+   "ms_per_call": 1.256,
+   "s_per_step": 0.0025,
+   "tflops": 1.5026067609352187,
+   "gbps": null
+  },
+  {
+   "kernel": "un_lr_32_1280_640_b",
+   "kind": "linear",
+   "calls_per_step": 2,
+   "ms_per_call": 1.275,
+   "s_per_step": 0.0025,
+   "tflops": 1.4805467963319994,
+   "gbps": null
+  },
+  {
+   "kernel": "un_c3_32_320_640",
+   "kind": "conv2d",
+   "calls_per_step": 2,
+   "ms_per_call": 1.136,
+   "s_per_step": 0.0023,
+   "tflops": 3.3239841368759566,
+   "gbps": null
+  },
+  {
+   "kernel": "un_ga_16_1280_silu",
+   "kind": "gn_apply",
+   "calls_per_step": 12,
+   "ms_per_call": 0.178,
+   "s_per_step": 0.0021,
+   "tflops": null,
+   "gbps": 7.3767972343240515
+  },
+  {
+   "kernel": "un_lr_16_1920_1280_first",
+   "kind": "linear",
+   "calls_per_step": 2,
+   "ms_per_call": 1.069,
+   "s_per_step": 0.0021,
+   "tflops": 1.4707546018628916,
+   "gbps": null
+  },
+  {
+   "kernel": "un_ga_16_2560_silu",
+   "kind": "gn_apply",
+   "calls_per_step": 4,
+   "ms_per_call": 0.512,
+   "s_per_step": 0.002,
+   "tflops": null,
+   "gbps": 5.118173526246945
+  },
+  {
+   "kernel": "un_lr_16_1920_1280_b_last",
+   "kind": "linear",
+   "calls_per_step": 2,
+   "ms_per_call": 0.984,
+   "s_per_step": 0.002,
+   "tflops": 1.5979338177681968,
+   "gbps": null
+  },
+  {
+   "kernel": "un_ga_16_1280_none",
+   "kind": "gn_apply",
+   "calls_per_step": 10,
+   "ms_per_call": 0.177,
+   "s_per_step": 0.0018,
+   "tflops": null,
+   "gbps": 7.391674808578152
+  },
+  {
+   "kernel": "un_at_8_s",
+   "kind": "flash_attn",
+   "calls_per_step": 2,
+   "ms_per_call": 0.879,
+   "s_per_step": 0.0018,
+   "tflops": 0.3816868624458011,
+   "gbps": null
+  },
+  {
+   "kernel": "un_lr_8_5120_1280_b",
+   "kind": "linear",
+   "calls_per_step": 2,
+   "ms_per_call": 0.911,
+   "s_per_step": 0.0018,
+   "tflops": 1.3819470576917516,
+   "gbps": null
+  },
+  {
+   "kernel": "un_lr_16_1920_1280_b",
+   "kind": "linear",
+   "calls_per_step": 2,
+   "ms_per_call": 0.847,
+   "s_per_step": 0.0017,
+   "tflops": 1.8579369898348237,
+   "gbps": null
+  },
+  {
+   "kernel": "un_lr_8_2560_1280_b",
+   "kind": "linear",
+   "calls_per_step": 6,
+   "ms_per_call": 0.262,
+   "s_per_step": 0.0016,
+   "tflops": 2.4000253812300136,
+   "gbps": null
+  },
+  {
+   "kernel": "un_lr_8_2560_1280_first",
+   "kind": "linear",
+   "calls_per_step": 6,
+   "ms_per_call": 0.201,
+   "s_per_step": 0.0012,
+   "tflops": 3.1265733491260663,
+   "gbps": null
+  },
+  {
+   "kernel": "un_lr_8_2560_1280_b_last",
+   "kind": "linear",
+   "calls_per_step": 6,
+   "ms_per_call": 0.181,
+   "s_per_step": 0.0011,
+   "tflops": 3.4836011969140595,
+   "gbps": null
+  },
+  {
+   "kernel": "un_ga_32_1920_silu",
+   "kind": "gn_apply",
+   "calls_per_step": 2,
+   "ms_per_call": 0.485,
+   "s_per_step": 0.001,
+   "tflops": null,
+   "gbps": 16.224962534815543
+  },
+  {
+   "kernel": "un_ga_64_320_silu",
+   "kind": "gn_apply",
+   "calls_per_step": 16,
+   "ms_per_call": 0.056,
+   "s_per_step": 0.0009,
+   "tflops": null,
+   "gbps": 94.17658482021413
+  },
+  {
+   "kernel": "un_gg_8",
+   "kind": "geglu",
+   "calls_per_step": 2,
+   "ms_per_call": 0.446,
+   "s_per_step": 0.0009,
+   "tflops": null,
+   "gbps": 9.907493642354826
+  },
+  {
+   "kernel": "un_gs_64_640",
+   "kind": "gn_stats",
+   "calls_per_step": 4,
+   "ms_per_call": 0.213,
+   "s_per_step": 0.0009,
+   "tflops": null,
+   "gbps": 24.66655362369041
+  },
+  {
+   "kernel": "un_ga_64_960_silu",
+   "kind": "gn_apply",
+   "calls_per_step": 2,
+   "ms_per_call": 0.405,
+   "s_per_step": 0.0008,
+   "tflops": null,
+   "gbps": 38.82913341174808
+  },
+  {
+   "kernel": "un_lr_8_1280_1280_b",
+   "kind": "linear",
+   "calls_per_step": 8,
+   "ms_per_call": 0.088,
+   "s_per_step": 0.0007,
+   "tflops": 3.5732266847155043,
+   "gbps": null
+  },
+  {
+   "kernel": "un_at_8_x",
+   "kind": "flash_attn",
+   "calls_per_step": 2,
+   "ms_per_call": 0.361,
+   "s_per_step": 0.0007,
+   "tflops": 0.4644801595885413,
+   "gbps": null
+  },
+  {
+   "kernel": "un_ga_16_1920_silu",
+   "kind": "gn_apply",
+   "calls_per_step": 2,
+   "ms_per_call": 0.358,
+   "s_per_step": 0.0007,
+   "tflops": null,
+   "gbps": 5.486584968942116
+  },
+  {
+   "kernel": "un_c1_16_640_1280",
+   "kind": "conv2d",
+   "calls_per_step": 2,
+   "ms_per_call": 0.286,
+   "s_per_step": 0.0006,
+   "tflops": 1.4672382022031691,
+   "gbps": null
+  },
+  {
+   "kernel": "un_gs_64_960",
+   "kind": "gn_stats",
+   "calls_per_step": 2,
+   "ms_per_call": 0.282,
+   "s_per_step": 0.0006,
+   "tflops": null,
+   "gbps": 27.841611169681364
+  },
+  {
+   "kernel": "un_ga_64_640_silu",
+   "kind": "gn_apply",
+   "calls_per_step": 4,
+   "ms_per_call": 0.14,
+   "s_per_step": 0.0006,
+   "tflops": null,
+   "gbps": 74.89223518269903
+  },
+  {
+   "kernel": "un_ga_32_640_silu",
+   "kind": "gn_apply",
+   "calls_per_step": 12,
+   "ms_per_call": 0.042,
+   "s_per_step": 0.0005,
+   "tflops": null,
+   "gbps": 62.919120330529324
+  },
+  {
+   "kernel": "un_c1_32_320_640",
+   "kind": "conv2d",
+   "calls_per_step": 2,
+   "ms_per_call": 0.258,
+   "s_per_step": 0.0005,
+   "tflops": 1.6255196160236545,
+   "gbps": null
+  },
+  {
+   "kernel": "un_ga_32_1280_silu",
+   "kind": "gn_apply",
+   "calls_per_step": 2,
+   "ms_per_call": 0.266,
+   "s_per_step": 0.0005,
+   "tflops": null,
+   "gbps": 19.67806045236689
+  },
+  {
+   "kernel": "un_ga_32_960_silu",
+   "kind": "gn_apply",
+   "calls_per_step": 2,
+   "ms_per_call": 0.175,
+   "s_per_step": 0.0004,
+   "tflops": null,
+   "gbps": 22.423758554235214
+  },
+  {
+   "kernel": "un_ga_32_640_none",
+   "kind": "gn_apply",
+   "calls_per_step": 10,
+   "ms_per_call": 0.034,
+   "s_per_step": 0.0003,
+   "tflops": null,
+   "gbps": 77.7040019629682
+  },
+  {
+   "kernel": "un_ga_8_1280_none",
+   "kind": "gn_apply",
+   "calls_per_step": 2,
+   "ms_per_call": 0.16,
+   "s_per_step": 0.0003,
+   "tflops": null,
+   "gbps": 2.047507686733706
+  },
+  {
+   "kernel": "un_l16_1280_20224",
+   "kind": "linear",
+   "calls_per_step": 1,
+   "ms_per_call": 0.171,
+   "s_per_step": 0.0002,
+   "tflops": 4.855984268025381,
+   "gbps": null
+  },
+  {
+   "kernel": "un_lr_8_1280_1280",
+   "kind": "linear",
+   "calls_per_step": 8,
+   "ms_per_call": 0.025,
+   "s_per_step": 0.0002,
+   "tflops": 12.388863411560562,
+   "gbps": null
+  },
+  {
+   "kernel": "un_ga_64_320_none",
+   "kind": "gn_apply",
+   "calls_per_step": 10,
+   "ms_per_call": 0.007,
+   "s_per_step": 0.0001,
+   "tflops": null,
+   "gbps": 745.4316120515253
+  },
+  {
+   "kernel": "un_gs_32_1920",
+   "kind": "gn_stats",
+   "calls_per_step": 2,
+   "ms_per_call": 0.061,
+   "s_per_step": 0.0001,
+   "tflops": null,
+   "gbps": 64.42450944
+  },
+  {
+   "kernel": "un_c3_64_320_32",
+   "kind": "conv2d",
+   "calls_per_step": 2,
+   "ms_per_call": 0.048,
+   "s_per_step": 0.0001,
+   "tflops": 15.676205386113267,
+   "gbps": null
+  },
+  {
+   "kernel": "un_temb",
+   "kind": "timestep_embed",
+   "calls_per_step": 1,
+   "ms_per_call": -0.175,
+   "s_per_step": 0,
+   "tflops": null,
+   "gbps": null
+  },
+  {
+   "kernel": "un_l16_384_1280",
+   "kind": "linear",
+   "calls_per_step": 1,
+   "ms_per_call": -0.179,
+   "s_per_step": 0,
+   "tflops": null,
+   "gbps": null
+  },
+  {
+   "kernel": "un_silu",
+   "kind": "unary",
+   "calls_per_step": 2,
+   "ms_per_call": -0.171,
+   "s_per_step": 0,
+   "tflops": null,
+   "gbps": null
+  },
+  {
+   "kernel": "un_l16_1280_1280",
+   "kind": "linear",
+   "calls_per_step": 1,
+   "ms_per_call": -0.23,
+   "s_per_step": 0,
+   "tflops": null,
+   "gbps": null
+  },
+  {
+   "kernel": "un_bf",
+   "kind": "bias_fold",
+   "calls_per_step": 1,
+   "ms_per_call": -0.154,
+   "s_per_step": 0,
+   "tflops": null,
+   "gbps": null
+  },
+  {
+   "kernel": "un_c3_64_32_320",
+   "kind": "conv2d",
+   "calls_per_step": 2,
+   "ms_per_call": -0.176,
+   "s_per_step": 0,
+   "tflops": null,
+   "gbps": null
+  },
+  {
+   "kernel": "un_kv_512",
+   "kind": "linear",
+   "calls_per_step": 20,
+   "ms_per_call": -0.233,
+   "s_per_step": 0,
+   "tflops": null,
+   "gbps": null
+  },
+  {
+   "kernel": "un_ra_64_320_384_320_320",
+   "kind": "res_add",
+   "calls_per_step": 10,
+   "ms_per_call": -0.049,
+   "s_per_step": 0,
+   "tflops": null,
+   "gbps": null
+  },
+  {
+   "kernel": "un_gs_32_320",
+   "kind": "gn_stats",
+   "calls_per_step": 2,
+   "ms_per_call": -0.292,
+   "s_per_step": 0,
+   "tflops": null,
+   "gbps": null
+  },
+  {
+   "kernel": "un_ga_32_320_silu",
+   "kind": "gn_apply",
+   "calls_per_step": 2,
+   "ms_per_call": -0.143,
+   "s_per_step": 0,
+   "tflops": null,
+   "gbps": null
+  },
+  {
+   "kernel": "un_gs_32_640",
+   "kind": "gn_stats",
+   "calls_per_step": 22,
+   "ms_per_call": -0.073,
+   "s_per_step": 0,
+   "tflops": null,
+   "gbps": null
+  },
+  {
+   "kernel": "un_kv_768",
+   "kind": "linear",
+   "calls_per_step": 20,
+   "ms_per_call": -0.18,
+   "s_per_step": 0,
+   "tflops": null,
+   "gbps": null
+  },
+  {
+   "kernel": "un_ra_32_640_640_640_768",
+   "kind": "res_add",
+   "calls_per_step": 10,
+   "ms_per_call": -0.127,
+   "s_per_step": 0,
+   "tflops": null,
+   "gbps": null
+  },
+  {
+   "kernel": "un_gs_16_640",
+   "kind": "gn_stats",
+   "calls_per_step": 2,
+   "ms_per_call": -0.149,
+   "s_per_step": 0,
+   "tflops": null,
+   "gbps": null
+  },
+  {
+   "kernel": "un_ga_16_640_silu",
+   "kind": "gn_apply",
+   "calls_per_step": 2,
+   "ms_per_call": 0.025,
+   "s_per_step": 0.0,
+   "tflops": null,
+   "gbps": 26.494256090987953
+  },
+  {
+   "kernel": "un_gs_16_1280",
+   "kind": "gn_stats",
+   "calls_per_step": 22,
+   "ms_per_call": -0.143,
+   "s_per_step": 0,
+   "tflops": null,
+   "gbps": null
+  },
+  {
+   "kernel": "un_ra_16_1280_1280_1280_1280",
+   "kind": "res_add",
+   "calls_per_step": 50,
+   "ms_per_call": -0.149,
+   "s_per_step": 0,
+   "tflops": null,
+   "gbps": null
+  },
+  {
+   "kernel": "un_kv_1280",
+   "kind": "linear",
+   "calls_per_step": 24,
+   "ms_per_call": -0.006,
+   "s_per_step": 0,
+   "tflops": null,
+   "gbps": null
+  },
+  {
+   "kernel": "un_gs_8_1280",
+   "kind": "gn_stats",
+   "calls_per_step": 24,
+   "ms_per_call": -0.17,
+   "s_per_step": 0,
+   "tflops": null,
+   "gbps": null
+  },
+  {
+   "kernel": "un_lr_8_1280_1280_first",
+   "kind": "linear",
+   "calls_per_step": 22,
+   "ms_per_call": -0.021,
+   "s_per_step": 0,
+   "tflops": null,
+   "gbps": null
+  },
+  {
+   "kernel": "un_lr_8_1280_1280_mid",
+   "kind": "linear",
+   "calls_per_step": 154,
+   "ms_per_call": -0.111,
+   "s_per_step": 0,
+   "tflops": null,
+   "gbps": null
+  },
+  {
+   "kernel": "un_lr_8_1280_1280_b_last",
+   "kind": "linear",
+   "calls_per_step": 22,
+   "ms_per_call": -0.023,
+   "s_per_step": 0,
+   "tflops": null,
+   "gbps": null
+  },
+  {
+   "kernel": "un_ra_8_1280_1280_1280_1280",
+   "kind": "res_add",
+   "calls_per_step": 22,
+   "ms_per_call": -0.206,
+   "s_per_step": 0,
+   "tflops": null,
+   "gbps": null
+  },
+  {
+   "kernel": "un_ln_8_1280",
+   "kind": "ln_nhwc",
+   "calls_per_step": 6,
+   "ms_per_call": -0.136,
+   "s_per_step": 0,
+   "tflops": null,
+   "gbps": null
+  },
+  {
+   "kernel": "un_cp_8_1280_2560",
+   "kind": "copy_win",
+   "calls_per_step": 12,
+   "ms_per_call": -0.181,
+   "s_per_step": 0,
+   "tflops": null,
+   "gbps": null
+  },
+  {
+   "kernel": "un_gs_8_2560",
+   "kind": "gn_stats",
+   "calls_per_step": 6,
+   "ms_per_call": -0.16,
+   "s_per_step": 0,
+   "tflops": null,
+   "gbps": null
+  },
+  {
+   "kernel": "un_up_8_1280_256",
+   "kind": "upsample2",
+   "calls_per_step": 10,
+   "ms_per_call": -0.154,
+   "s_per_step": 0,
+   "tflops": null,
+   "gbps": null
+  },
+  {
+   "kernel": "un_cp_16_1280_2560",
+   "kind": "copy_win",
+   "calls_per_step": 8,
+   "ms_per_call": -0.216,
+   "s_per_step": 0,
+   "tflops": null,
+   "gbps": null
+  },
+  {
+   "kernel": "un_gs_16_2560",
+   "kind": "gn_stats",
+   "calls_per_step": 4,
+   "ms_per_call": -0.162,
+   "s_per_step": 0,
+   "tflops": null,
+   "gbps": null
+  },
+  {
+   "kernel": "un_cp_16_1280_1920",
+   "kind": "copy_win",
+   "calls_per_step": 2,
+   "ms_per_call": -0.169,
+   "s_per_step": 0,
+   "tflops": null,
+   "gbps": null
+  },
+  {
+   "kernel": "un_cp_16_640_1920",
+   "kind": "copy_win",
+   "calls_per_step": 2,
+   "ms_per_call": -0.171,
+   "s_per_step": 0,
+   "tflops": null,
+   "gbps": null
+  },
+  {
+   "kernel": "un_gs_16_1920",
+   "kind": "gn_stats",
+   "calls_per_step": 2,
+   "ms_per_call": -0.129,
+   "s_per_step": 0,
+   "tflops": null,
+   "gbps": null
+  },
+  {
+   "kernel": "un_up_16_1280_256",
+   "kind": "upsample2",
+   "calls_per_step": 10,
+   "ms_per_call": -0.164,
+   "s_per_step": 0,
+   "tflops": null,
+   "gbps": null
+  },
+  {
+   "kernel": "un_cp_32_1280_1920",
+   "kind": "copy_win",
+   "calls_per_step": 2,
+   "ms_per_call": -0.115,
+   "s_per_step": 0,
+   "tflops": null,
+   "gbps": null
+  },
+  {
+   "kernel": "un_cp_32_640_1920",
+   "kind": "copy_win",
+   "calls_per_step": 2,
+   "ms_per_call": -0.144,
+   "s_per_step": 0,
+   "tflops": null,
+   "gbps": null
+  },
+  {
+   "kernel": "un_cp_32_640_1280",
+   "kind": "copy_win",
+   "calls_per_step": 4,
+   "ms_per_call": -0.117,
+   "s_per_step": 0,
+   "tflops": null,
+   "gbps": null
+  },
+  {
+   "kernel": "un_gs_32_1280",
+   "kind": "gn_stats",
+   "calls_per_step": 2,
+   "ms_per_call": -0.056,
+   "s_per_step": 0,
+   "tflops": null,
+   "gbps": null
+  },
+  {
+   "kernel": "un_cp_32_640_960",
+   "kind": "copy_win",
+   "calls_per_step": 2,
+   "ms_per_call": -0.149,
+   "s_per_step": 0,
+   "tflops": null,
+   "gbps": null
+  },
+  {
+   "kernel": "un_cp_32_320_960",
+   "kind": "copy_win",
+   "calls_per_step": 2,
+   "ms_per_call": -0.28,
+   "s_per_step": 0,
+   "tflops": null,
+   "gbps": null
+  },
+  {
+   "kernel": "un_gs_32_960",
+   "kind": "gn_stats",
+   "calls_per_step": 2,
+   "ms_per_call": -0.101,
+   "s_per_step": 0,
+   "tflops": null,
+   "gbps": null
+  },
+  {
+   "kernel": "un_up_32_640_256",
+   "kind": "upsample2",
+   "calls_per_step": 4,
+   "ms_per_call": -0.108,
+   "s_per_step": 0,
+   "tflops": null,
+   "gbps": null
+  },
+  {
+   "kernel": "un_up_32_640_128",
+   "kind": "upsample2",
+   "calls_per_step": 2,
+   "ms_per_call": -0.154,
+   "s_per_step": 0,
+   "tflops": null,
+   "gbps": null
+  },
+  {
+   "kernel": "un_cp_64_640_960",
+   "kind": "copy_win",
+   "calls_per_step": 2,
+   "ms_per_call": -0.057,
+   "s_per_step": 0,
+   "tflops": null,
+   "gbps": null
+  },
+  {
+   "kernel": "un_cp_64_320_960",
+   "kind": "copy_win",
+   "calls_per_step": 2,
+   "ms_per_call": -0.101,
+   "s_per_step": 0,
+   "tflops": null,
+   "gbps": null
+  },
+  {
+   "kernel": "un_cp_64_320_640",
+   "kind": "copy_win",
+   "calls_per_step": 8,
+   "ms_per_call": -0.106,
+   "s_per_step": 0,
+   "tflops": null,
+   "gbps": null
+  }
+ ],
+ "stages": [
+  {
+   "stage": "s1",
+   "units": "time … down0.attn0.cross",
+   "run_wall_s": 0.603,
+   "deploy_only_s": 0.024,
+   "weights_mb": 61
+  },
+  {
+   "stage": "s2",
+   "units": "down0.attn0.ff … down0.res1",
+   "run_wall_s": 0.068,
+   "deploy_only_s": 0.007,
+   "weights_mb": 6
+  },
+  {
+   "stage": "s3",
+   "units": "down0.attn1 … down0.down",
+   "run_wall_s": 0.608,
+   "deploy_only_s": 0.007,
+   "weights_mb": 8
+  },
+  {
+   "stage": "s4",
+   "units": "down1.res0 … down2.attn1.ff",
+   "run_wall_s": 0.526,
+   "deploy_only_s": 0.093,
+   "weights_mb": 303
+  },
+  {
+   "stage": "s5",
+   "units": "down2.down … up2.res0",
+   "run_wall_s": 0.932,
+   "deploy_only_s": 0.324,
+   "weights_mb": 1135
+  },
+  {
+   "stage": "s6",
+   "units": "up2.attn0 … up3.res0",
+   "run_wall_s": 0.511,
+   "deploy_only_s": 0.039,
+   "weights_mb": 114
+  },
+  {
+   "stage": "s7",
+   "units": "up3.attn0 … up3.attn0.ff",
+   "run_wall_s": 0.603,
+   "deploy_only_s": 0.007,
+   "weights_mb": 6
+  },
+  {
+   "stage": "s8",
+   "units": "up3.res1 … up3.attn1.cross",
+   "run_wall_s": 0.608,
+   "deploy_only_s": 0.008,
+   "weights_mb": 9
+  },
+  {
+   "stage": "s9",
+   "units": "up3.attn1.ff … up3.res2",
+   "run_wall_s": 0.089,
+   "deploy_only_s": 0.006,
+   "weights_mb": 9
+  },
+  {
+   "stage": "s10",
+   "units": "up3.attn2 … out",
+   "run_wall_s": 0.603,
+   "deploy_only_s": 0.006,
+   "weights_mb": 7
+  }
+ ]
+}

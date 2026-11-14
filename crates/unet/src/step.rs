@@ -157,17 +157,17 @@ mod s2 {
     npu::decls! {
         in_x: input, bytes = 12533760;
         out_y: output, bytes = 12451840;
-        w: weights, bytes = 6443008;
-        act: workspace, bytes = 52969472;
+        w: weights, bytes = 6606848;
+        act: workspace, bytes = 56705024;
     }
     #[npu::program(chiplets = 1, cores = 2)]
     pub fn step() {
         // 入口第一步：@act 与 out_y 整块清零（两核各清一半）：边框、token 的补齐行、余量都靠它是 0
         if core_rank() == 0 {
-            un_zero(act().cast(), 1616);
+            un_zero(act().cast(), 1730);
             un_zero(out_y().cast(), 380);
         } else {
-            un_zero(act().at(26476544).cast(), 1617);
+            un_zero(act().at(28344320).cast(), 1731);
             un_zero(out_y().at(6225920).cast(), 380);
         }
         sync_cores();
@@ -181,22 +181,24 @@ mod s2 {
         sync_cores();
         un_gg_64(act().at(3112960).cast(), act().at(15564800).cast(), act().at(28016640).cast());
         sync_cores();
-        un_c1_64_1280_320_r(act().at(28016640).cast(), w().at(1662976).cast(), w().at(2482176).cast(), in_x().at(81920).cast(), act().at(40468480).cast());
+        un_lr_64_1280_384_b(act().at(28364800).cast(), w().at(1662976).cast(), w().at(2646016).cast(), act().at(40572928).cast());
         sync_cores();
-        un_c1_64_320_320_r(act().at(40468480).cast(), w().at(2486272).cast(), w().at(2691072).cast(), in_x().at(3194880).cast(), out_y().at(0).cast());
+        un_ra_64_320_384_320_320(act().at(40468480).cast(), in_x().at(81920).cast(), act().at(44204032).cast());
+        sync_cores();
+        un_c1_64_320_320_r(act().at(44204032).cast(), w().at(2650112).cast(), w().at(2854912).cast(), in_x().at(3194880).cast(), out_y().at(0).cast());
         sync_cores();
         // down0.res1
-        un_gs_64_320(out_y().at(0).cast(), act().at(43581440).cast());
+        un_gs_64_320(out_y().at(0).cast(), act().at(47316992).cast());
         sync_cores();
-        un_ga_64_320_silu(out_y().at(0).cast(), act().at(43581440).cast(), w().at(2695168).cast(), w().at(2699264).cast(), w().at(2703360).cast(), act().at(43622400).cast());
+        un_ga_64_320_silu(out_y().at(0).cast(), act().at(47316992).cast(), w().at(2859008).cast(), w().at(2863104).cast(), w().at(2867200).cast(), act().at(47357952).cast());
         sync_cores();
-        un_c3_64_320_320(act().at(43622400).cast(), w().at(2744320).cast(), in_x().at(1280).cast(), act().at(46735360).cast());
+        un_c3_64_320_320(act().at(47357952).cast(), w().at(2908160).cast(), in_x().at(1280).cast(), act().at(50470912).cast());
         sync_cores();
-        un_gs_64_320(act().at(46735360).cast(), act().at(43581440).cast());
+        un_gs_64_320(act().at(50470912).cast(), act().at(47316992).cast());
         sync_cores();
-        un_ga_64_320_silu(act().at(46735360).cast(), act().at(43581440).cast(), w().at(4587520).cast(), w().at(4591616).cast(), w().at(2703360).cast(), act().at(49848320).cast());
+        un_ga_64_320_silu(act().at(50470912).cast(), act().at(47316992).cast(), w().at(4751360).cast(), w().at(4755456).cast(), w().at(2867200).cast(), act().at(53583872).cast());
         sync_cores();
-        un_c3_64_320_320_r(act().at(49848320).cast(), w().at(4595712).cast(), w().at(6438912).cast(), out_y().at(0).cast(), out_y().at(3112960).cast());
+        un_c3_64_320_320_r(act().at(53583872).cast(), w().at(4759552).cast(), w().at(6602752).cast(), out_y().at(0).cast(), out_y().at(3112960).cast());
         sync_cores();
         // ── 第 1 路（空提示词）──
         // down0.attn0.ff
@@ -208,45 +210,47 @@ mod s2 {
         sync_cores();
         un_gg_64(act().at(3112960).cast(), act().at(15564800).cast(), act().at(28016640).cast());
         sync_cores();
-        un_c1_64_1280_320_r(act().at(28016640).cast(), w().at(1662976).cast(), w().at(2482176).cast(), in_x().at(6307840).cast(), act().at(40468480).cast());
+        un_lr_64_1280_384_b(act().at(28364800).cast(), w().at(1662976).cast(), w().at(2646016).cast(), act().at(40572928).cast());
         sync_cores();
-        un_c1_64_320_320_r(act().at(40468480).cast(), w().at(2486272).cast(), w().at(2691072).cast(), in_x().at(9420800).cast(), out_y().at(6225920).cast());
+        un_ra_64_320_384_320_320(act().at(40468480).cast(), in_x().at(6307840).cast(), act().at(44204032).cast());
+        sync_cores();
+        un_c1_64_320_320_r(act().at(44204032).cast(), w().at(2650112).cast(), w().at(2854912).cast(), in_x().at(9420800).cast(), out_y().at(6225920).cast());
         sync_cores();
         // down0.res1
-        un_gs_64_320(out_y().at(6225920).cast(), act().at(43581440).cast());
+        un_gs_64_320(out_y().at(6225920).cast(), act().at(47316992).cast());
         sync_cores();
-        un_ga_64_320_silu(out_y().at(6225920).cast(), act().at(43581440).cast(), w().at(2695168).cast(), w().at(2699264).cast(), w().at(2703360).cast(), act().at(43622400).cast());
+        un_ga_64_320_silu(out_y().at(6225920).cast(), act().at(47316992).cast(), w().at(2859008).cast(), w().at(2863104).cast(), w().at(2867200).cast(), act().at(47357952).cast());
         sync_cores();
-        un_c3_64_320_320(act().at(43622400).cast(), w().at(2744320).cast(), in_x().at(1280).cast(), act().at(46735360).cast());
+        un_c3_64_320_320(act().at(47357952).cast(), w().at(2908160).cast(), in_x().at(1280).cast(), act().at(50470912).cast());
         sync_cores();
-        un_gs_64_320(act().at(46735360).cast(), act().at(43581440).cast());
+        un_gs_64_320(act().at(50470912).cast(), act().at(47316992).cast());
         sync_cores();
-        un_ga_64_320_silu(act().at(46735360).cast(), act().at(43581440).cast(), w().at(4587520).cast(), w().at(4591616).cast(), w().at(2703360).cast(), act().at(49848320).cast());
+        un_ga_64_320_silu(act().at(50470912).cast(), act().at(47316992).cast(), w().at(4751360).cast(), w().at(4755456).cast(), w().at(2867200).cast(), act().at(53583872).cast());
         sync_cores();
-        un_c3_64_320_320_r(act().at(49848320).cast(), w().at(4595712).cast(), w().at(6438912).cast(), out_y().at(6225920).cast(), out_y().at(9338880).cast());
+        un_c3_64_320_320_r(act().at(53583872).cast(), w().at(4759552).cast(), w().at(6602752).cast(), out_y().at(6225920).cast(), out_y().at(9338880).cast());
         sync_cores();
     }
 }
 
-/// s3：down0.attn1、down0.attn1.cross、down0.attn1.ff
+/// s3：down0.attn1、down0.attn1.cross、down0.attn1.ff、down0.down
 #[cfg(feature = "s3")]
 mod s3 {
     use super::*;
     npu::decls! {
         in_x: input, bytes = 6619136;
-        out_y: output, bytes = 6225920;
-        w: weights, bytes = 6537216;
-        act: workspace, bytes = 92454912;
+        out_y: output, bytes = 8192000;
+        w: weights, bytes = 8548352;
+        act: workspace, bytes = 96190464;
     }
     #[npu::program(chiplets = 1, cores = 2)]
     pub fn step() {
         // 入口第一步：@act 与 out_y 整块清零（两核各清一半）：边框、token 的补齐行、余量都靠它是 0
         if core_rank() == 0 {
-            un_zero(act().cast(), 2821);
-            un_zero(out_y().cast(), 190);
+            un_zero(act().cast(), 2935);
+            un_zero(out_y().cast(), 250);
         } else {
-            un_zero(act().at(46219264).cast(), 2822);
-            un_zero(out_y().at(3112960).cast(), 190);
+            un_zero(act().at(48087040).cast(), 2936);
+            un_zero(out_y().at(4096000).cast(), 250);
         }
         sync_cores();
         // ── 第 0 路（有提示词）──
@@ -291,9 +295,14 @@ mod s3 {
         sync_cores();
         un_gg_64(act().at(51978240).cast(), act().at(64430080).cast(), act().at(76881920).cast());
         sync_cores();
-        un_c1_64_1280_320_r(act().at(76881920).cast(), w().at(5505024).cast(), w().at(6324224).cast(), act().at(45752320).cast(), act().at(89333760).cast());
+        un_lr_64_1280_384_b(act().at(77230080).cast(), w().at(5505024).cast(), w().at(6488064).cast(), act().at(89438208).cast());
         sync_cores();
-        un_c1_64_320_320_r(act().at(89333760).cast(), w().at(6328320).cast(), w().at(6533120).cast(), in_x().at(0).cast(), out_y().at(0).cast());
+        un_ra_64_320_384_320_320(act().at(89333760).cast(), act().at(45752320).cast(), act().at(93069312).cast());
+        sync_cores();
+        un_c1_64_320_320_r(act().at(93069312).cast(), w().at(6492160).cast(), w().at(6696960).cast(), in_x().at(0).cast(), out_y().at(0).cast());
+        sync_cores();
+        // down0.down
+        un_c3_32_320_320_s2(out_y().at(0).cast(), w().at(6701056).cast(), w().at(8544256).cast(), out_y().at(3112960).cast());
         sync_cores();
         // ── 第 1 路（空提示词）──
         // down0.attn1
@@ -337,594 +346,685 @@ mod s3 {
         sync_cores();
         un_gg_64(act().at(51978240).cast(), act().at(64430080).cast(), act().at(76881920).cast());
         sync_cores();
-        un_c1_64_1280_320_r(act().at(76881920).cast(), w().at(5505024).cast(), w().at(6324224).cast(), act().at(45752320).cast(), act().at(89333760).cast());
+        un_lr_64_1280_384_b(act().at(77230080).cast(), w().at(5505024).cast(), w().at(6488064).cast(), act().at(89438208).cast());
         sync_cores();
-        un_c1_64_320_320_r(act().at(89333760).cast(), w().at(6328320).cast(), w().at(6533120).cast(), in_x().at(3309568).cast(), out_y().at(3112960).cast());
+        un_ra_64_320_384_320_320(act().at(89333760).cast(), act().at(45752320).cast(), act().at(93069312).cast());
+        sync_cores();
+        un_c1_64_320_320_r(act().at(93069312).cast(), w().at(6492160).cast(), w().at(6696960).cast(), in_x().at(3309568).cast(), out_y().at(4096000).cast());
+        sync_cores();
+        // down0.down
+        un_c3_32_320_320_s2(out_y().at(4096000).cast(), w().at(6701056).cast(), w().at(8544256).cast(), out_y().at(7208960).cast());
         sync_cores();
     }
 }
 
-/// s4：down0.down、down1.res0、down1.attn0、down1.attn0.cross、down1.attn0.ff、down1.res1、down1.attn1、down1.attn1.cross、down1.attn1.ff、down1.down
+/// s4：down1.res0、down1.attn0、down1.attn0.cross、down1.attn0.ff、down1.res1、down1.attn1、down1.attn1.cross、down1.attn1.ff、down1.down、down2.res0、down2.attn0、down2.attn0.cross、down2.attn0.ff、down2.res1、down2.attn1、down2.attn1.cross、down2.attn1.ff
 #[cfg(feature = "s4")]
 mod s4 {
     use super::*;
     npu::decls! {
-        in_x: input, bytes = 6701056;
-        out_y: output, bytes = 11468800;
-        w: weights, bytes = 75550720;
-        act: workspace, bytes = 125288448;
+        in_x: input, bytes = 2441216;
+        out_y: output, bytes = 16056320;
+        w: weights, bytes = 318042112;
+        act: workspace, bytes = 250953728;
     }
     #[npu::program(chiplets = 1, cores = 2)]
     pub fn step() {
         // 入口第一步：@act 与 out_y 整块清零（两核各清一半）：边框、token 的补齐行、余量都靠它是 0
         if core_rank() == 0 {
-            un_zero(act().cast(), 3823);
-            un_zero(out_y().cast(), 350);
+            un_zero(act().cast(), 7658);
+            un_zero(out_y().cast(), 490);
         } else {
-            un_zero(act().at(62636032).cast(), 3824);
-            un_zero(out_y().at(5734400).cast(), 350);
+            un_zero(act().at(125468672).cast(), 7659);
+            un_zero(out_y().at(8028160).cast(), 490);
         }
         sync_cores();
         // ── 第 0 路（有提示词）──
-        // down0.down
-        un_c3_32_320_320_s2(in_x().at(81920).cast(), w().at(0).cast(), w().at(1843200).cast(), out_y().at(0).cast());
-        sync_cores();
         // down1.res0
-        un_gs_32_320(out_y().at(0).cast(), act().at(0).cast());
+        un_gs_32_320(in_x().at(81920).cast(), act().at(0).cast());
         sync_cores();
-        un_ga_32_320_silu(out_y().at(0).cast(), act().at(0).cast(), w().at(1847296).cast(), w().at(1851392).cast(), w().at(1855488).cast(), act().at(40960).cast());
+        un_ga_32_320_silu(in_x().at(81920).cast(), act().at(0).cast(), w().at(0).cast(), w().at(4096).cast(), w().at(8192).cast(), act().at(40960).cast());
         sync_cores();
-        un_c3_32_320_640(act().at(40960).cast(), w().at(1896448).cast(), in_x().at(2560).cast(), act().at(1024000).cast());
+        un_c3_32_320_640(act().at(40960).cast(), w().at(49152).cast(), in_x().at(2560).cast(), act().at(1024000).cast());
         sync_cores();
         un_gs_32_640(act().at(1024000).cast(), act().at(0).cast());
         sync_cores();
-        un_ga_32_640_silu(act().at(1024000).cast(), act().at(0).cast(), w().at(5582848).cast(), w().at(5586944).cast(), w().at(5591040).cast(), act().at(2990080).cast());
+        un_ga_32_640_silu(act().at(1024000).cast(), act().at(0).cast(), w().at(3735552).cast(), w().at(3739648).cast(), w().at(3743744).cast(), act().at(2990080).cast());
         sync_cores();
-        un_c1_32_320_640(out_y().at(0).cast(), w().at(5672960).cast(), w().at(6082560).cast(), act().at(4956160).cast());
+        un_c1_32_320_640(in_x().at(81920).cast(), w().at(3825664).cast(), w().at(4235264).cast(), act().at(4956160).cast());
         sync_cores();
-        un_c3_32_640_640_r(act().at(2990080).cast(), w().at(6086656).cast(), w().at(13459456).cast(), act().at(4956160).cast(), act().at(6922240).cast());
+        un_c3_32_640_640_r(act().at(2990080).cast(), w().at(4239360).cast(), w().at(11612160).cast(), act().at(4956160).cast(), act().at(6922240).cast());
         sync_cores();
         // down1.attn0
         un_gs_32_640(act().at(6922240).cast(), act().at(0).cast());
         sync_cores();
-        un_ga_32_640_none(act().at(6922240).cast(), act().at(0).cast(), w().at(13463552).cast(), w().at(13467648).cast(), w().at(5591040).cast(), act().at(8888320).cast());
+        un_ga_32_640_none(act().at(6922240).cast(), act().at(0).cast(), w().at(11616256).cast(), w().at(11620352).cast(), w().at(3743744).cast(), act().at(8888320).cast());
         sync_cores();
-        un_lr_32_640_640_b(act().at(8888320).cast(), w().at(13471744).cast(), w().at(14290944).cast(), act().at(10854400).cast());
+        un_lr_32_640_640_b(act().at(8980480).cast(), w().at(11624448).cast(), w().at(12443648).cast(), act().at(10946560).cast());
         sync_cores();
-        un_ln_32_640(act().at(10854400).cast(), w().at(14295040).cast(), w().at(14299136).cast(), act().at(12820480).cast());
+        un_ln_32_640(act().at(10854400).cast(), w().at(12447744).cast(), w().at(12451840).cast(), act().at(12820480).cast());
         sync_cores();
-        un_lr_32_640_768(act().at(12820480).cast(), w().at(14303232).cast(), act().at(14786560).cast());
+        un_lr_32_640_768(act().at(12912640).cast(), w().at(12455936).cast(), act().at(14897152).cast());
         sync_cores();
-        un_lr_32_640_768(act().at(12820480).cast(), w().at(15286272).cast(), act().at(17145856).cast());
+        un_lr_32_640_768(act().at(12912640).cast(), w().at(13438976).cast(), act().at(17256448).cast());
         sync_cores();
-        un_lr_32_640_768(act().at(12820480).cast(), w().at(16269312).cast(), act().at(19505152).cast());
+        un_lr_32_640_768(act().at(12912640).cast(), w().at(14422016).cast(), act().at(19615744).cast());
         sync_cores();
-        un_at_32_s(act().at(14786560).cast(), act().at(17145856).cast(), act().at(19505152).cast(), w().at(17252352).cast(), act().at(21864448).cast());
+        un_at_32_s(act().at(14786560).cast(), act().at(17145856).cast(), act().at(19505152).cast(), w().at(15405056).cast(), act().at(21864448).cast());
         sync_cores();
-        un_c1_32_768_640_r(act().at(21864448).cast(), w().at(17256448).cast(), w().at(18239488).cast(), act().at(10854400).cast(), act().at(24223744).cast());
+        un_c1_32_768_640_r(act().at(21864448).cast(), w().at(15409152).cast(), w().at(16392192).cast(), act().at(10854400).cast(), act().at(24223744).cast());
         sync_cores();
         // down1.attn0.cross
-        un_ln_32_640(act().at(24223744).cast(), w().at(18243584).cast(), w().at(18247680).cast(), act().at(26189824).cast());
+        un_ln_32_640(act().at(24223744).cast(), w().at(16396288).cast(), w().at(16400384).cast(), act().at(26189824).cast());
         sync_cores();
-        un_lr_32_640_768(act().at(26189824).cast(), w().at(18251776).cast(), act().at(28155904).cast());
+        un_lr_32_640_768(act().at(26281984).cast(), w().at(16404480).cast(), act().at(28266496).cast());
         sync_cores();
-        un_kv_768(in_x().at(3194880).cast(), w().at(19234816).cast(), act().at(30515200).cast());
+        un_kv_768(in_x().at(1064960).cast(), w().at(17387520).cast(), act().at(30515200).cast());
         sync_cores();
-        un_kv_768(in_x().at(3194880).cast(), w().at(20414464).cast(), act().at(30711808).cast());
+        un_kv_768(in_x().at(1064960).cast(), w().at(18567168).cast(), act().at(30711808).cast());
         sync_cores();
-        un_at_32_x(act().at(28155904).cast(), act().at(30515200).cast(), act().at(30711808).cast(), w().at(21594112).cast(), act().at(30908416).cast());
+        un_at_32_x(act().at(28155904).cast(), act().at(30515200).cast(), act().at(30711808).cast(), w().at(19746816).cast(), act().at(30908416).cast());
         sync_cores();
-        un_c1_32_768_640_r(act().at(30908416).cast(), w().at(21598208).cast(), w().at(22581248).cast(), act().at(24223744).cast(), act().at(33267712).cast());
+        un_c1_32_768_640_r(act().at(30908416).cast(), w().at(19750912).cast(), w().at(20733952).cast(), act().at(24223744).cast(), act().at(33267712).cast());
         sync_cores();
         // down1.attn0.ff
-        un_ln_32_640(act().at(33267712).cast(), w().at(22585344).cast(), w().at(22589440).cast(), act().at(35233792).cast());
+        un_ln_32_640(act().at(33267712).cast(), w().at(20738048).cast(), w().at(20742144).cast(), act().at(35233792).cast());
         sync_cores();
-        un_lr_32_640_2560_b(act().at(35233792).cast(), w().at(22593536).cast(), w().at(25870336).cast(), act().at(37199872).cast());
+        un_lr_32_640_2560_b(act().at(35325952).cast(), w().at(20746240).cast(), w().at(24023040).cast(), act().at(37568512).cast());
         sync_cores();
-        un_lr_32_640_2560_b(act().at(35233792).cast(), w().at(25882624).cast(), w().at(29159424).cast(), act().at(45064192).cast());
+        un_lr_32_640_2560_b(act().at(35325952).cast(), w().at(24035328).cast(), w().at(27312128).cast(), act().at(45432832).cast());
         sync_cores();
         un_gg_32(act().at(37199872).cast(), act().at(45064192).cast(), act().at(52928512).cast());
         sync_cores();
-        un_c1_32_2560_640_r_o768_q640(act().at(52928512).cast(), w().at(29171712).cast(), w().at(32448512).cast(), act().at(33267712).cast(), act().at(60792832).cast());
+        un_lr_32_2560_640_b(act().at(53297152).cast(), w().at(27324416).cast(), w().at(30601216).cast(), act().at(60884992).cast());
         sync_cores();
-        un_c1_32_768_640_r(act().at(60792832).cast(), w().at(32452608).cast(), w().at(33435648).cast(), act().at(6922240).cast(), out_y().at(983040).cast());
+        un_ra_32_640_640_640_768(act().at(60792832).cast(), act().at(33267712).cast(), act().at(62758912).cast());
+        sync_cores();
+        un_c1_32_768_640_r(act().at(62758912).cast(), w().at(30605312).cast(), w().at(31588352).cast(), act().at(6922240).cast(), out_y().at(0).cast());
         sync_cores();
         // down1.res1
-        un_gs_32_640(out_y().at(983040).cast(), act().at(0).cast());
+        un_gs_32_640(out_y().at(0).cast(), act().at(0).cast());
         sync_cores();
-        un_ga_32_640_silu(out_y().at(983040).cast(), act().at(0).cast(), w().at(33439744).cast(), w().at(33443840).cast(), w().at(5591040).cast(), act().at(63152128).cast());
+        un_ga_32_640_silu(out_y().at(0).cast(), act().at(0).cast(), w().at(31592448).cast(), w().at(31596544).cast(), w().at(3743744).cast(), act().at(65118208).cast());
         sync_cores();
-        un_c3_32_640_640(act().at(63152128).cast(), w().at(33447936).cast(), in_x().at(5120).cast(), act().at(65118208).cast());
+        un_c3_32_640_640(act().at(65118208).cast(), w().at(31600640).cast(), in_x().at(5120).cast(), act().at(67084288).cast());
         sync_cores();
-        un_gs_32_640(act().at(65118208).cast(), act().at(0).cast());
+        un_gs_32_640(act().at(67084288).cast(), act().at(0).cast());
         sync_cores();
-        un_ga_32_640_silu(act().at(65118208).cast(), act().at(0).cast(), w().at(40820736).cast(), w().at(40824832).cast(), w().at(5591040).cast(), act().at(67084288).cast());
+        un_ga_32_640_silu(act().at(67084288).cast(), act().at(0).cast(), w().at(38973440).cast(), w().at(38977536).cast(), w().at(3743744).cast(), act().at(69050368).cast());
         sync_cores();
-        un_c3_32_640_640_r(act().at(67084288).cast(), w().at(40828928).cast(), w().at(48201728).cast(), out_y().at(983040).cast(), act().at(69050368).cast());
+        un_c3_32_640_640_r(act().at(69050368).cast(), w().at(38981632).cast(), w().at(46354432).cast(), out_y().at(0).cast(), act().at(71016448).cast());
         sync_cores();
         // down1.attn1
-        un_gs_32_640(act().at(69050368).cast(), act().at(0).cast());
+        un_gs_32_640(act().at(71016448).cast(), act().at(0).cast());
         sync_cores();
-        un_ga_32_640_none(act().at(69050368).cast(), act().at(0).cast(), w().at(48205824).cast(), w().at(48209920).cast(), w().at(5591040).cast(), act().at(71016448).cast());
+        un_ga_32_640_none(act().at(71016448).cast(), act().at(0).cast(), w().at(46358528).cast(), w().at(46362624).cast(), w().at(3743744).cast(), act().at(72982528).cast());
         sync_cores();
-        un_lr_32_640_640_b(act().at(71016448).cast(), w().at(48214016).cast(), w().at(49033216).cast(), act().at(72982528).cast());
+        un_lr_32_640_640_b(act().at(73074688).cast(), w().at(46366720).cast(), w().at(47185920).cast(), act().at(75040768).cast());
         sync_cores();
-        un_ln_32_640(act().at(72982528).cast(), w().at(49037312).cast(), w().at(49041408).cast(), act().at(74948608).cast());
+        un_ln_32_640(act().at(74948608).cast(), w().at(47190016).cast(), w().at(47194112).cast(), act().at(76914688).cast());
         sync_cores();
-        un_lr_32_640_768(act().at(74948608).cast(), w().at(49045504).cast(), act().at(76914688).cast());
+        un_lr_32_640_768(act().at(77006848).cast(), w().at(47198208).cast(), act().at(78991360).cast());
         sync_cores();
-        un_lr_32_640_768(act().at(74948608).cast(), w().at(50028544).cast(), act().at(79273984).cast());
+        un_lr_32_640_768(act().at(77006848).cast(), w().at(48181248).cast(), act().at(81350656).cast());
         sync_cores();
-        un_lr_32_640_768(act().at(74948608).cast(), w().at(51011584).cast(), act().at(81633280).cast());
+        un_lr_32_640_768(act().at(77006848).cast(), w().at(49164288).cast(), act().at(83709952).cast());
         sync_cores();
-        un_at_32_s(act().at(76914688).cast(), act().at(79273984).cast(), act().at(81633280).cast(), w().at(17252352).cast(), act().at(83992576).cast());
+        un_at_32_s(act().at(78880768).cast(), act().at(81240064).cast(), act().at(83599360).cast(), w().at(15405056).cast(), act().at(85958656).cast());
         sync_cores();
-        un_c1_32_768_640_r(act().at(83992576).cast(), w().at(51994624).cast(), w().at(52977664).cast(), act().at(72982528).cast(), act().at(86351872).cast());
+        un_c1_32_768_640_r(act().at(85958656).cast(), w().at(50147328).cast(), w().at(51130368).cast(), act().at(74948608).cast(), act().at(88317952).cast());
         sync_cores();
         // down1.attn1.cross
-        un_ln_32_640(act().at(86351872).cast(), w().at(52981760).cast(), w().at(52985856).cast(), act().at(88317952).cast());
+        un_ln_32_640(act().at(88317952).cast(), w().at(51134464).cast(), w().at(51138560).cast(), act().at(90284032).cast());
         sync_cores();
-        un_lr_32_640_768(act().at(88317952).cast(), w().at(52989952).cast(), act().at(90284032).cast());
+        un_lr_32_640_768(act().at(90376192).cast(), w().at(51142656).cast(), act().at(92360704).cast());
         sync_cores();
-        un_kv_768(in_x().at(3194880).cast(), w().at(53972992).cast(), act().at(92643328).cast());
+        un_kv_768(in_x().at(1064960).cast(), w().at(52125696).cast(), act().at(94609408).cast());
         sync_cores();
-        un_kv_768(in_x().at(3194880).cast(), w().at(55152640).cast(), act().at(92839936).cast());
+        un_kv_768(in_x().at(1064960).cast(), w().at(53305344).cast(), act().at(94806016).cast());
         sync_cores();
-        un_at_32_x(act().at(90284032).cast(), act().at(92643328).cast(), act().at(92839936).cast(), w().at(21594112).cast(), act().at(93036544).cast());
+        un_at_32_x(act().at(92250112).cast(), act().at(94609408).cast(), act().at(94806016).cast(), w().at(19746816).cast(), act().at(95002624).cast());
         sync_cores();
-        un_c1_32_768_640_r(act().at(93036544).cast(), w().at(56332288).cast(), w().at(57315328).cast(), act().at(86351872).cast(), act().at(95395840).cast());
+        un_c1_32_768_640_r(act().at(95002624).cast(), w().at(54484992).cast(), w().at(55468032).cast(), act().at(88317952).cast(), act().at(97361920).cast());
         sync_cores();
         // down1.attn1.ff
-        un_ln_32_640(act().at(95395840).cast(), w().at(57319424).cast(), w().at(57323520).cast(), act().at(97361920).cast());
+        un_ln_32_640(act().at(97361920).cast(), w().at(55472128).cast(), w().at(55476224).cast(), act().at(99328000).cast());
         sync_cores();
-        un_lr_32_640_2560_b(act().at(97361920).cast(), w().at(57327616).cast(), w().at(60604416).cast(), act().at(99328000).cast());
+        un_lr_32_640_2560_b(act().at(99420160).cast(), w().at(55480320).cast(), w().at(58757120).cast(), act().at(101662720).cast());
         sync_cores();
-        un_lr_32_640_2560_b(act().at(97361920).cast(), w().at(60616704).cast(), w().at(63893504).cast(), act().at(107192320).cast());
+        un_lr_32_640_2560_b(act().at(99420160).cast(), w().at(58769408).cast(), w().at(62046208).cast(), act().at(109527040).cast());
         sync_cores();
-        un_gg_32(act().at(99328000).cast(), act().at(107192320).cast(), act().at(115056640).cast());
+        un_gg_32(act().at(101294080).cast(), act().at(109158400).cast(), act().at(117022720).cast());
         sync_cores();
-        un_c1_32_2560_640_r_o768_q640(act().at(115056640).cast(), w().at(63905792).cast(), w().at(67182592).cast(), act().at(95395840).cast(), act().at(122920960).cast());
+        un_lr_32_2560_640_b(act().at(117391360).cast(), w().at(62058496).cast(), w().at(65335296).cast(), act().at(124979200).cast());
         sync_cores();
-        un_c1_32_768_640_r(act().at(122920960).cast(), w().at(67186688).cast(), w().at(68169728).cast(), act().at(69050368).cast(), out_y().at(2949120).cast());
+        un_ra_32_640_640_640_768(act().at(124887040).cast(), act().at(97361920).cast(), act().at(126853120).cast());
+        sync_cores();
+        un_c1_32_768_640_r(act().at(126853120).cast(), w().at(65339392).cast(), w().at(66322432).cast(), act().at(71016448).cast(), out_y().at(1966080).cast());
         sync_cores();
         // down1.down
-        un_c3_16_640_640_s2(out_y().at(2949120).cast(), w().at(68173824).cast(), w().at(75546624).cast(), out_y().at(4915200).cast());
+        un_c3_16_640_640_s2(out_y().at(1966080).cast(), w().at(66326528).cast(), w().at(73699328).cast(), out_y().at(3932160).cast());
+        sync_cores();
+        // down2.res0
+        un_gs_16_640(out_y().at(3932160).cast(), act().at(0).cast());
+        sync_cores();
+        un_ga_16_640_silu(out_y().at(3932160).cast(), act().at(0).cast(), w().at(73703424).cast(), w().at(73707520).cast(), w().at(3743744).cast(), act().at(129212416).cast());
+        sync_cores();
+        un_c3_16_640_1280(act().at(129212416).cast(), w().at(73711616).cast(), in_x().at(7680).cast(), act().at(130031616).cast());
+        sync_cores();
+        un_gs_16_1280(act().at(130031616).cast(), act().at(0).cast());
+        sync_cores();
+        un_ga_16_1280_silu(act().at(130031616).cast(), act().at(0).cast(), w().at(88457216).cast(), w().at(88465408).cast(), w().at(88473600).cast(), act().at(131670016).cast());
+        sync_cores();
+        un_c1_16_640_1280(out_y().at(3932160).cast(), w().at(88637440).cast(), w().at(90275840).cast(), act().at(133308416).cast());
+        sync_cores();
+        un_lr_16_1280_1280_first(act().at(131718656).cast(), w().at(90284032).cast(), act().at(134946816).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(131721216).cast(), w().at(93560832).cast(), act().at(134946816).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(131723776).cast(), w().at(96837632).cast(), act().at(134946816).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(131769856).cast(), w().at(100114432).cast(), act().at(134946816).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(131772416).cast(), w().at(103391232).cast(), act().at(134946816).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(131774976).cast(), w().at(106668032).cast(), act().at(134946816).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(131821056).cast(), w().at(109944832).cast(), act().at(134946816).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(131823616).cast(), w().at(113221632).cast(), act().at(134946816).cast());
+        sync_cores();
+        un_lr_16_1280_1280_b_last(act().at(131826176).cast(), w().at(116498432).cast(), w().at(119775232).cast(), act().at(134946816).cast(), act().at(136687616).cast());
+        sync_cores();
+        un_ra_16_1280_1280_1280_1280(act().at(136585216).cast(), act().at(133308416).cast(), act().at(138223616).cast());
+        sync_cores();
+        // down2.attn0
+        un_gs_16_1280(act().at(138223616).cast(), act().at(0).cast());
+        sync_cores();
+        un_ga_16_1280_none(act().at(138223616).cast(), act().at(0).cast(), w().at(119783424).cast(), w().at(119791616).cast(), w().at(88473600).cast(), act().at(139862016).cast());
+        sync_cores();
+        un_lr_16_1280_1280_b(act().at(139964416).cast(), w().at(119799808).cast(), w().at(123076608).cast(), act().at(141602816).cast());
+        sync_cores();
+        un_ln_16_1280(act().at(141500416).cast(), w().at(123084800).cast(), w().at(123092992).cast(), act().at(143138816).cast());
+        sync_cores();
+        un_lr_16_1280_1280(act().at(143241216).cast(), w().at(123101184).cast(), act().at(144879616).cast());
+        sync_cores();
+        un_lr_16_1280_1280(act().at(143241216).cast(), w().at(126377984).cast(), act().at(146518016).cast());
+        sync_cores();
+        un_lr_16_1280_1280(act().at(143241216).cast(), w().at(129654784).cast(), act().at(148156416).cast());
+        sync_cores();
+        un_at_16_s(act().at(144777216).cast(), act().at(146415616).cast(), act().at(148054016).cast(), w().at(132931584).cast(), act().at(149692416).cast());
+        sync_cores();
+        un_lr_16_1280_1280_b(act().at(149794816).cast(), w().at(132935680).cast(), w().at(136212480).cast(), act().at(151433216).cast());
+        sync_cores();
+        un_ra_16_1280_1280_1280_1280(act().at(151330816).cast(), act().at(141500416).cast(), act().at(152969216).cast());
+        sync_cores();
+        // down2.attn0.cross
+        un_ln_16_1280(act().at(152969216).cast(), w().at(136220672).cast(), w().at(136228864).cast(), act().at(154607616).cast());
+        sync_cores();
+        un_lr_16_1280_1280(act().at(154710016).cast(), w().at(136237056).cast(), act().at(156348416).cast());
+        sync_cores();
+        un_kv_1280(in_x().at(1064960).cast(), w().at(139513856).cast(), act().at(157884416).cast());
+        sync_cores();
+        un_kv_1280(in_x().at(1064960).cast(), w().at(141479936).cast(), act().at(158212096).cast());
+        sync_cores();
+        un_at_16_x(act().at(156246016).cast(), act().at(157884416).cast(), act().at(158212096).cast(), w().at(19746816).cast(), act().at(158539776).cast());
+        sync_cores();
+        un_lr_16_1280_1280_b(act().at(158642176).cast(), w().at(143446016).cast(), w().at(146722816).cast(), act().at(160280576).cast());
+        sync_cores();
+        un_ra_16_1280_1280_1280_1280(act().at(160178176).cast(), act().at(152969216).cast(), act().at(161816576).cast());
+        sync_cores();
+        // down2.attn0.ff
+        un_ln_16_1280(act().at(161816576).cast(), w().at(146731008).cast(), w().at(146739200).cast(), act().at(163454976).cast());
+        sync_cores();
+        un_lr_16_1280_5120_b(act().at(163557376).cast(), w().at(146747392).cast(), w().at(159854592).cast(), act().at(165502976).cast());
+        sync_cores();
+        un_lr_16_1280_5120_b(act().at(163557376).cast(), w().at(159875072).cast(), w().at(172982272).cast(), act().at(172056576).cast());
+        sync_cores();
+        un_gg_16(act().at(165093376).cast(), act().at(171646976).cast(), act().at(178200576).cast());
+        sync_cores();
+        un_lr_16_5120_1280_b(act().at(178610176).cast(), w().at(173002752).cast(), w().at(186109952).cast(), act().at(184856576).cast());
+        sync_cores();
+        un_ra_16_1280_1280_1280_1280(act().at(184754176).cast(), act().at(161816576).cast(), act().at(186392576).cast());
+        sync_cores();
+        un_lr_16_1280_1280_b(act().at(186494976).cast(), w().at(186118144).cast(), w().at(189394944).cast(), act().at(188133376).cast());
+        sync_cores();
+        un_ra_16_1280_1280_1280_1280(act().at(188030976).cast(), act().at(138223616).cast(), out_y().at(4751360).cast());
+        sync_cores();
+        // down2.res1
+        un_gs_16_1280(out_y().at(4751360).cast(), act().at(0).cast());
+        sync_cores();
+        un_ga_16_1280_silu(out_y().at(4751360).cast(), act().at(0).cast(), w().at(189403136).cast(), w().at(189411328).cast(), w().at(88473600).cast(), act().at(189669376).cast());
+        sync_cores();
+        un_lr_16_1280_1280_first(act().at(189718016).cast(), w().at(189419520).cast(), act().at(191307776).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(189720576).cast(), w().at(192696320).cast(), act().at(191307776).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(189723136).cast(), w().at(195973120).cast(), act().at(191307776).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(189769216).cast(), w().at(199249920).cast(), act().at(191307776).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(189771776).cast(), w().at(202526720).cast(), act().at(191307776).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(189774336).cast(), w().at(205803520).cast(), act().at(191307776).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(189820416).cast(), w().at(209080320).cast(), act().at(191307776).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(189822976).cast(), w().at(212357120).cast(), act().at(191307776).cast());
+        sync_cores();
+        un_lr_16_1280_1280_b_last(act().at(189825536).cast(), w().at(215633920).cast(), in_x().at(12800).cast(), act().at(191307776).cast(), act().at(193048576).cast());
+        sync_cores();
+        un_gs_16_1280(act().at(192946176).cast(), act().at(0).cast());
+        sync_cores();
+        un_ga_16_1280_silu(act().at(192946176).cast(), act().at(0).cast(), w().at(218910720).cast(), w().at(218918912).cast(), w().at(88473600).cast(), act().at(194584576).cast());
+        sync_cores();
+        un_lr_16_1280_1280_first(act().at(194633216).cast(), w().at(218927104).cast(), act().at(196222976).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(194635776).cast(), w().at(222203904).cast(), act().at(196222976).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(194638336).cast(), w().at(225480704).cast(), act().at(196222976).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(194684416).cast(), w().at(228757504).cast(), act().at(196222976).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(194686976).cast(), w().at(232034304).cast(), act().at(196222976).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(194689536).cast(), w().at(235311104).cast(), act().at(196222976).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(194735616).cast(), w().at(238587904).cast(), act().at(196222976).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(194738176).cast(), w().at(241864704).cast(), act().at(196222976).cast());
+        sync_cores();
+        un_lr_16_1280_1280_b_last(act().at(194740736).cast(), w().at(245141504).cast(), w().at(248418304).cast(), act().at(196222976).cast(), act().at(197963776).cast());
+        sync_cores();
+        un_ra_16_1280_1280_1280_1280(act().at(197861376).cast(), out_y().at(4751360).cast(), act().at(199499776).cast());
+        sync_cores();
+        // down2.attn1
+        un_gs_16_1280(act().at(199499776).cast(), act().at(0).cast());
+        sync_cores();
+        un_ga_16_1280_none(act().at(199499776).cast(), act().at(0).cast(), w().at(248426496).cast(), w().at(248434688).cast(), w().at(88473600).cast(), act().at(201138176).cast());
+        sync_cores();
+        un_lr_16_1280_1280_b(act().at(201240576).cast(), w().at(248442880).cast(), w().at(251719680).cast(), act().at(202878976).cast());
+        sync_cores();
+        un_ln_16_1280(act().at(202776576).cast(), w().at(251727872).cast(), w().at(251736064).cast(), act().at(204414976).cast());
+        sync_cores();
+        un_lr_16_1280_1280(act().at(204517376).cast(), w().at(251744256).cast(), act().at(206155776).cast());
+        sync_cores();
+        un_lr_16_1280_1280(act().at(204517376).cast(), w().at(255021056).cast(), act().at(207794176).cast());
+        sync_cores();
+        un_lr_16_1280_1280(act().at(204517376).cast(), w().at(258297856).cast(), act().at(209432576).cast());
+        sync_cores();
+        un_at_16_s(act().at(206053376).cast(), act().at(207691776).cast(), act().at(209330176).cast(), w().at(132931584).cast(), act().at(210968576).cast());
+        sync_cores();
+        un_lr_16_1280_1280_b(act().at(211070976).cast(), w().at(261574656).cast(), w().at(264851456).cast(), act().at(212709376).cast());
+        sync_cores();
+        un_ra_16_1280_1280_1280_1280(act().at(212606976).cast(), act().at(202776576).cast(), act().at(214245376).cast());
+        sync_cores();
+        // down2.attn1.cross
+        un_ln_16_1280(act().at(214245376).cast(), w().at(264859648).cast(), w().at(264867840).cast(), act().at(215883776).cast());
+        sync_cores();
+        un_lr_16_1280_1280(act().at(215986176).cast(), w().at(264876032).cast(), act().at(217624576).cast());
+        sync_cores();
+        un_kv_1280(in_x().at(1064960).cast(), w().at(268152832).cast(), act().at(219160576).cast());
+        sync_cores();
+        un_kv_1280(in_x().at(1064960).cast(), w().at(270118912).cast(), act().at(219488256).cast());
+        sync_cores();
+        un_at_16_x(act().at(217522176).cast(), act().at(219160576).cast(), act().at(219488256).cast(), w().at(19746816).cast(), act().at(219815936).cast());
+        sync_cores();
+        un_lr_16_1280_1280_b(act().at(219918336).cast(), w().at(272084992).cast(), w().at(275361792).cast(), act().at(221556736).cast());
+        sync_cores();
+        un_ra_16_1280_1280_1280_1280(act().at(221454336).cast(), act().at(214245376).cast(), act().at(223092736).cast());
+        sync_cores();
+        // down2.attn1.ff
+        un_ln_16_1280(act().at(223092736).cast(), w().at(275369984).cast(), w().at(275378176).cast(), act().at(224731136).cast());
+        sync_cores();
+        un_lr_16_1280_5120_b(act().at(224833536).cast(), w().at(275386368).cast(), w().at(288493568).cast(), act().at(226779136).cast());
+        sync_cores();
+        un_lr_16_1280_5120_b(act().at(224833536).cast(), w().at(288514048).cast(), w().at(301621248).cast(), act().at(233332736).cast());
+        sync_cores();
+        un_gg_16(act().at(226369536).cast(), act().at(232923136).cast(), act().at(239476736).cast());
+        sync_cores();
+        un_lr_16_5120_1280_b(act().at(239886336).cast(), w().at(301641728).cast(), w().at(314748928).cast(), act().at(246132736).cast());
+        sync_cores();
+        un_ra_16_1280_1280_1280_1280(act().at(246030336).cast(), act().at(223092736).cast(), act().at(247668736).cast());
+        sync_cores();
+        un_lr_16_1280_1280_b(act().at(247771136).cast(), w().at(314757120).cast(), w().at(318033920).cast(), act().at(249409536).cast());
+        sync_cores();
+        un_ra_16_1280_1280_1280_1280(act().at(249307136).cast(), act().at(199499776).cast(), out_y().at(6389760).cast());
         sync_cores();
         // ── 第 1 路（空提示词）──
-        // down0.down
-        un_c3_32_320_320_s2(in_x().at(3391488).cast(), w().at(0).cast(), w().at(1843200).cast(), out_y().at(5734400).cast());
-        sync_cores();
         // down1.res0
-        un_gs_32_320(out_y().at(5734400).cast(), act().at(0).cast());
+        un_gs_32_320(in_x().at(1261568).cast(), act().at(0).cast());
         sync_cores();
-        un_ga_32_320_silu(out_y().at(5734400).cast(), act().at(0).cast(), w().at(1847296).cast(), w().at(1851392).cast(), w().at(1855488).cast(), act().at(40960).cast());
+        un_ga_32_320_silu(in_x().at(1261568).cast(), act().at(0).cast(), w().at(0).cast(), w().at(4096).cast(), w().at(8192).cast(), act().at(40960).cast());
         sync_cores();
-        un_c3_32_320_640(act().at(40960).cast(), w().at(1896448).cast(), in_x().at(2560).cast(), act().at(1024000).cast());
+        un_c3_32_320_640(act().at(40960).cast(), w().at(49152).cast(), in_x().at(2560).cast(), act().at(1024000).cast());
         sync_cores();
         un_gs_32_640(act().at(1024000).cast(), act().at(0).cast());
         sync_cores();
-        un_ga_32_640_silu(act().at(1024000).cast(), act().at(0).cast(), w().at(5582848).cast(), w().at(5586944).cast(), w().at(5591040).cast(), act().at(2990080).cast());
+        un_ga_32_640_silu(act().at(1024000).cast(), act().at(0).cast(), w().at(3735552).cast(), w().at(3739648).cast(), w().at(3743744).cast(), act().at(2990080).cast());
         sync_cores();
-        un_c1_32_320_640(out_y().at(5734400).cast(), w().at(5672960).cast(), w().at(6082560).cast(), act().at(4956160).cast());
+        un_c1_32_320_640(in_x().at(1261568).cast(), w().at(3825664).cast(), w().at(4235264).cast(), act().at(4956160).cast());
         sync_cores();
-        un_c3_32_640_640_r(act().at(2990080).cast(), w().at(6086656).cast(), w().at(13459456).cast(), act().at(4956160).cast(), act().at(6922240).cast());
+        un_c3_32_640_640_r(act().at(2990080).cast(), w().at(4239360).cast(), w().at(11612160).cast(), act().at(4956160).cast(), act().at(6922240).cast());
         sync_cores();
         // down1.attn0
         un_gs_32_640(act().at(6922240).cast(), act().at(0).cast());
         sync_cores();
-        un_ga_32_640_none(act().at(6922240).cast(), act().at(0).cast(), w().at(13463552).cast(), w().at(13467648).cast(), w().at(5591040).cast(), act().at(8888320).cast());
+        un_ga_32_640_none(act().at(6922240).cast(), act().at(0).cast(), w().at(11616256).cast(), w().at(11620352).cast(), w().at(3743744).cast(), act().at(8888320).cast());
         sync_cores();
-        un_lr_32_640_640_b(act().at(8888320).cast(), w().at(13471744).cast(), w().at(14290944).cast(), act().at(10854400).cast());
+        un_lr_32_640_640_b(act().at(8980480).cast(), w().at(11624448).cast(), w().at(12443648).cast(), act().at(10946560).cast());
         sync_cores();
-        un_ln_32_640(act().at(10854400).cast(), w().at(14295040).cast(), w().at(14299136).cast(), act().at(12820480).cast());
+        un_ln_32_640(act().at(10854400).cast(), w().at(12447744).cast(), w().at(12451840).cast(), act().at(12820480).cast());
         sync_cores();
-        un_lr_32_640_768(act().at(12820480).cast(), w().at(14303232).cast(), act().at(14786560).cast());
+        un_lr_32_640_768(act().at(12912640).cast(), w().at(12455936).cast(), act().at(14897152).cast());
         sync_cores();
-        un_lr_32_640_768(act().at(12820480).cast(), w().at(15286272).cast(), act().at(17145856).cast());
+        un_lr_32_640_768(act().at(12912640).cast(), w().at(13438976).cast(), act().at(17256448).cast());
         sync_cores();
-        un_lr_32_640_768(act().at(12820480).cast(), w().at(16269312).cast(), act().at(19505152).cast());
+        un_lr_32_640_768(act().at(12912640).cast(), w().at(14422016).cast(), act().at(19615744).cast());
         sync_cores();
-        un_at_32_s(act().at(14786560).cast(), act().at(17145856).cast(), act().at(19505152).cast(), w().at(17252352).cast(), act().at(21864448).cast());
+        un_at_32_s(act().at(14786560).cast(), act().at(17145856).cast(), act().at(19505152).cast(), w().at(15405056).cast(), act().at(21864448).cast());
         sync_cores();
-        un_c1_32_768_640_r(act().at(21864448).cast(), w().at(17256448).cast(), w().at(18239488).cast(), act().at(10854400).cast(), act().at(24223744).cast());
+        un_c1_32_768_640_r(act().at(21864448).cast(), w().at(15409152).cast(), w().at(16392192).cast(), act().at(10854400).cast(), act().at(24223744).cast());
         sync_cores();
         // down1.attn0.cross
-        un_ln_32_640(act().at(24223744).cast(), w().at(18243584).cast(), w().at(18247680).cast(), act().at(26189824).cast());
+        un_ln_32_640(act().at(24223744).cast(), w().at(16396288).cast(), w().at(16400384).cast(), act().at(26189824).cast());
         sync_cores();
-        un_lr_32_640_768(act().at(26189824).cast(), w().at(18251776).cast(), act().at(28155904).cast());
+        un_lr_32_640_768(act().at(26281984).cast(), w().at(16404480).cast(), act().at(28266496).cast());
         sync_cores();
-        un_kv_768(in_x().at(6504448).cast(), w().at(19234816).cast(), act().at(30515200).cast());
+        un_kv_768(in_x().at(2244608).cast(), w().at(17387520).cast(), act().at(30515200).cast());
         sync_cores();
-        un_kv_768(in_x().at(6504448).cast(), w().at(20414464).cast(), act().at(30711808).cast());
+        un_kv_768(in_x().at(2244608).cast(), w().at(18567168).cast(), act().at(30711808).cast());
         sync_cores();
-        un_at_32_x(act().at(28155904).cast(), act().at(30515200).cast(), act().at(30711808).cast(), w().at(21594112).cast(), act().at(30908416).cast());
+        un_at_32_x(act().at(28155904).cast(), act().at(30515200).cast(), act().at(30711808).cast(), w().at(19746816).cast(), act().at(30908416).cast());
         sync_cores();
-        un_c1_32_768_640_r(act().at(30908416).cast(), w().at(21598208).cast(), w().at(22581248).cast(), act().at(24223744).cast(), act().at(33267712).cast());
+        un_c1_32_768_640_r(act().at(30908416).cast(), w().at(19750912).cast(), w().at(20733952).cast(), act().at(24223744).cast(), act().at(33267712).cast());
         sync_cores();
         // down1.attn0.ff
-        un_ln_32_640(act().at(33267712).cast(), w().at(22585344).cast(), w().at(22589440).cast(), act().at(35233792).cast());
+        un_ln_32_640(act().at(33267712).cast(), w().at(20738048).cast(), w().at(20742144).cast(), act().at(35233792).cast());
         sync_cores();
-        un_lr_32_640_2560_b(act().at(35233792).cast(), w().at(22593536).cast(), w().at(25870336).cast(), act().at(37199872).cast());
+        un_lr_32_640_2560_b(act().at(35325952).cast(), w().at(20746240).cast(), w().at(24023040).cast(), act().at(37568512).cast());
         sync_cores();
-        un_lr_32_640_2560_b(act().at(35233792).cast(), w().at(25882624).cast(), w().at(29159424).cast(), act().at(45064192).cast());
+        un_lr_32_640_2560_b(act().at(35325952).cast(), w().at(24035328).cast(), w().at(27312128).cast(), act().at(45432832).cast());
         sync_cores();
         un_gg_32(act().at(37199872).cast(), act().at(45064192).cast(), act().at(52928512).cast());
         sync_cores();
-        un_c1_32_2560_640_r_o768_q640(act().at(52928512).cast(), w().at(29171712).cast(), w().at(32448512).cast(), act().at(33267712).cast(), act().at(60792832).cast());
+        un_lr_32_2560_640_b(act().at(53297152).cast(), w().at(27324416).cast(), w().at(30601216).cast(), act().at(60884992).cast());
         sync_cores();
-        un_c1_32_768_640_r(act().at(60792832).cast(), w().at(32452608).cast(), w().at(33435648).cast(), act().at(6922240).cast(), out_y().at(6717440).cast());
+        un_ra_32_640_640_640_768(act().at(60792832).cast(), act().at(33267712).cast(), act().at(62758912).cast());
+        sync_cores();
+        un_c1_32_768_640_r(act().at(62758912).cast(), w().at(30605312).cast(), w().at(31588352).cast(), act().at(6922240).cast(), out_y().at(8028160).cast());
         sync_cores();
         // down1.res1
-        un_gs_32_640(out_y().at(6717440).cast(), act().at(0).cast());
+        un_gs_32_640(out_y().at(8028160).cast(), act().at(0).cast());
         sync_cores();
-        un_ga_32_640_silu(out_y().at(6717440).cast(), act().at(0).cast(), w().at(33439744).cast(), w().at(33443840).cast(), w().at(5591040).cast(), act().at(63152128).cast());
+        un_ga_32_640_silu(out_y().at(8028160).cast(), act().at(0).cast(), w().at(31592448).cast(), w().at(31596544).cast(), w().at(3743744).cast(), act().at(65118208).cast());
         sync_cores();
-        un_c3_32_640_640(act().at(63152128).cast(), w().at(33447936).cast(), in_x().at(5120).cast(), act().at(65118208).cast());
+        un_c3_32_640_640(act().at(65118208).cast(), w().at(31600640).cast(), in_x().at(5120).cast(), act().at(67084288).cast());
         sync_cores();
-        un_gs_32_640(act().at(65118208).cast(), act().at(0).cast());
+        un_gs_32_640(act().at(67084288).cast(), act().at(0).cast());
         sync_cores();
-        un_ga_32_640_silu(act().at(65118208).cast(), act().at(0).cast(), w().at(40820736).cast(), w().at(40824832).cast(), w().at(5591040).cast(), act().at(67084288).cast());
+        un_ga_32_640_silu(act().at(67084288).cast(), act().at(0).cast(), w().at(38973440).cast(), w().at(38977536).cast(), w().at(3743744).cast(), act().at(69050368).cast());
         sync_cores();
-        un_c3_32_640_640_r(act().at(67084288).cast(), w().at(40828928).cast(), w().at(48201728).cast(), out_y().at(6717440).cast(), act().at(69050368).cast());
+        un_c3_32_640_640_r(act().at(69050368).cast(), w().at(38981632).cast(), w().at(46354432).cast(), out_y().at(8028160).cast(), act().at(71016448).cast());
         sync_cores();
         // down1.attn1
-        un_gs_32_640(act().at(69050368).cast(), act().at(0).cast());
+        un_gs_32_640(act().at(71016448).cast(), act().at(0).cast());
         sync_cores();
-        un_ga_32_640_none(act().at(69050368).cast(), act().at(0).cast(), w().at(48205824).cast(), w().at(48209920).cast(), w().at(5591040).cast(), act().at(71016448).cast());
+        un_ga_32_640_none(act().at(71016448).cast(), act().at(0).cast(), w().at(46358528).cast(), w().at(46362624).cast(), w().at(3743744).cast(), act().at(72982528).cast());
         sync_cores();
-        un_lr_32_640_640_b(act().at(71016448).cast(), w().at(48214016).cast(), w().at(49033216).cast(), act().at(72982528).cast());
+        un_lr_32_640_640_b(act().at(73074688).cast(), w().at(46366720).cast(), w().at(47185920).cast(), act().at(75040768).cast());
         sync_cores();
-        un_ln_32_640(act().at(72982528).cast(), w().at(49037312).cast(), w().at(49041408).cast(), act().at(74948608).cast());
+        un_ln_32_640(act().at(74948608).cast(), w().at(47190016).cast(), w().at(47194112).cast(), act().at(76914688).cast());
         sync_cores();
-        un_lr_32_640_768(act().at(74948608).cast(), w().at(49045504).cast(), act().at(76914688).cast());
+        un_lr_32_640_768(act().at(77006848).cast(), w().at(47198208).cast(), act().at(78991360).cast());
         sync_cores();
-        un_lr_32_640_768(act().at(74948608).cast(), w().at(50028544).cast(), act().at(79273984).cast());
+        un_lr_32_640_768(act().at(77006848).cast(), w().at(48181248).cast(), act().at(81350656).cast());
         sync_cores();
-        un_lr_32_640_768(act().at(74948608).cast(), w().at(51011584).cast(), act().at(81633280).cast());
+        un_lr_32_640_768(act().at(77006848).cast(), w().at(49164288).cast(), act().at(83709952).cast());
         sync_cores();
-        un_at_32_s(act().at(76914688).cast(), act().at(79273984).cast(), act().at(81633280).cast(), w().at(17252352).cast(), act().at(83992576).cast());
+        un_at_32_s(act().at(78880768).cast(), act().at(81240064).cast(), act().at(83599360).cast(), w().at(15405056).cast(), act().at(85958656).cast());
         sync_cores();
-        un_c1_32_768_640_r(act().at(83992576).cast(), w().at(51994624).cast(), w().at(52977664).cast(), act().at(72982528).cast(), act().at(86351872).cast());
+        un_c1_32_768_640_r(act().at(85958656).cast(), w().at(50147328).cast(), w().at(51130368).cast(), act().at(74948608).cast(), act().at(88317952).cast());
         sync_cores();
         // down1.attn1.cross
-        un_ln_32_640(act().at(86351872).cast(), w().at(52981760).cast(), w().at(52985856).cast(), act().at(88317952).cast());
+        un_ln_32_640(act().at(88317952).cast(), w().at(51134464).cast(), w().at(51138560).cast(), act().at(90284032).cast());
         sync_cores();
-        un_lr_32_640_768(act().at(88317952).cast(), w().at(52989952).cast(), act().at(90284032).cast());
+        un_lr_32_640_768(act().at(90376192).cast(), w().at(51142656).cast(), act().at(92360704).cast());
         sync_cores();
-        un_kv_768(in_x().at(6504448).cast(), w().at(53972992).cast(), act().at(92643328).cast());
+        un_kv_768(in_x().at(2244608).cast(), w().at(52125696).cast(), act().at(94609408).cast());
         sync_cores();
-        un_kv_768(in_x().at(6504448).cast(), w().at(55152640).cast(), act().at(92839936).cast());
+        un_kv_768(in_x().at(2244608).cast(), w().at(53305344).cast(), act().at(94806016).cast());
         sync_cores();
-        un_at_32_x(act().at(90284032).cast(), act().at(92643328).cast(), act().at(92839936).cast(), w().at(21594112).cast(), act().at(93036544).cast());
+        un_at_32_x(act().at(92250112).cast(), act().at(94609408).cast(), act().at(94806016).cast(), w().at(19746816).cast(), act().at(95002624).cast());
         sync_cores();
-        un_c1_32_768_640_r(act().at(93036544).cast(), w().at(56332288).cast(), w().at(57315328).cast(), act().at(86351872).cast(), act().at(95395840).cast());
+        un_c1_32_768_640_r(act().at(95002624).cast(), w().at(54484992).cast(), w().at(55468032).cast(), act().at(88317952).cast(), act().at(97361920).cast());
         sync_cores();
         // down1.attn1.ff
-        un_ln_32_640(act().at(95395840).cast(), w().at(57319424).cast(), w().at(57323520).cast(), act().at(97361920).cast());
+        un_ln_32_640(act().at(97361920).cast(), w().at(55472128).cast(), w().at(55476224).cast(), act().at(99328000).cast());
         sync_cores();
-        un_lr_32_640_2560_b(act().at(97361920).cast(), w().at(57327616).cast(), w().at(60604416).cast(), act().at(99328000).cast());
+        un_lr_32_640_2560_b(act().at(99420160).cast(), w().at(55480320).cast(), w().at(58757120).cast(), act().at(101662720).cast());
         sync_cores();
-        un_lr_32_640_2560_b(act().at(97361920).cast(), w().at(60616704).cast(), w().at(63893504).cast(), act().at(107192320).cast());
+        un_lr_32_640_2560_b(act().at(99420160).cast(), w().at(58769408).cast(), w().at(62046208).cast(), act().at(109527040).cast());
         sync_cores();
-        un_gg_32(act().at(99328000).cast(), act().at(107192320).cast(), act().at(115056640).cast());
+        un_gg_32(act().at(101294080).cast(), act().at(109158400).cast(), act().at(117022720).cast());
         sync_cores();
-        un_c1_32_2560_640_r_o768_q640(act().at(115056640).cast(), w().at(63905792).cast(), w().at(67182592).cast(), act().at(95395840).cast(), act().at(122920960).cast());
+        un_lr_32_2560_640_b(act().at(117391360).cast(), w().at(62058496).cast(), w().at(65335296).cast(), act().at(124979200).cast());
         sync_cores();
-        un_c1_32_768_640_r(act().at(122920960).cast(), w().at(67186688).cast(), w().at(68169728).cast(), act().at(69050368).cast(), out_y().at(8683520).cast());
+        un_ra_32_640_640_640_768(act().at(124887040).cast(), act().at(97361920).cast(), act().at(126853120).cast());
+        sync_cores();
+        un_c1_32_768_640_r(act().at(126853120).cast(), w().at(65339392).cast(), w().at(66322432).cast(), act().at(71016448).cast(), out_y().at(9994240).cast());
         sync_cores();
         // down1.down
-        un_c3_16_640_640_s2(out_y().at(8683520).cast(), w().at(68173824).cast(), w().at(75546624).cast(), out_y().at(10649600).cast());
+        un_c3_16_640_640_s2(out_y().at(9994240).cast(), w().at(66326528).cast(), w().at(73699328).cast(), out_y().at(11960320).cast());
+        sync_cores();
+        // down2.res0
+        un_gs_16_640(out_y().at(11960320).cast(), act().at(0).cast());
+        sync_cores();
+        un_ga_16_640_silu(out_y().at(11960320).cast(), act().at(0).cast(), w().at(73703424).cast(), w().at(73707520).cast(), w().at(3743744).cast(), act().at(129212416).cast());
+        sync_cores();
+        un_c3_16_640_1280(act().at(129212416).cast(), w().at(73711616).cast(), in_x().at(7680).cast(), act().at(130031616).cast());
+        sync_cores();
+        un_gs_16_1280(act().at(130031616).cast(), act().at(0).cast());
+        sync_cores();
+        un_ga_16_1280_silu(act().at(130031616).cast(), act().at(0).cast(), w().at(88457216).cast(), w().at(88465408).cast(), w().at(88473600).cast(), act().at(131670016).cast());
+        sync_cores();
+        un_c1_16_640_1280(out_y().at(11960320).cast(), w().at(88637440).cast(), w().at(90275840).cast(), act().at(133308416).cast());
+        sync_cores();
+        un_lr_16_1280_1280_first(act().at(131718656).cast(), w().at(90284032).cast(), act().at(134946816).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(131721216).cast(), w().at(93560832).cast(), act().at(134946816).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(131723776).cast(), w().at(96837632).cast(), act().at(134946816).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(131769856).cast(), w().at(100114432).cast(), act().at(134946816).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(131772416).cast(), w().at(103391232).cast(), act().at(134946816).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(131774976).cast(), w().at(106668032).cast(), act().at(134946816).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(131821056).cast(), w().at(109944832).cast(), act().at(134946816).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(131823616).cast(), w().at(113221632).cast(), act().at(134946816).cast());
+        sync_cores();
+        un_lr_16_1280_1280_b_last(act().at(131826176).cast(), w().at(116498432).cast(), w().at(119775232).cast(), act().at(134946816).cast(), act().at(136687616).cast());
+        sync_cores();
+        un_ra_16_1280_1280_1280_1280(act().at(136585216).cast(), act().at(133308416).cast(), act().at(138223616).cast());
+        sync_cores();
+        // down2.attn0
+        un_gs_16_1280(act().at(138223616).cast(), act().at(0).cast());
+        sync_cores();
+        un_ga_16_1280_none(act().at(138223616).cast(), act().at(0).cast(), w().at(119783424).cast(), w().at(119791616).cast(), w().at(88473600).cast(), act().at(139862016).cast());
+        sync_cores();
+        un_lr_16_1280_1280_b(act().at(139964416).cast(), w().at(119799808).cast(), w().at(123076608).cast(), act().at(141602816).cast());
+        sync_cores();
+        un_ln_16_1280(act().at(141500416).cast(), w().at(123084800).cast(), w().at(123092992).cast(), act().at(143138816).cast());
+        sync_cores();
+        un_lr_16_1280_1280(act().at(143241216).cast(), w().at(123101184).cast(), act().at(144879616).cast());
+        sync_cores();
+        un_lr_16_1280_1280(act().at(143241216).cast(), w().at(126377984).cast(), act().at(146518016).cast());
+        sync_cores();
+        un_lr_16_1280_1280(act().at(143241216).cast(), w().at(129654784).cast(), act().at(148156416).cast());
+        sync_cores();
+        un_at_16_s(act().at(144777216).cast(), act().at(146415616).cast(), act().at(148054016).cast(), w().at(132931584).cast(), act().at(149692416).cast());
+        sync_cores();
+        un_lr_16_1280_1280_b(act().at(149794816).cast(), w().at(132935680).cast(), w().at(136212480).cast(), act().at(151433216).cast());
+        sync_cores();
+        un_ra_16_1280_1280_1280_1280(act().at(151330816).cast(), act().at(141500416).cast(), act().at(152969216).cast());
+        sync_cores();
+        // down2.attn0.cross
+        un_ln_16_1280(act().at(152969216).cast(), w().at(136220672).cast(), w().at(136228864).cast(), act().at(154607616).cast());
+        sync_cores();
+        un_lr_16_1280_1280(act().at(154710016).cast(), w().at(136237056).cast(), act().at(156348416).cast());
+        sync_cores();
+        un_kv_1280(in_x().at(2244608).cast(), w().at(139513856).cast(), act().at(157884416).cast());
+        sync_cores();
+        un_kv_1280(in_x().at(2244608).cast(), w().at(141479936).cast(), act().at(158212096).cast());
+        sync_cores();
+        un_at_16_x(act().at(156246016).cast(), act().at(157884416).cast(), act().at(158212096).cast(), w().at(19746816).cast(), act().at(158539776).cast());
+        sync_cores();
+        un_lr_16_1280_1280_b(act().at(158642176).cast(), w().at(143446016).cast(), w().at(146722816).cast(), act().at(160280576).cast());
+        sync_cores();
+        un_ra_16_1280_1280_1280_1280(act().at(160178176).cast(), act().at(152969216).cast(), act().at(161816576).cast());
+        sync_cores();
+        // down2.attn0.ff
+        un_ln_16_1280(act().at(161816576).cast(), w().at(146731008).cast(), w().at(146739200).cast(), act().at(163454976).cast());
+        sync_cores();
+        un_lr_16_1280_5120_b(act().at(163557376).cast(), w().at(146747392).cast(), w().at(159854592).cast(), act().at(165502976).cast());
+        sync_cores();
+        un_lr_16_1280_5120_b(act().at(163557376).cast(), w().at(159875072).cast(), w().at(172982272).cast(), act().at(172056576).cast());
+        sync_cores();
+        un_gg_16(act().at(165093376).cast(), act().at(171646976).cast(), act().at(178200576).cast());
+        sync_cores();
+        un_lr_16_5120_1280_b(act().at(178610176).cast(), w().at(173002752).cast(), w().at(186109952).cast(), act().at(184856576).cast());
+        sync_cores();
+        un_ra_16_1280_1280_1280_1280(act().at(184754176).cast(), act().at(161816576).cast(), act().at(186392576).cast());
+        sync_cores();
+        un_lr_16_1280_1280_b(act().at(186494976).cast(), w().at(186118144).cast(), w().at(189394944).cast(), act().at(188133376).cast());
+        sync_cores();
+        un_ra_16_1280_1280_1280_1280(act().at(188030976).cast(), act().at(138223616).cast(), out_y().at(12779520).cast());
+        sync_cores();
+        // down2.res1
+        un_gs_16_1280(out_y().at(12779520).cast(), act().at(0).cast());
+        sync_cores();
+        un_ga_16_1280_silu(out_y().at(12779520).cast(), act().at(0).cast(), w().at(189403136).cast(), w().at(189411328).cast(), w().at(88473600).cast(), act().at(189669376).cast());
+        sync_cores();
+        un_lr_16_1280_1280_first(act().at(189718016).cast(), w().at(189419520).cast(), act().at(191307776).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(189720576).cast(), w().at(192696320).cast(), act().at(191307776).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(189723136).cast(), w().at(195973120).cast(), act().at(191307776).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(189769216).cast(), w().at(199249920).cast(), act().at(191307776).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(189771776).cast(), w().at(202526720).cast(), act().at(191307776).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(189774336).cast(), w().at(205803520).cast(), act().at(191307776).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(189820416).cast(), w().at(209080320).cast(), act().at(191307776).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(189822976).cast(), w().at(212357120).cast(), act().at(191307776).cast());
+        sync_cores();
+        un_lr_16_1280_1280_b_last(act().at(189825536).cast(), w().at(215633920).cast(), in_x().at(12800).cast(), act().at(191307776).cast(), act().at(193048576).cast());
+        sync_cores();
+        un_gs_16_1280(act().at(192946176).cast(), act().at(0).cast());
+        sync_cores();
+        un_ga_16_1280_silu(act().at(192946176).cast(), act().at(0).cast(), w().at(218910720).cast(), w().at(218918912).cast(), w().at(88473600).cast(), act().at(194584576).cast());
+        sync_cores();
+        un_lr_16_1280_1280_first(act().at(194633216).cast(), w().at(218927104).cast(), act().at(196222976).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(194635776).cast(), w().at(222203904).cast(), act().at(196222976).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(194638336).cast(), w().at(225480704).cast(), act().at(196222976).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(194684416).cast(), w().at(228757504).cast(), act().at(196222976).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(194686976).cast(), w().at(232034304).cast(), act().at(196222976).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(194689536).cast(), w().at(235311104).cast(), act().at(196222976).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(194735616).cast(), w().at(238587904).cast(), act().at(196222976).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(194738176).cast(), w().at(241864704).cast(), act().at(196222976).cast());
+        sync_cores();
+        un_lr_16_1280_1280_b_last(act().at(194740736).cast(), w().at(245141504).cast(), w().at(248418304).cast(), act().at(196222976).cast(), act().at(197963776).cast());
+        sync_cores();
+        un_ra_16_1280_1280_1280_1280(act().at(197861376).cast(), out_y().at(12779520).cast(), act().at(199499776).cast());
+        sync_cores();
+        // down2.attn1
+        un_gs_16_1280(act().at(199499776).cast(), act().at(0).cast());
+        sync_cores();
+        un_ga_16_1280_none(act().at(199499776).cast(), act().at(0).cast(), w().at(248426496).cast(), w().at(248434688).cast(), w().at(88473600).cast(), act().at(201138176).cast());
+        sync_cores();
+        un_lr_16_1280_1280_b(act().at(201240576).cast(), w().at(248442880).cast(), w().at(251719680).cast(), act().at(202878976).cast());
+        sync_cores();
+        un_ln_16_1280(act().at(202776576).cast(), w().at(251727872).cast(), w().at(251736064).cast(), act().at(204414976).cast());
+        sync_cores();
+        un_lr_16_1280_1280(act().at(204517376).cast(), w().at(251744256).cast(), act().at(206155776).cast());
+        sync_cores();
+        un_lr_16_1280_1280(act().at(204517376).cast(), w().at(255021056).cast(), act().at(207794176).cast());
+        sync_cores();
+        un_lr_16_1280_1280(act().at(204517376).cast(), w().at(258297856).cast(), act().at(209432576).cast());
+        sync_cores();
+        un_at_16_s(act().at(206053376).cast(), act().at(207691776).cast(), act().at(209330176).cast(), w().at(132931584).cast(), act().at(210968576).cast());
+        sync_cores();
+        un_lr_16_1280_1280_b(act().at(211070976).cast(), w().at(261574656).cast(), w().at(264851456).cast(), act().at(212709376).cast());
+        sync_cores();
+        un_ra_16_1280_1280_1280_1280(act().at(212606976).cast(), act().at(202776576).cast(), act().at(214245376).cast());
+        sync_cores();
+        // down2.attn1.cross
+        un_ln_16_1280(act().at(214245376).cast(), w().at(264859648).cast(), w().at(264867840).cast(), act().at(215883776).cast());
+        sync_cores();
+        un_lr_16_1280_1280(act().at(215986176).cast(), w().at(264876032).cast(), act().at(217624576).cast());
+        sync_cores();
+        un_kv_1280(in_x().at(2244608).cast(), w().at(268152832).cast(), act().at(219160576).cast());
+        sync_cores();
+        un_kv_1280(in_x().at(2244608).cast(), w().at(270118912).cast(), act().at(219488256).cast());
+        sync_cores();
+        un_at_16_x(act().at(217522176).cast(), act().at(219160576).cast(), act().at(219488256).cast(), w().at(19746816).cast(), act().at(219815936).cast());
+        sync_cores();
+        un_lr_16_1280_1280_b(act().at(219918336).cast(), w().at(272084992).cast(), w().at(275361792).cast(), act().at(221556736).cast());
+        sync_cores();
+        un_ra_16_1280_1280_1280_1280(act().at(221454336).cast(), act().at(214245376).cast(), act().at(223092736).cast());
+        sync_cores();
+        // down2.attn1.ff
+        un_ln_16_1280(act().at(223092736).cast(), w().at(275369984).cast(), w().at(275378176).cast(), act().at(224731136).cast());
+        sync_cores();
+        un_lr_16_1280_5120_b(act().at(224833536).cast(), w().at(275386368).cast(), w().at(288493568).cast(), act().at(226779136).cast());
+        sync_cores();
+        un_lr_16_1280_5120_b(act().at(224833536).cast(), w().at(288514048).cast(), w().at(301621248).cast(), act().at(233332736).cast());
+        sync_cores();
+        un_gg_16(act().at(226369536).cast(), act().at(232923136).cast(), act().at(239476736).cast());
+        sync_cores();
+        un_lr_16_5120_1280_b(act().at(239886336).cast(), w().at(301641728).cast(), w().at(314748928).cast(), act().at(246132736).cast());
+        sync_cores();
+        un_ra_16_1280_1280_1280_1280(act().at(246030336).cast(), act().at(223092736).cast(), act().at(247668736).cast());
+        sync_cores();
+        un_lr_16_1280_1280_b(act().at(247771136).cast(), w().at(314757120).cast(), w().at(318033920).cast(), act().at(249409536).cast());
+        sync_cores();
+        un_ra_16_1280_1280_1280_1280(act().at(249307136).cast(), act().at(199499776).cast(), out_y().at(14417920).cast());
         sync_cores();
     }
 }
 
-/// s5：down2.res0、down2.attn0、down2.attn0.cross、down2.attn0.ff
+/// s5：down2.down、down3.res0、down3.res1、mid.res0、mid.attn、mid.attn.cross、mid.attn.ff、mid.res1、up0.res0、up0.res1、up0.res2、up0.up、up1.res0、up1.attn0、up1.attn0.cross、up1.attn0.ff、up1.res1、up1.attn1、up1.attn1.cross、up1.attn1.ff、up1.res2、up1.attn2、up1.attn2.cross、up1.attn2.ff、up1.up、up2.res0
 #[cfg(feature = "s5")]
 mod s5 {
     use super::*;
     npu::decls! {
-        in_x: input, bytes = 2113536;
-        out_y: output, bytes = 3276800;
-        w: weights, bytes = 115793920;
-        act: workspace, bytes = 50675712;
+        in_x: input, bytes = 12599296;
+        out_y: output, bytes = 3932160;
+        w: weights, bytes = 1189982208;
+        act: workspace, bytes = 331333632;
     }
     #[npu::program(chiplets = 1, cores = 2)]
     pub fn step() {
         // 入口第一步：@act 与 out_y 整块清零（两核各清一半）：边框、token 的补齐行、余量都靠它是 0
         if core_rank() == 0 {
-            un_zero(act().cast(), 1546);
-            un_zero(out_y().cast(), 100);
+            un_zero(act().cast(), 10111);
+            un_zero(out_y().cast(), 120);
         } else {
-            un_zero(act().at(25329664).cast(), 1547);
-            un_zero(out_y().at(1638400).cast(), 100);
-        }
-        sync_cores();
-        // ── 第 0 路（有提示词）──
-        // down2.res0
-        un_gs_16_640(in_x().at(81920).cast(), act().at(0).cast());
-        sync_cores();
-        un_ga_16_640_silu(in_x().at(81920).cast(), act().at(0).cast(), w().at(0).cast(), w().at(4096).cast(), w().at(8192).cast(), act().at(40960).cast());
-        sync_cores();
-        un_c3_16_640_1280(act().at(40960).cast(), w().at(90112).cast(), in_x().at(7680).cast(), act().at(860160).cast());
-        sync_cores();
-        un_gs_16_1280(act().at(860160).cast(), act().at(0).cast());
-        sync_cores();
-        un_ga_16_1280_silu(act().at(860160).cast(), act().at(0).cast(), w().at(14835712).cast(), w().at(14843904).cast(), w().at(14852096).cast(), act().at(2498560).cast());
-        sync_cores();
-        un_c1_16_640_1280(in_x().at(81920).cast(), w().at(15015936).cast(), w().at(16654336).cast(), act().at(4136960).cast());
-        sync_cores();
-        un_c3_16_1280_1280_r(act().at(2498560).cast(), w().at(16662528).cast(), w().at(46153728).cast(), act().at(4136960).cast(), act().at(5775360).cast());
-        sync_cores();
-        // down2.attn0
-        un_gs_16_1280(act().at(5775360).cast(), act().at(0).cast());
-        sync_cores();
-        un_ga_16_1280_none(act().at(5775360).cast(), act().at(0).cast(), w().at(46161920).cast(), w().at(46170112).cast(), w().at(14852096).cast(), act().at(7413760).cast());
-        sync_cores();
-        un_c1_16_1280_1280(act().at(7413760).cast(), w().at(46178304).cast(), w().at(49455104).cast(), act().at(9052160).cast());
-        sync_cores();
-        un_ln_16_1280(act().at(9052160).cast(), w().at(49463296).cast(), w().at(49471488).cast(), act().at(10690560).cast());
-        sync_cores();
-        un_c1_16_1280_1280(act().at(10690560).cast(), w().at(49479680).cast(), w().at(52756480).cast(), act().at(12328960).cast());
-        sync_cores();
-        un_c1_16_1280_1280(act().at(10690560).cast(), w().at(52764672).cast(), w().at(52756480).cast(), act().at(13967360).cast());
-        sync_cores();
-        un_c1_16_1280_1280(act().at(10690560).cast(), w().at(56041472).cast(), w().at(52756480).cast(), act().at(15605760).cast());
-        sync_cores();
-        un_at_16_s(act().at(12328960).cast(), act().at(13967360).cast(), act().at(15605760).cast(), w().at(59318272).cast(), act().at(17244160).cast());
-        sync_cores();
-        un_c1_16_1280_1280_r(act().at(17244160).cast(), w().at(59322368).cast(), w().at(62599168).cast(), act().at(9052160).cast(), act().at(18882560).cast());
-        sync_cores();
-        // down2.attn0.cross
-        un_ln_16_1280(act().at(18882560).cast(), w().at(62607360).cast(), w().at(62615552).cast(), act().at(20520960).cast());
-        sync_cores();
-        un_c1_16_1280_1280(act().at(20520960).cast(), w().at(62623744).cast(), w().at(52756480).cast(), act().at(22159360).cast());
-        sync_cores();
-        un_kv_1280(in_x().at(901120).cast(), w().at(65900544).cast(), act().at(23797760).cast());
-        sync_cores();
-        un_kv_1280(in_x().at(901120).cast(), w().at(67866624).cast(), act().at(24125440).cast());
-        sync_cores();
-        un_at_16_x(act().at(22159360).cast(), act().at(23797760).cast(), act().at(24125440).cast(), w().at(69832704).cast(), act().at(24453120).cast());
-        sync_cores();
-        un_c1_16_1280_1280_r(act().at(24453120).cast(), w().at(69836800).cast(), w().at(73113600).cast(), act().at(18882560).cast(), act().at(26091520).cast());
-        sync_cores();
-        // down2.attn0.ff
-        un_ln_16_1280(act().at(26091520).cast(), w().at(73121792).cast(), w().at(73129984).cast(), act().at(27729920).cast());
-        sync_cores();
-        un_c1_16_1280_5120(act().at(27729920).cast(), w().at(73138176).cast(), w().at(86245376).cast(), act().at(29368320).cast());
-        sync_cores();
-        un_c1_16_1280_5120(act().at(27729920).cast(), w().at(86265856).cast(), w().at(99373056).cast(), act().at(35921920).cast());
-        sync_cores();
-        un_gg_16(act().at(29368320).cast(), act().at(35921920).cast(), act().at(42475520).cast());
-        sync_cores();
-        un_c1_16_5120_1280_r(act().at(42475520).cast(), w().at(99393536).cast(), w().at(112500736).cast(), act().at(26091520).cast(), act().at(49029120).cast());
-        sync_cores();
-        un_c1_16_1280_1280_r(act().at(49029120).cast(), w().at(112508928).cast(), w().at(115785728).cast(), act().at(5775360).cast(), out_y().at(0).cast());
-        sync_cores();
-        // ── 第 1 路（空提示词）──
-        // down2.res0
-        un_gs_16_640(in_x().at(1097728).cast(), act().at(0).cast());
-        sync_cores();
-        un_ga_16_640_silu(in_x().at(1097728).cast(), act().at(0).cast(), w().at(0).cast(), w().at(4096).cast(), w().at(8192).cast(), act().at(40960).cast());
-        sync_cores();
-        un_c3_16_640_1280(act().at(40960).cast(), w().at(90112).cast(), in_x().at(7680).cast(), act().at(860160).cast());
-        sync_cores();
-        un_gs_16_1280(act().at(860160).cast(), act().at(0).cast());
-        sync_cores();
-        un_ga_16_1280_silu(act().at(860160).cast(), act().at(0).cast(), w().at(14835712).cast(), w().at(14843904).cast(), w().at(14852096).cast(), act().at(2498560).cast());
-        sync_cores();
-        un_c1_16_640_1280(in_x().at(1097728).cast(), w().at(15015936).cast(), w().at(16654336).cast(), act().at(4136960).cast());
-        sync_cores();
-        un_c3_16_1280_1280_r(act().at(2498560).cast(), w().at(16662528).cast(), w().at(46153728).cast(), act().at(4136960).cast(), act().at(5775360).cast());
-        sync_cores();
-        // down2.attn0
-        un_gs_16_1280(act().at(5775360).cast(), act().at(0).cast());
-        sync_cores();
-        un_ga_16_1280_none(act().at(5775360).cast(), act().at(0).cast(), w().at(46161920).cast(), w().at(46170112).cast(), w().at(14852096).cast(), act().at(7413760).cast());
-        sync_cores();
-        un_c1_16_1280_1280(act().at(7413760).cast(), w().at(46178304).cast(), w().at(49455104).cast(), act().at(9052160).cast());
-        sync_cores();
-        un_ln_16_1280(act().at(9052160).cast(), w().at(49463296).cast(), w().at(49471488).cast(), act().at(10690560).cast());
-        sync_cores();
-        un_c1_16_1280_1280(act().at(10690560).cast(), w().at(49479680).cast(), w().at(52756480).cast(), act().at(12328960).cast());
-        sync_cores();
-        un_c1_16_1280_1280(act().at(10690560).cast(), w().at(52764672).cast(), w().at(52756480).cast(), act().at(13967360).cast());
-        sync_cores();
-        un_c1_16_1280_1280(act().at(10690560).cast(), w().at(56041472).cast(), w().at(52756480).cast(), act().at(15605760).cast());
-        sync_cores();
-        un_at_16_s(act().at(12328960).cast(), act().at(13967360).cast(), act().at(15605760).cast(), w().at(59318272).cast(), act().at(17244160).cast());
-        sync_cores();
-        un_c1_16_1280_1280_r(act().at(17244160).cast(), w().at(59322368).cast(), w().at(62599168).cast(), act().at(9052160).cast(), act().at(18882560).cast());
-        sync_cores();
-        // down2.attn0.cross
-        un_ln_16_1280(act().at(18882560).cast(), w().at(62607360).cast(), w().at(62615552).cast(), act().at(20520960).cast());
-        sync_cores();
-        un_c1_16_1280_1280(act().at(20520960).cast(), w().at(62623744).cast(), w().at(52756480).cast(), act().at(22159360).cast());
-        sync_cores();
-        un_kv_1280(in_x().at(1916928).cast(), w().at(65900544).cast(), act().at(23797760).cast());
-        sync_cores();
-        un_kv_1280(in_x().at(1916928).cast(), w().at(67866624).cast(), act().at(24125440).cast());
-        sync_cores();
-        un_at_16_x(act().at(22159360).cast(), act().at(23797760).cast(), act().at(24125440).cast(), w().at(69832704).cast(), act().at(24453120).cast());
-        sync_cores();
-        un_c1_16_1280_1280_r(act().at(24453120).cast(), w().at(69836800).cast(), w().at(73113600).cast(), act().at(18882560).cast(), act().at(26091520).cast());
-        sync_cores();
-        // down2.attn0.ff
-        un_ln_16_1280(act().at(26091520).cast(), w().at(73121792).cast(), w().at(73129984).cast(), act().at(27729920).cast());
-        sync_cores();
-        un_c1_16_1280_5120(act().at(27729920).cast(), w().at(73138176).cast(), w().at(86245376).cast(), act().at(29368320).cast());
-        sync_cores();
-        un_c1_16_1280_5120(act().at(27729920).cast(), w().at(86265856).cast(), w().at(99373056).cast(), act().at(35921920).cast());
-        sync_cores();
-        un_gg_16(act().at(29368320).cast(), act().at(35921920).cast(), act().at(42475520).cast());
-        sync_cores();
-        un_c1_16_5120_1280_r(act().at(42475520).cast(), w().at(99393536).cast(), w().at(112500736).cast(), act().at(26091520).cast(), act().at(49029120).cast());
-        sync_cores();
-        un_c1_16_1280_1280_r(act().at(49029120).cast(), w().at(112508928).cast(), w().at(115785728).cast(), act().at(5775360).cast(), out_y().at(1638400).cast());
-        sync_cores();
-    }
-}
-
-/// s6：down2.res1、down2.attn1、down2.attn1.cross、down2.attn1.ff
-#[cfg(feature = "s6")]
-mod s6 {
-    use super::*;
-    npu::decls! {
-        in_x: input, bytes = 3751936;
-        out_y: output, bytes = 3276800;
-        w: weights, bytes = 128819200;
-        act: workspace, bytes = 49856512;
-    }
-    #[npu::program(chiplets = 1, cores = 2)]
-    pub fn step() {
-        // 入口第一步：@act 与 out_y 整块清零（两核各清一半）：边框、token 的补齐行、余量都靠它是 0
-        if core_rank() == 0 {
-            un_zero(act().cast(), 1521);
-            un_zero(out_y().cast(), 100);
-        } else {
-            un_zero(act().at(24920064).cast(), 1522);
-            un_zero(out_y().at(1638400).cast(), 100);
-        }
-        sync_cores();
-        // ── 第 0 路（有提示词）──
-        // down2.res1
-        un_gs_16_1280(in_x().at(81920).cast(), act().at(0).cast());
-        sync_cores();
-        un_ga_16_1280_silu(in_x().at(81920).cast(), act().at(0).cast(), w().at(0).cast(), w().at(8192).cast(), w().at(16384).cast(), act().at(40960).cast());
-        sync_cores();
-        un_c3_16_1280_1280(act().at(40960).cast(), w().at(180224).cast(), in_x().at(12800).cast(), act().at(1679360).cast());
-        sync_cores();
-        un_gs_16_1280(act().at(1679360).cast(), act().at(0).cast());
-        sync_cores();
-        un_ga_16_1280_silu(act().at(1679360).cast(), act().at(0).cast(), w().at(29671424).cast(), w().at(29679616).cast(), w().at(16384).cast(), act().at(3317760).cast());
-        sync_cores();
-        un_c3_16_1280_1280_r(act().at(3317760).cast(), w().at(29687808).cast(), w().at(59179008).cast(), in_x().at(81920).cast(), act().at(4956160).cast());
-        sync_cores();
-        // down2.attn1
-        un_gs_16_1280(act().at(4956160).cast(), act().at(0).cast());
-        sync_cores();
-        un_ga_16_1280_none(act().at(4956160).cast(), act().at(0).cast(), w().at(59187200).cast(), w().at(59195392).cast(), w().at(16384).cast(), act().at(6594560).cast());
-        sync_cores();
-        un_c1_16_1280_1280(act().at(6594560).cast(), w().at(59203584).cast(), w().at(62480384).cast(), act().at(8232960).cast());
-        sync_cores();
-        un_ln_16_1280(act().at(8232960).cast(), w().at(62488576).cast(), w().at(62496768).cast(), act().at(9871360).cast());
-        sync_cores();
-        un_c1_16_1280_1280(act().at(9871360).cast(), w().at(62504960).cast(), w().at(65781760).cast(), act().at(11509760).cast());
-        sync_cores();
-        un_c1_16_1280_1280(act().at(9871360).cast(), w().at(65789952).cast(), w().at(65781760).cast(), act().at(13148160).cast());
-        sync_cores();
-        un_c1_16_1280_1280(act().at(9871360).cast(), w().at(69066752).cast(), w().at(65781760).cast(), act().at(14786560).cast());
-        sync_cores();
-        un_at_16_s(act().at(11509760).cast(), act().at(13148160).cast(), act().at(14786560).cast(), w().at(72343552).cast(), act().at(16424960).cast());
-        sync_cores();
-        un_c1_16_1280_1280_r(act().at(16424960).cast(), w().at(72347648).cast(), w().at(75624448).cast(), act().at(8232960).cast(), act().at(18063360).cast());
-        sync_cores();
-        // down2.attn1.cross
-        un_ln_16_1280(act().at(18063360).cast(), w().at(75632640).cast(), w().at(75640832).cast(), act().at(19701760).cast());
-        sync_cores();
-        un_c1_16_1280_1280(act().at(19701760).cast(), w().at(75649024).cast(), w().at(65781760).cast(), act().at(21340160).cast());
-        sync_cores();
-        un_kv_1280(in_x().at(1720320).cast(), w().at(78925824).cast(), act().at(22978560).cast());
-        sync_cores();
-        un_kv_1280(in_x().at(1720320).cast(), w().at(80891904).cast(), act().at(23306240).cast());
-        sync_cores();
-        un_at_16_x(act().at(21340160).cast(), act().at(22978560).cast(), act().at(23306240).cast(), w().at(82857984).cast(), act().at(23633920).cast());
-        sync_cores();
-        un_c1_16_1280_1280_r(act().at(23633920).cast(), w().at(82862080).cast(), w().at(86138880).cast(), act().at(18063360).cast(), act().at(25272320).cast());
-        sync_cores();
-        // down2.attn1.ff
-        un_ln_16_1280(act().at(25272320).cast(), w().at(86147072).cast(), w().at(86155264).cast(), act().at(26910720).cast());
-        sync_cores();
-        un_c1_16_1280_5120(act().at(26910720).cast(), w().at(86163456).cast(), w().at(99270656).cast(), act().at(28549120).cast());
-        sync_cores();
-        un_c1_16_1280_5120(act().at(26910720).cast(), w().at(99291136).cast(), w().at(112398336).cast(), act().at(35102720).cast());
-        sync_cores();
-        un_gg_16(act().at(28549120).cast(), act().at(35102720).cast(), act().at(41656320).cast());
-        sync_cores();
-        un_c1_16_5120_1280_r(act().at(41656320).cast(), w().at(112418816).cast(), w().at(125526016).cast(), act().at(25272320).cast(), act().at(48209920).cast());
-        sync_cores();
-        un_c1_16_1280_1280_r(act().at(48209920).cast(), w().at(125534208).cast(), w().at(128811008).cast(), act().at(4956160).cast(), out_y().at(0).cast());
-        sync_cores();
-        // ── 第 1 路（空提示词）──
-        // down2.res1
-        un_gs_16_1280(in_x().at(1916928).cast(), act().at(0).cast());
-        sync_cores();
-        un_ga_16_1280_silu(in_x().at(1916928).cast(), act().at(0).cast(), w().at(0).cast(), w().at(8192).cast(), w().at(16384).cast(), act().at(40960).cast());
-        sync_cores();
-        un_c3_16_1280_1280(act().at(40960).cast(), w().at(180224).cast(), in_x().at(12800).cast(), act().at(1679360).cast());
-        sync_cores();
-        un_gs_16_1280(act().at(1679360).cast(), act().at(0).cast());
-        sync_cores();
-        un_ga_16_1280_silu(act().at(1679360).cast(), act().at(0).cast(), w().at(29671424).cast(), w().at(29679616).cast(), w().at(16384).cast(), act().at(3317760).cast());
-        sync_cores();
-        un_c3_16_1280_1280_r(act().at(3317760).cast(), w().at(29687808).cast(), w().at(59179008).cast(), in_x().at(1916928).cast(), act().at(4956160).cast());
-        sync_cores();
-        // down2.attn1
-        un_gs_16_1280(act().at(4956160).cast(), act().at(0).cast());
-        sync_cores();
-        un_ga_16_1280_none(act().at(4956160).cast(), act().at(0).cast(), w().at(59187200).cast(), w().at(59195392).cast(), w().at(16384).cast(), act().at(6594560).cast());
-        sync_cores();
-        un_c1_16_1280_1280(act().at(6594560).cast(), w().at(59203584).cast(), w().at(62480384).cast(), act().at(8232960).cast());
-        sync_cores();
-        un_ln_16_1280(act().at(8232960).cast(), w().at(62488576).cast(), w().at(62496768).cast(), act().at(9871360).cast());
-        sync_cores();
-        un_c1_16_1280_1280(act().at(9871360).cast(), w().at(62504960).cast(), w().at(65781760).cast(), act().at(11509760).cast());
-        sync_cores();
-        un_c1_16_1280_1280(act().at(9871360).cast(), w().at(65789952).cast(), w().at(65781760).cast(), act().at(13148160).cast());
-        sync_cores();
-        un_c1_16_1280_1280(act().at(9871360).cast(), w().at(69066752).cast(), w().at(65781760).cast(), act().at(14786560).cast());
-        sync_cores();
-        un_at_16_s(act().at(11509760).cast(), act().at(13148160).cast(), act().at(14786560).cast(), w().at(72343552).cast(), act().at(16424960).cast());
-        sync_cores();
-        un_c1_16_1280_1280_r(act().at(16424960).cast(), w().at(72347648).cast(), w().at(75624448).cast(), act().at(8232960).cast(), act().at(18063360).cast());
-        sync_cores();
-        // down2.attn1.cross
-        un_ln_16_1280(act().at(18063360).cast(), w().at(75632640).cast(), w().at(75640832).cast(), act().at(19701760).cast());
-        sync_cores();
-        un_c1_16_1280_1280(act().at(19701760).cast(), w().at(75649024).cast(), w().at(65781760).cast(), act().at(21340160).cast());
-        sync_cores();
-        un_kv_1280(in_x().at(3555328).cast(), w().at(78925824).cast(), act().at(22978560).cast());
-        sync_cores();
-        un_kv_1280(in_x().at(3555328).cast(), w().at(80891904).cast(), act().at(23306240).cast());
-        sync_cores();
-        un_at_16_x(act().at(21340160).cast(), act().at(22978560).cast(), act().at(23306240).cast(), w().at(82857984).cast(), act().at(23633920).cast());
-        sync_cores();
-        un_c1_16_1280_1280_r(act().at(23633920).cast(), w().at(82862080).cast(), w().at(86138880).cast(), act().at(18063360).cast(), act().at(25272320).cast());
-        sync_cores();
-        // down2.attn1.ff
-        un_ln_16_1280(act().at(25272320).cast(), w().at(86147072).cast(), w().at(86155264).cast(), act().at(26910720).cast());
-        sync_cores();
-        un_c1_16_1280_5120(act().at(26910720).cast(), w().at(86163456).cast(), w().at(99270656).cast(), act().at(28549120).cast());
-        sync_cores();
-        un_c1_16_1280_5120(act().at(26910720).cast(), w().at(99291136).cast(), w().at(112398336).cast(), act().at(35102720).cast());
-        sync_cores();
-        un_gg_16(act().at(28549120).cast(), act().at(35102720).cast(), act().at(41656320).cast());
-        sync_cores();
-        un_c1_16_5120_1280_r(act().at(41656320).cast(), w().at(112418816).cast(), w().at(125526016).cast(), act().at(25272320).cast(), act().at(48209920).cast());
-        sync_cores();
-        un_c1_16_1280_1280_r(act().at(48209920).cast(), w().at(125534208).cast(), w().at(128811008).cast(), act().at(4956160).cast(), out_y().at(1638400).cast());
-        sync_cores();
-    }
-}
-
-/// s7：down2.down、down3.res0、down3.res1、mid.res0、mid.attn、mid.attn.cross、mid.attn.ff、mid.res1、up0.res0、up0.res1、up0.res2
-#[cfg(feature = "s7")]
-mod s7 {
-    use super::*;
-    npu::decls! {
-        in_x: input, bytes = 3751936;
-        out_y: output, bytes = 1966080;
-        w: weights, bytes = 620969984;
-        act: workspace, bytes = 66568192;
-    }
-    #[npu::program(chiplets = 1, cores = 2)]
-    pub fn step() {
-        // 入口第一步：@act 与 out_y 整块清零（两核各清一半）：边框、token 的补齐行、余量都靠它是 0
-        if core_rank() == 0 {
-            un_zero(act().cast(), 2031);
-            un_zero(out_y().cast(), 60);
-        } else {
-            un_zero(act().at(33275904).cast(), 2032);
-            un_zero(out_y().at(983040).cast(), 60);
+            un_zero(act().at(165658624).cast(), 10112);
+            un_zero(out_y().at(1966080).cast(), 120);
         }
         sync_cores();
         // ── 第 0 路（有提示词）──
@@ -936,1551 +1036,2125 @@ mod s7 {
         sync_cores();
         un_ga_8_1280_silu(act().at(0).cast(), act().at(983040).cast(), w().at(29499392).cast(), w().at(29507584).cast(), w().at(29515776).cast(), act().at(1024000).cast());
         sync_cores();
-        un_c3_8_1280_1280(act().at(1024000).cast(), w().at(29679616).cast(), in_x().at(17920).cast(), act().at(2007040).cast());
+        un_lr_8_1280_1280_first(act().at(1052160).cast(), w().at(29679616).cast(), act().at(2007040).cast());
         sync_cores();
-        un_gs_8_1280(act().at(2007040).cast(), act().at(983040).cast());
+        un_lr_8_1280_1280_mid(act().at(1054720).cast(), w().at(32956416).cast(), act().at(2007040).cast());
         sync_cores();
-        un_ga_8_1280_silu(act().at(2007040).cast(), act().at(983040).cast(), w().at(59170816).cast(), w().at(59179008).cast(), w().at(29515776).cast(), act().at(2990080).cast());
+        un_lr_8_1280_1280_mid(act().at(1057280).cast(), w().at(36233216).cast(), act().at(2007040).cast());
         sync_cores();
-        un_c3_8_1280_1280_r(act().at(2990080).cast(), w().at(59187200).cast(), w().at(88678400).cast(), act().at(0).cast(), act().at(3973120).cast());
+        un_lr_8_1280_1280_mid(act().at(1082880).cast(), w().at(39510016).cast(), act().at(2007040).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(1085440).cast(), w().at(42786816).cast(), act().at(2007040).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(1088000).cast(), w().at(46063616).cast(), act().at(2007040).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(1113600).cast(), w().at(49340416).cast(), act().at(2007040).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(1116160).cast(), w().at(52617216).cast(), act().at(2007040).cast());
+        sync_cores();
+        un_lr_8_1280_1280_b_last(act().at(1118720).cast(), w().at(55894016).cast(), in_x().at(17920).cast(), act().at(2007040).cast(), act().at(2560000).cast());
+        sync_cores();
+        un_gs_8_1280(act().at(2498560).cast(), act().at(983040).cast());
+        sync_cores();
+        un_ga_8_1280_silu(act().at(2498560).cast(), act().at(983040).cast(), w().at(59170816).cast(), w().at(59179008).cast(), w().at(29515776).cast(), act().at(3481600).cast());
+        sync_cores();
+        un_lr_8_1280_1280_first(act().at(3509760).cast(), w().at(59187200).cast(), act().at(4464640).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(3512320).cast(), w().at(62464000).cast(), act().at(4464640).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(3514880).cast(), w().at(65740800).cast(), act().at(4464640).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(3540480).cast(), w().at(69017600).cast(), act().at(4464640).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(3543040).cast(), w().at(72294400).cast(), act().at(4464640).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(3545600).cast(), w().at(75571200).cast(), act().at(4464640).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(3571200).cast(), w().at(78848000).cast(), act().at(4464640).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(3573760).cast(), w().at(82124800).cast(), act().at(4464640).cast());
+        sync_cores();
+        un_lr_8_1280_1280_b_last(act().at(3576320).cast(), w().at(85401600).cast(), w().at(88678400).cast(), act().at(4464640).cast(), act().at(5017600).cast());
+        sync_cores();
+        un_ra_8_1280_1280_1280_1280(act().at(4956160).cast(), act().at(0).cast(), act().at(5939200).cast());
         sync_cores();
         // down3.res1
-        un_gs_8_1280(act().at(3973120).cast(), act().at(983040).cast());
-        sync_cores();
-        un_ga_8_1280_silu(act().at(3973120).cast(), act().at(983040).cast(), w().at(88686592).cast(), w().at(88694784).cast(), w().at(29515776).cast(), act().at(4956160).cast());
-        sync_cores();
-        un_c3_8_1280_1280(act().at(4956160).cast(), w().at(88702976).cast(), in_x().at(23040).cast(), act().at(5939200).cast());
-        sync_cores();
         un_gs_8_1280(act().at(5939200).cast(), act().at(983040).cast());
         sync_cores();
-        un_ga_8_1280_silu(act().at(5939200).cast(), act().at(983040).cast(), w().at(118194176).cast(), w().at(118202368).cast(), w().at(29515776).cast(), act().at(6922240).cast());
+        un_ga_8_1280_silu(act().at(5939200).cast(), act().at(983040).cast(), w().at(88686592).cast(), w().at(88694784).cast(), w().at(29515776).cast(), act().at(6922240).cast());
         sync_cores();
-        un_c3_8_1280_1280_r(act().at(6922240).cast(), w().at(118210560).cast(), w().at(147701760).cast(), act().at(3973120).cast(), act().at(7905280).cast());
+        un_lr_8_1280_1280_first(act().at(6950400).cast(), w().at(88702976).cast(), act().at(7905280).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(6952960).cast(), w().at(91979776).cast(), act().at(7905280).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(6955520).cast(), w().at(95256576).cast(), act().at(7905280).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(6981120).cast(), w().at(98533376).cast(), act().at(7905280).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(6983680).cast(), w().at(101810176).cast(), act().at(7905280).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(6986240).cast(), w().at(105086976).cast(), act().at(7905280).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(7011840).cast(), w().at(108363776).cast(), act().at(7905280).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(7014400).cast(), w().at(111640576).cast(), act().at(7905280).cast());
+        sync_cores();
+        un_lr_8_1280_1280_b_last(act().at(7016960).cast(), w().at(114917376).cast(), in_x().at(23040).cast(), act().at(7905280).cast(), act().at(8458240).cast());
+        sync_cores();
+        un_gs_8_1280(act().at(8396800).cast(), act().at(983040).cast());
+        sync_cores();
+        un_ga_8_1280_silu(act().at(8396800).cast(), act().at(983040).cast(), w().at(118194176).cast(), w().at(118202368).cast(), w().at(29515776).cast(), act().at(9379840).cast());
+        sync_cores();
+        un_lr_8_1280_1280_first(act().at(9408000).cast(), w().at(118210560).cast(), act().at(10362880).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(9410560).cast(), w().at(121487360).cast(), act().at(10362880).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(9413120).cast(), w().at(124764160).cast(), act().at(10362880).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(9438720).cast(), w().at(128040960).cast(), act().at(10362880).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(9441280).cast(), w().at(131317760).cast(), act().at(10362880).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(9443840).cast(), w().at(134594560).cast(), act().at(10362880).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(9469440).cast(), w().at(137871360).cast(), act().at(10362880).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(9472000).cast(), w().at(141148160).cast(), act().at(10362880).cast());
+        sync_cores();
+        un_lr_8_1280_1280_b_last(act().at(9474560).cast(), w().at(144424960).cast(), w().at(147701760).cast(), act().at(10362880).cast(), act().at(10915840).cast());
+        sync_cores();
+        un_ra_8_1280_1280_1280_1280(act().at(10854400).cast(), act().at(5939200).cast(), act().at(11837440).cast());
         sync_cores();
         // mid.res0
-        un_gs_8_1280(act().at(7905280).cast(), act().at(983040).cast());
-        sync_cores();
-        un_ga_8_1280_silu(act().at(7905280).cast(), act().at(983040).cast(), w().at(147709952).cast(), w().at(147718144).cast(), w().at(29515776).cast(), act().at(8888320).cast());
-        sync_cores();
-        un_c3_8_1280_1280(act().at(8888320).cast(), w().at(147726336).cast(), in_x().at(28160).cast(), act().at(9871360).cast());
-        sync_cores();
-        un_gs_8_1280(act().at(9871360).cast(), act().at(983040).cast());
-        sync_cores();
-        un_ga_8_1280_silu(act().at(9871360).cast(), act().at(983040).cast(), w().at(177217536).cast(), w().at(177225728).cast(), w().at(29515776).cast(), act().at(10854400).cast());
-        sync_cores();
-        un_c3_8_1280_1280_r(act().at(10854400).cast(), w().at(177233920).cast(), w().at(206725120).cast(), act().at(7905280).cast(), act().at(11837440).cast());
-        sync_cores();
-        // mid.attn
         un_gs_8_1280(act().at(11837440).cast(), act().at(983040).cast());
         sync_cores();
-        un_ga_8_1280_none(act().at(11837440).cast(), act().at(983040).cast(), w().at(206733312).cast(), w().at(206741504).cast(), w().at(29515776).cast(), act().at(12820480).cast());
+        un_ga_8_1280_silu(act().at(11837440).cast(), act().at(983040).cast(), w().at(147709952).cast(), w().at(147718144).cast(), w().at(29515776).cast(), act().at(12820480).cast());
         sync_cores();
-        un_c1_8_1280_1280(act().at(12820480).cast(), w().at(206749696).cast(), w().at(210026496).cast(), act().at(13803520).cast());
+        un_lr_8_1280_1280_first(act().at(12848640).cast(), w().at(147726336).cast(), act().at(13803520).cast());
         sync_cores();
-        un_ln_8_1280(act().at(13803520).cast(), w().at(210034688).cast(), w().at(210042880).cast(), act().at(14786560).cast());
+        un_lr_8_1280_1280_mid(act().at(12851200).cast(), w().at(151003136).cast(), act().at(13803520).cast());
         sync_cores();
-        un_c1_8_1280_1280(act().at(14786560).cast(), w().at(210051072).cast(), w().at(213327872).cast(), act().at(15769600).cast());
+        un_lr_8_1280_1280_mid(act().at(12853760).cast(), w().at(154279936).cast(), act().at(13803520).cast());
         sync_cores();
-        un_c1_8_1280_1280(act().at(14786560).cast(), w().at(213336064).cast(), w().at(213327872).cast(), act().at(16752640).cast());
+        un_lr_8_1280_1280_mid(act().at(12879360).cast(), w().at(157556736).cast(), act().at(13803520).cast());
         sync_cores();
-        un_c1_8_1280_1280(act().at(14786560).cast(), w().at(216612864).cast(), w().at(213327872).cast(), act().at(17735680).cast());
+        un_lr_8_1280_1280_mid(act().at(12881920).cast(), w().at(160833536).cast(), act().at(13803520).cast());
         sync_cores();
-        un_at_8_s(act().at(15769600).cast(), act().at(16752640).cast(), act().at(17735680).cast(), w().at(219889664).cast(), act().at(18718720).cast());
+        un_lr_8_1280_1280_mid(act().at(12884480).cast(), w().at(164110336).cast(), act().at(13803520).cast());
         sync_cores();
-        un_c1_8_1280_1280_r(act().at(18718720).cast(), w().at(219893760).cast(), w().at(223170560).cast(), act().at(13803520).cast(), act().at(19701760).cast());
+        un_lr_8_1280_1280_mid(act().at(12910080).cast(), w().at(167387136).cast(), act().at(13803520).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(12912640).cast(), w().at(170663936).cast(), act().at(13803520).cast());
+        sync_cores();
+        un_lr_8_1280_1280_b_last(act().at(12915200).cast(), w().at(173940736).cast(), in_x().at(28160).cast(), act().at(13803520).cast(), act().at(14356480).cast());
+        sync_cores();
+        un_gs_8_1280(act().at(14295040).cast(), act().at(983040).cast());
+        sync_cores();
+        un_ga_8_1280_silu(act().at(14295040).cast(), act().at(983040).cast(), w().at(177217536).cast(), w().at(177225728).cast(), w().at(29515776).cast(), act().at(15278080).cast());
+        sync_cores();
+        un_lr_8_1280_1280_first(act().at(15306240).cast(), w().at(177233920).cast(), act().at(16261120).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(15308800).cast(), w().at(180510720).cast(), act().at(16261120).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(15311360).cast(), w().at(183787520).cast(), act().at(16261120).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(15336960).cast(), w().at(187064320).cast(), act().at(16261120).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(15339520).cast(), w().at(190341120).cast(), act().at(16261120).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(15342080).cast(), w().at(193617920).cast(), act().at(16261120).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(15367680).cast(), w().at(196894720).cast(), act().at(16261120).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(15370240).cast(), w().at(200171520).cast(), act().at(16261120).cast());
+        sync_cores();
+        un_lr_8_1280_1280_b_last(act().at(15372800).cast(), w().at(203448320).cast(), w().at(206725120).cast(), act().at(16261120).cast(), act().at(16814080).cast());
+        sync_cores();
+        un_ra_8_1280_1280_1280_1280(act().at(16752640).cast(), act().at(11837440).cast(), act().at(17735680).cast());
+        sync_cores();
+        // mid.attn
+        un_gs_8_1280(act().at(17735680).cast(), act().at(983040).cast());
+        sync_cores();
+        un_ga_8_1280_none(act().at(17735680).cast(), act().at(983040).cast(), w().at(206733312).cast(), w().at(206741504).cast(), w().at(29515776).cast(), act().at(18718720).cast());
+        sync_cores();
+        un_lr_8_1280_1280_b(act().at(18780160).cast(), w().at(206749696).cast(), w().at(210026496).cast(), act().at(19763200).cast());
+        sync_cores();
+        un_ln_8_1280(act().at(19701760).cast(), w().at(210034688).cast(), w().at(210042880).cast(), act().at(20684800).cast());
+        sync_cores();
+        un_lr_8_1280_1280(act().at(20746240).cast(), w().at(210051072).cast(), act().at(21729280).cast());
+        sync_cores();
+        un_lr_8_1280_1280(act().at(20746240).cast(), w().at(213327872).cast(), act().at(22712320).cast());
+        sync_cores();
+        un_lr_8_1280_1280(act().at(20746240).cast(), w().at(216604672).cast(), act().at(23695360).cast());
+        sync_cores();
+        un_at_8_s(act().at(21667840).cast(), act().at(22650880).cast(), act().at(23633920).cast(), w().at(219881472).cast(), act().at(24616960).cast());
+        sync_cores();
+        un_lr_8_1280_1280_b(act().at(24678400).cast(), w().at(219885568).cast(), w().at(223162368).cast(), act().at(25661440).cast());
+        sync_cores();
+        un_ra_8_1280_1280_1280_1280(act().at(25600000).cast(), act().at(19701760).cast(), act().at(26583040).cast());
         sync_cores();
         // mid.attn.cross
-        un_ln_8_1280(act().at(19701760).cast(), w().at(223178752).cast(), w().at(223186944).cast(), act().at(20684800).cast());
+        un_ln_8_1280(act().at(26583040).cast(), w().at(223170560).cast(), w().at(223178752).cast(), act().at(27566080).cast());
         sync_cores();
-        un_c1_8_1280_1280(act().at(20684800).cast(), w().at(223195136).cast(), w().at(213327872).cast(), act().at(21667840).cast());
+        un_lr_8_1280_1280(act().at(27627520).cast(), w().at(223186944).cast(), act().at(28610560).cast());
         sync_cores();
-        un_kv_1280(in_x().at(1720320).cast(), w().at(226471936).cast(), act().at(22650880).cast());
+        un_kv_1280(in_x().at(1720320).cast(), w().at(226463744).cast(), act().at(29532160).cast());
         sync_cores();
-        un_kv_1280(in_x().at(1720320).cast(), w().at(228438016).cast(), act().at(22978560).cast());
+        un_kv_1280(in_x().at(1720320).cast(), w().at(228429824).cast(), act().at(29859840).cast());
         sync_cores();
-        un_at_8_x(act().at(21667840).cast(), act().at(22650880).cast(), act().at(22978560).cast(), w().at(230404096).cast(), act().at(23306240).cast());
+        un_at_8_x(act().at(28549120).cast(), act().at(29532160).cast(), act().at(29859840).cast(), w().at(230395904).cast(), act().at(30187520).cast());
         sync_cores();
-        un_c1_8_1280_1280_r(act().at(23306240).cast(), w().at(230408192).cast(), w().at(233684992).cast(), act().at(19701760).cast(), act().at(24289280).cast());
+        un_lr_8_1280_1280_b(act().at(30248960).cast(), w().at(230400000).cast(), w().at(233676800).cast(), act().at(31232000).cast());
+        sync_cores();
+        un_ra_8_1280_1280_1280_1280(act().at(31170560).cast(), act().at(26583040).cast(), act().at(32153600).cast());
         sync_cores();
         // mid.attn.ff
-        un_ln_8_1280(act().at(24289280).cast(), w().at(233693184).cast(), w().at(233701376).cast(), act().at(25272320).cast());
+        un_ln_8_1280(act().at(32153600).cast(), w().at(233684992).cast(), w().at(233693184).cast(), act().at(33136640).cast());
         sync_cores();
-        un_c1_8_1280_5120(act().at(25272320).cast(), w().at(233709568).cast(), w().at(246816768).cast(), act().at(26255360).cast());
+        un_lr_8_1280_5120_b(act().at(33198080).cast(), w().at(233701376).cast(), w().at(246808576).cast(), act().at(34365440).cast());
         sync_cores();
-        un_c1_8_1280_5120(act().at(25272320).cast(), w().at(246837248).cast(), w().at(259944448).cast(), act().at(30187520).cast());
+        un_lr_8_1280_5120_b(act().at(33198080).cast(), w().at(246829056).cast(), w().at(259936256).cast(), act().at(38297600).cast());
         sync_cores();
-        un_gg_8(act().at(26255360).cast(), act().at(30187520).cast(), act().at(34119680).cast());
+        un_gg_8(act().at(34119680).cast(), act().at(38051840).cast(), act().at(41984000).cast());
         sync_cores();
-        un_c1_8_5120_1280_r(act().at(34119680).cast(), w().at(259964928).cast(), w().at(273072128).cast(), act().at(24289280).cast(), act().at(38051840).cast());
+        un_lr_8_5120_1280_b(act().at(42229760).cast(), w().at(259956736).cast(), w().at(273063936).cast(), act().at(45977600).cast());
         sync_cores();
-        un_c1_8_1280_1280_r(act().at(38051840).cast(), w().at(273080320).cast(), w().at(276357120).cast(), act().at(11837440).cast(), act().at(39034880).cast());
+        un_ra_8_1280_1280_1280_1280(act().at(45916160).cast(), act().at(32153600).cast(), act().at(46899200).cast());
+        sync_cores();
+        un_lr_8_1280_1280_b(act().at(46960640).cast(), w().at(273072128).cast(), w().at(276348928).cast(), act().at(47943680).cast());
+        sync_cores();
+        un_ra_8_1280_1280_1280_1280(act().at(47882240).cast(), act().at(17735680).cast(), act().at(48865280).cast());
         sync_cores();
         // mid.res1
-        un_gs_8_1280(act().at(39034880).cast(), act().at(983040).cast());
+        un_gs_8_1280(act().at(48865280).cast(), act().at(983040).cast());
         sync_cores();
-        un_ga_8_1280_silu(act().at(39034880).cast(), act().at(983040).cast(), w().at(276365312).cast(), w().at(276373504).cast(), w().at(29515776).cast(), act().at(40017920).cast());
+        un_ga_8_1280_silu(act().at(48865280).cast(), act().at(983040).cast(), w().at(276357120).cast(), w().at(276365312).cast(), w().at(29515776).cast(), act().at(49848320).cast());
         sync_cores();
-        un_c3_8_1280_1280(act().at(40017920).cast(), w().at(276381696).cast(), in_x().at(33280).cast(), act().at(41000960).cast());
+        un_lr_8_1280_1280_first(act().at(49876480).cast(), w().at(276373504).cast(), act().at(50831360).cast());
         sync_cores();
-        un_gs_8_1280(act().at(41000960).cast(), act().at(983040).cast());
+        un_lr_8_1280_1280_mid(act().at(49879040).cast(), w().at(279650304).cast(), act().at(50831360).cast());
         sync_cores();
-        un_ga_8_1280_silu(act().at(41000960).cast(), act().at(983040).cast(), w().at(305872896).cast(), w().at(305881088).cast(), w().at(29515776).cast(), act().at(41984000).cast());
+        un_lr_8_1280_1280_mid(act().at(49881600).cast(), w().at(282927104).cast(), act().at(50831360).cast());
         sync_cores();
-        un_c3_8_1280_1280_r(act().at(41984000).cast(), w().at(305889280).cast(), w().at(335380480).cast(), act().at(39034880).cast(), act().at(42967040).cast());
+        un_lr_8_1280_1280_mid(act().at(49907200).cast(), w().at(286203904).cast(), act().at(50831360).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(49909760).cast(), w().at(289480704).cast(), act().at(50831360).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(49912320).cast(), w().at(292757504).cast(), act().at(50831360).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(49937920).cast(), w().at(296034304).cast(), act().at(50831360).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(49940480).cast(), w().at(299311104).cast(), act().at(50831360).cast());
+        sync_cores();
+        un_lr_8_1280_1280_b_last(act().at(49943040).cast(), w().at(302587904).cast(), in_x().at(33280).cast(), act().at(50831360).cast(), act().at(51384320).cast());
+        sync_cores();
+        un_gs_8_1280(act().at(51322880).cast(), act().at(983040).cast());
+        sync_cores();
+        un_ga_8_1280_silu(act().at(51322880).cast(), act().at(983040).cast(), w().at(305864704).cast(), w().at(305872896).cast(), w().at(29515776).cast(), act().at(52305920).cast());
+        sync_cores();
+        un_lr_8_1280_1280_first(act().at(52334080).cast(), w().at(305881088).cast(), act().at(53288960).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(52336640).cast(), w().at(309157888).cast(), act().at(53288960).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(52339200).cast(), w().at(312434688).cast(), act().at(53288960).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(52364800).cast(), w().at(315711488).cast(), act().at(53288960).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(52367360).cast(), w().at(318988288).cast(), act().at(53288960).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(52369920).cast(), w().at(322265088).cast(), act().at(53288960).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(52395520).cast(), w().at(325541888).cast(), act().at(53288960).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(52398080).cast(), w().at(328818688).cast(), act().at(53288960).cast());
+        sync_cores();
+        un_lr_8_1280_1280_b_last(act().at(52400640).cast(), w().at(332095488).cast(), w().at(335372288).cast(), act().at(53288960).cast(), act().at(53841920).cast());
+        sync_cores();
+        un_ra_8_1280_1280_1280_1280(act().at(53780480).cast(), act().at(48865280).cast(), act().at(54763520).cast());
         sync_cores();
         // up0.res0
-        un_cp_8_1280_2560(act().at(42967040).cast(), act().at(43950080).cast());
+        un_cp_8_1280_2560(act().at(54763520).cast(), act().at(55746560).cast());
         sync_cores();
-        un_cp_8_1280_2560(act().at(7905280).cast(), act().at(43952640).cast());
+        un_cp_8_1280_2560(act().at(11837440).cast(), act().at(55749120).cast());
         sync_cores();
-        un_gs_8_2560(act().at(43950080).cast(), act().at(983040).cast());
+        un_gs_8_2560(act().at(55746560).cast(), act().at(983040).cast());
         sync_cores();
-        un_ga_8_2560_silu(act().at(43950080).cast(), act().at(983040).cast(), w().at(335388672).cast(), w().at(335400960).cast(), w().at(335413248).cast(), act().at(45916160).cast());
+        un_ga_8_2560_silu(act().at(55746560).cast(), act().at(983040).cast(), w().at(335380480).cast(), w().at(335392768).cast(), w().at(335405056).cast(), act().at(57712640).cast());
         sync_cores();
-        un_c3_8_2560_1280(act().at(45916160).cast(), w().at(335740928).cast(), in_x().at(38400).cast(), act().at(47882240).cast());
+        un_lr_8_2560_1280_first(act().at(57768960).cast(), w().at(335732736).cast(), act().at(59678720).cast());
         sync_cores();
-        un_gs_8_1280(act().at(47882240).cast(), act().at(983040).cast());
+        un_lr_8_2560_1280_mid(act().at(57774080).cast(), w().at(342286336).cast(), act().at(59678720).cast());
         sync_cores();
-        un_ga_8_1280_silu(act().at(47882240).cast(), act().at(983040).cast(), w().at(394723328).cast(), w().at(394731520).cast(), w().at(29515776).cast(), act().at(48865280).cast());
+        un_lr_8_2560_1280_mid(act().at(57779200).cast(), w().at(348839936).cast(), act().at(59678720).cast());
         sync_cores();
-        un_c1_8_2560_1280(act().at(43950080).cast(), w().at(394739712).cast(), w().at(401293312).cast(), act().at(49848320).cast());
+        un_lr_8_2560_1280_mid(act().at(57830400).cast(), w().at(355393536).cast(), act().at(59678720).cast());
         sync_cores();
-        un_c3_8_1280_1280_r(act().at(48865280).cast(), w().at(401301504).cast(), w().at(430792704).cast(), act().at(49848320).cast(), act().at(50831360).cast());
+        un_lr_8_2560_1280_mid(act().at(57835520).cast(), w().at(361947136).cast(), act().at(59678720).cast());
+        sync_cores();
+        un_lr_8_2560_1280_mid(act().at(57840640).cast(), w().at(368500736).cast(), act().at(59678720).cast());
+        sync_cores();
+        un_lr_8_2560_1280_mid(act().at(57891840).cast(), w().at(375054336).cast(), act().at(59678720).cast());
+        sync_cores();
+        un_lr_8_2560_1280_mid(act().at(57896960).cast(), w().at(381607936).cast(), act().at(59678720).cast());
+        sync_cores();
+        un_lr_8_2560_1280_b_last(act().at(57902080).cast(), w().at(388161536).cast(), in_x().at(38400).cast(), act().at(59678720).cast(), act().at(60231680).cast());
+        sync_cores();
+        un_gs_8_1280(act().at(60170240).cast(), act().at(983040).cast());
+        sync_cores();
+        un_ga_8_1280_silu(act().at(60170240).cast(), act().at(983040).cast(), w().at(394715136).cast(), w().at(394723328).cast(), w().at(29515776).cast(), act().at(61153280).cast());
+        sync_cores();
+        un_lr_8_2560_1280_b(act().at(55869440).cast(), w().at(394731520).cast(), w().at(401285120).cast(), act().at(62197760).cast());
+        sync_cores();
+        un_lr_8_1280_1280_first(act().at(61181440).cast(), w().at(401293312).cast(), act().at(63119360).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(61184000).cast(), w().at(404570112).cast(), act().at(63119360).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(61186560).cast(), w().at(407846912).cast(), act().at(63119360).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(61212160).cast(), w().at(411123712).cast(), act().at(63119360).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(61214720).cast(), w().at(414400512).cast(), act().at(63119360).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(61217280).cast(), w().at(417677312).cast(), act().at(63119360).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(61242880).cast(), w().at(420954112).cast(), act().at(63119360).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(61245440).cast(), w().at(424230912).cast(), act().at(63119360).cast());
+        sync_cores();
+        un_lr_8_1280_1280_b_last(act().at(61248000).cast(), w().at(427507712).cast(), w().at(430784512).cast(), act().at(63119360).cast(), act().at(63672320).cast());
+        sync_cores();
+        un_ra_8_1280_1280_1280_1280(act().at(63610880).cast(), act().at(62136320).cast(), act().at(64593920).cast());
         sync_cores();
         // up0.res1
-        un_cp_8_1280_2560(act().at(50831360).cast(), act().at(51814400).cast());
+        un_cp_8_1280_2560(act().at(64593920).cast(), act().at(65576960).cast());
         sync_cores();
-        un_cp_8_1280_2560(act().at(3973120).cast(), act().at(51816960).cast());
+        un_cp_8_1280_2560(act().at(5939200).cast(), act().at(65579520).cast());
         sync_cores();
-        un_gs_8_2560(act().at(51814400).cast(), act().at(983040).cast());
+        un_gs_8_2560(act().at(65576960).cast(), act().at(983040).cast());
         sync_cores();
-        un_ga_8_2560_silu(act().at(51814400).cast(), act().at(983040).cast(), w().at(430800896).cast(), w().at(430813184).cast(), w().at(335413248).cast(), act().at(53780480).cast());
+        un_ga_8_2560_silu(act().at(65576960).cast(), act().at(983040).cast(), w().at(430792704).cast(), w().at(430804992).cast(), w().at(335405056).cast(), act().at(67543040).cast());
         sync_cores();
-        un_c3_8_2560_1280(act().at(53780480).cast(), w().at(430825472).cast(), in_x().at(43520).cast(), act().at(55746560).cast());
+        un_lr_8_2560_1280_first(act().at(67599360).cast(), w().at(430817280).cast(), act().at(69509120).cast());
         sync_cores();
-        un_gs_8_1280(act().at(55746560).cast(), act().at(983040).cast());
+        un_lr_8_2560_1280_mid(act().at(67604480).cast(), w().at(437370880).cast(), act().at(69509120).cast());
         sync_cores();
-        un_ga_8_1280_silu(act().at(55746560).cast(), act().at(983040).cast(), w().at(489807872).cast(), w().at(489816064).cast(), w().at(29515776).cast(), act().at(56729600).cast());
+        un_lr_8_2560_1280_mid(act().at(67609600).cast(), w().at(443924480).cast(), act().at(69509120).cast());
         sync_cores();
-        un_c1_8_2560_1280(act().at(51814400).cast(), w().at(489824256).cast(), w().at(496377856).cast(), act().at(57712640).cast());
+        un_lr_8_2560_1280_mid(act().at(67660800).cast(), w().at(450478080).cast(), act().at(69509120).cast());
         sync_cores();
-        un_c3_8_1280_1280_r(act().at(56729600).cast(), w().at(496386048).cast(), w().at(525877248).cast(), act().at(57712640).cast(), act().at(58695680).cast());
+        un_lr_8_2560_1280_mid(act().at(67665920).cast(), w().at(457031680).cast(), act().at(69509120).cast());
+        sync_cores();
+        un_lr_8_2560_1280_mid(act().at(67671040).cast(), w().at(463585280).cast(), act().at(69509120).cast());
+        sync_cores();
+        un_lr_8_2560_1280_mid(act().at(67722240).cast(), w().at(470138880).cast(), act().at(69509120).cast());
+        sync_cores();
+        un_lr_8_2560_1280_mid(act().at(67727360).cast(), w().at(476692480).cast(), act().at(69509120).cast());
+        sync_cores();
+        un_lr_8_2560_1280_b_last(act().at(67732480).cast(), w().at(483246080).cast(), in_x().at(43520).cast(), act().at(69509120).cast(), act().at(70062080).cast());
+        sync_cores();
+        un_gs_8_1280(act().at(70000640).cast(), act().at(983040).cast());
+        sync_cores();
+        un_ga_8_1280_silu(act().at(70000640).cast(), act().at(983040).cast(), w().at(489799680).cast(), w().at(489807872).cast(), w().at(29515776).cast(), act().at(70983680).cast());
+        sync_cores();
+        un_lr_8_2560_1280_b(act().at(65699840).cast(), w().at(489816064).cast(), w().at(496369664).cast(), act().at(72028160).cast());
+        sync_cores();
+        un_lr_8_1280_1280_first(act().at(71011840).cast(), w().at(496377856).cast(), act().at(72949760).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(71014400).cast(), w().at(499654656).cast(), act().at(72949760).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(71016960).cast(), w().at(502931456).cast(), act().at(72949760).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(71042560).cast(), w().at(506208256).cast(), act().at(72949760).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(71045120).cast(), w().at(509485056).cast(), act().at(72949760).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(71047680).cast(), w().at(512761856).cast(), act().at(72949760).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(71073280).cast(), w().at(516038656).cast(), act().at(72949760).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(71075840).cast(), w().at(519315456).cast(), act().at(72949760).cast());
+        sync_cores();
+        un_lr_8_1280_1280_b_last(act().at(71078400).cast(), w().at(522592256).cast(), w().at(525869056).cast(), act().at(72949760).cast(), act().at(73502720).cast());
+        sync_cores();
+        un_ra_8_1280_1280_1280_1280(act().at(73441280).cast(), act().at(71966720).cast(), act().at(74424320).cast());
         sync_cores();
         // up0.res2
-        un_cp_8_1280_2560(act().at(58695680).cast(), act().at(59678720).cast());
+        un_cp_8_1280_2560(act().at(74424320).cast(), act().at(75407360).cast());
         sync_cores();
-        un_cp_8_1280_2560(act().at(0).cast(), act().at(59681280).cast());
+        un_cp_8_1280_2560(act().at(0).cast(), act().at(75409920).cast());
         sync_cores();
-        un_gs_8_2560(act().at(59678720).cast(), act().at(983040).cast());
+        un_gs_8_2560(act().at(75407360).cast(), act().at(983040).cast());
         sync_cores();
-        un_ga_8_2560_silu(act().at(59678720).cast(), act().at(983040).cast(), w().at(525885440).cast(), w().at(525897728).cast(), w().at(335413248).cast(), act().at(61644800).cast());
+        un_ga_8_2560_silu(act().at(75407360).cast(), act().at(983040).cast(), w().at(525877248).cast(), w().at(525889536).cast(), w().at(335405056).cast(), act().at(77373440).cast());
         sync_cores();
-        un_c3_8_2560_1280(act().at(61644800).cast(), w().at(525910016).cast(), in_x().at(48640).cast(), act().at(63610880).cast());
+        un_lr_8_2560_1280_first(act().at(77429760).cast(), w().at(525901824).cast(), act().at(79339520).cast());
         sync_cores();
-        un_gs_8_1280(act().at(63610880).cast(), act().at(983040).cast());
+        un_lr_8_2560_1280_mid(act().at(77434880).cast(), w().at(532455424).cast(), act().at(79339520).cast());
         sync_cores();
-        un_ga_8_1280_silu(act().at(63610880).cast(), act().at(983040).cast(), w().at(584892416).cast(), w().at(584900608).cast(), w().at(29515776).cast(), act().at(64593920).cast());
+        un_lr_8_2560_1280_mid(act().at(77440000).cast(), w().at(539009024).cast(), act().at(79339520).cast());
         sync_cores();
-        un_c1_8_2560_1280(act().at(59678720).cast(), w().at(584908800).cast(), w().at(591462400).cast(), act().at(65576960).cast());
+        un_lr_8_2560_1280_mid(act().at(77491200).cast(), w().at(545562624).cast(), act().at(79339520).cast());
         sync_cores();
-        un_c3_8_1280_1280_r(act().at(64593920).cast(), w().at(591470592).cast(), w().at(620961792).cast(), act().at(65576960).cast(), out_y().at(0).cast());
+        un_lr_8_2560_1280_mid(act().at(77496320).cast(), w().at(552116224).cast(), act().at(79339520).cast());
+        sync_cores();
+        un_lr_8_2560_1280_mid(act().at(77501440).cast(), w().at(558669824).cast(), act().at(79339520).cast());
+        sync_cores();
+        un_lr_8_2560_1280_mid(act().at(77552640).cast(), w().at(565223424).cast(), act().at(79339520).cast());
+        sync_cores();
+        un_lr_8_2560_1280_mid(act().at(77557760).cast(), w().at(571777024).cast(), act().at(79339520).cast());
+        sync_cores();
+        un_lr_8_2560_1280_b_last(act().at(77562880).cast(), w().at(578330624).cast(), in_x().at(48640).cast(), act().at(79339520).cast(), act().at(79892480).cast());
+        sync_cores();
+        un_gs_8_1280(act().at(79831040).cast(), act().at(983040).cast());
+        sync_cores();
+        un_ga_8_1280_silu(act().at(79831040).cast(), act().at(983040).cast(), w().at(584884224).cast(), w().at(584892416).cast(), w().at(29515776).cast(), act().at(80814080).cast());
+        sync_cores();
+        un_lr_8_2560_1280_b(act().at(75530240).cast(), w().at(584900608).cast(), w().at(591454208).cast(), act().at(81858560).cast());
+        sync_cores();
+        un_lr_8_1280_1280_first(act().at(80842240).cast(), w().at(591462400).cast(), act().at(82780160).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(80844800).cast(), w().at(594739200).cast(), act().at(82780160).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(80847360).cast(), w().at(598016000).cast(), act().at(82780160).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(80872960).cast(), w().at(601292800).cast(), act().at(82780160).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(80875520).cast(), w().at(604569600).cast(), act().at(82780160).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(80878080).cast(), w().at(607846400).cast(), act().at(82780160).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(80903680).cast(), w().at(611123200).cast(), act().at(82780160).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(80906240).cast(), w().at(614400000).cast(), act().at(82780160).cast());
+        sync_cores();
+        un_lr_8_1280_1280_b_last(act().at(80908800).cast(), w().at(617676800).cast(), w().at(620953600).cast(), act().at(82780160).cast(), act().at(83333120).cast());
+        sync_cores();
+        un_ra_8_1280_1280_1280_1280(act().at(83271680).cast(), act().at(81797120).cast(), act().at(84254720).cast());
+        sync_cores();
+        // up0.up
+        un_up_8_1280_256(act().at(84254720).cast(), act().at(85237760).cast());
+        sync_cores();
+        un_up_8_1280_256(act().at(84255232).cast(), act().at(85238272).cast());
+        sync_cores();
+        un_up_8_1280_256(act().at(84255744).cast(), act().at(85238784).cast());
+        sync_cores();
+        un_up_8_1280_256(act().at(84256256).cast(), act().at(85239296).cast());
+        sync_cores();
+        un_up_8_1280_256(act().at(84256768).cast(), act().at(85239808).cast());
+        sync_cores();
+        un_lr_16_1280_1280_first(act().at(85286400).cast(), w().at(620961792).cast(), act().at(86876160).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(85288960).cast(), w().at(624238592).cast(), act().at(86876160).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(85291520).cast(), w().at(627515392).cast(), act().at(86876160).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(85337600).cast(), w().at(630792192).cast(), act().at(86876160).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(85340160).cast(), w().at(634068992).cast(), act().at(86876160).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(85342720).cast(), w().at(637345792).cast(), act().at(86876160).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(85388800).cast(), w().at(640622592).cast(), act().at(86876160).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(85391360).cast(), w().at(643899392).cast(), act().at(86876160).cast());
+        sync_cores();
+        un_lr_16_1280_1280_b_last(act().at(85393920).cast(), w().at(647176192).cast(), w().at(650452992).cast(), act().at(86876160).cast(), act().at(88616960).cast());
+        sync_cores();
+        // up1.res0
+        un_cp_16_1280_2560(act().at(88514560).cast(), act().at(90152960).cast());
+        sync_cores();
+        un_cp_16_1280_2560(in_x().at(81920).cast(), act().at(90155520).cast());
+        sync_cores();
+        un_gs_16_2560(act().at(90152960).cast(), act().at(983040).cast());
+        sync_cores();
+        un_ga_16_2560_silu(act().at(90152960).cast(), act().at(983040).cast(), w().at(650461184).cast(), w().at(650473472).cast(), w().at(335405056).cast(), act().at(93429760).cast());
+        sync_cores();
+        un_lr_16_2560_1280_first(act().at(93527040).cast(), w().at(650485760).cast(), act().at(96706560).cast());
+        sync_cores();
+        un_lr_16_2560_1280_mid(act().at(93532160).cast(), w().at(657039360).cast(), act().at(96706560).cast());
+        sync_cores();
+        un_lr_16_2560_1280_mid(act().at(93537280).cast(), w().at(663592960).cast(), act().at(96706560).cast());
+        sync_cores();
+        un_lr_16_2560_1280_mid(act().at(93629440).cast(), w().at(670146560).cast(), act().at(96706560).cast());
+        sync_cores();
+        un_lr_16_2560_1280_mid(act().at(93634560).cast(), w().at(676700160).cast(), act().at(96706560).cast());
+        sync_cores();
+        un_lr_16_2560_1280_mid(act().at(93639680).cast(), w().at(683253760).cast(), act().at(96706560).cast());
+        sync_cores();
+        un_lr_16_2560_1280_mid(act().at(93731840).cast(), w().at(689807360).cast(), act().at(96706560).cast());
+        sync_cores();
+        un_lr_16_2560_1280_mid(act().at(93736960).cast(), w().at(696360960).cast(), act().at(96706560).cast());
+        sync_cores();
+        un_lr_16_2560_1280_b_last(act().at(93742080).cast(), w().at(702914560).cast(), in_x().at(53760).cast(), act().at(96706560).cast(), act().at(98447360).cast());
+        sync_cores();
+        un_gs_16_1280(act().at(98344960).cast(), act().at(983040).cast());
+        sync_cores();
+        un_ga_16_1280_silu(act().at(98344960).cast(), act().at(983040).cast(), w().at(709468160).cast(), w().at(709476352).cast(), w().at(29515776).cast(), act().at(99983360).cast());
+        sync_cores();
+        un_lr_16_2560_1280_b(act().at(90357760).cast(), w().at(709484544).cast(), w().at(716038144).cast(), act().at(101724160).cast());
+        sync_cores();
+        un_lr_16_1280_1280_first(act().at(100032000).cast(), w().at(716046336).cast(), act().at(103260160).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(100034560).cast(), w().at(719323136).cast(), act().at(103260160).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(100037120).cast(), w().at(722599936).cast(), act().at(103260160).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(100083200).cast(), w().at(725876736).cast(), act().at(103260160).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(100085760).cast(), w().at(729153536).cast(), act().at(103260160).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(100088320).cast(), w().at(732430336).cast(), act().at(103260160).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(100134400).cast(), w().at(735707136).cast(), act().at(103260160).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(100136960).cast(), w().at(738983936).cast(), act().at(103260160).cast());
+        sync_cores();
+        un_lr_16_1280_1280_b_last(act().at(100139520).cast(), w().at(742260736).cast(), w().at(745537536).cast(), act().at(103260160).cast(), act().at(105000960).cast());
+        sync_cores();
+        un_ra_16_1280_1280_1280_1280(act().at(104898560).cast(), act().at(101621760).cast(), act().at(106536960).cast());
+        sync_cores();
+        // up1.attn0
+        un_gs_16_1280(act().at(106536960).cast(), act().at(983040).cast());
+        sync_cores();
+        un_ga_16_1280_none(act().at(106536960).cast(), act().at(983040).cast(), w().at(745545728).cast(), w().at(745553920).cast(), w().at(29515776).cast(), act().at(108175360).cast());
+        sync_cores();
+        un_lr_16_1280_1280_b(act().at(108277760).cast(), w().at(745562112).cast(), w().at(748838912).cast(), act().at(109916160).cast());
+        sync_cores();
+        un_ln_16_1280(act().at(109813760).cast(), w().at(748847104).cast(), w().at(748855296).cast(), act().at(111452160).cast());
+        sync_cores();
+        un_lr_16_1280_1280(act().at(111554560).cast(), w().at(748863488).cast(), act().at(113192960).cast());
+        sync_cores();
+        un_lr_16_1280_1280(act().at(111554560).cast(), w().at(752140288).cast(), act().at(114831360).cast());
+        sync_cores();
+        un_lr_16_1280_1280(act().at(111554560).cast(), w().at(755417088).cast(), act().at(116469760).cast());
+        sync_cores();
+        un_at_16_s(act().at(113090560).cast(), act().at(114728960).cast(), act().at(116367360).cast(), w().at(758693888).cast(), act().at(118005760).cast());
+        sync_cores();
+        un_lr_16_1280_1280_b(act().at(118108160).cast(), w().at(758697984).cast(), w().at(761974784).cast(), act().at(119746560).cast());
+        sync_cores();
+        un_ra_16_1280_1280_1280_1280(act().at(119644160).cast(), act().at(109813760).cast(), act().at(121282560).cast());
+        sync_cores();
+        // up1.attn0.cross
+        un_ln_16_1280(act().at(121282560).cast(), w().at(761982976).cast(), w().at(761991168).cast(), act().at(122920960).cast());
+        sync_cores();
+        un_lr_16_1280_1280(act().at(123023360).cast(), w().at(761999360).cast(), act().at(124661760).cast());
+        sync_cores();
+        un_kv_1280(in_x().at(1720320).cast(), w().at(765276160).cast(), act().at(126197760).cast());
+        sync_cores();
+        un_kv_1280(in_x().at(1720320).cast(), w().at(767242240).cast(), act().at(126525440).cast());
+        sync_cores();
+        un_at_16_x(act().at(124559360).cast(), act().at(126197760).cast(), act().at(126525440).cast(), w().at(230395904).cast(), act().at(126853120).cast());
+        sync_cores();
+        un_lr_16_1280_1280_b(act().at(126955520).cast(), w().at(769208320).cast(), w().at(772485120).cast(), act().at(128593920).cast());
+        sync_cores();
+        un_ra_16_1280_1280_1280_1280(act().at(128491520).cast(), act().at(121282560).cast(), act().at(130129920).cast());
+        sync_cores();
+        // up1.attn0.ff
+        un_ln_16_1280(act().at(130129920).cast(), w().at(772493312).cast(), w().at(772501504).cast(), act().at(131768320).cast());
+        sync_cores();
+        un_lr_16_1280_5120_b(act().at(131870720).cast(), w().at(772509696).cast(), w().at(785616896).cast(), act().at(133816320).cast());
+        sync_cores();
+        un_lr_16_1280_5120_b(act().at(131870720).cast(), w().at(785637376).cast(), w().at(798744576).cast(), act().at(140369920).cast());
+        sync_cores();
+        un_gg_16(act().at(133406720).cast(), act().at(139960320).cast(), act().at(146513920).cast());
+        sync_cores();
+        un_lr_16_5120_1280_b(act().at(146923520).cast(), w().at(798765056).cast(), w().at(811872256).cast(), act().at(153169920).cast());
+        sync_cores();
+        un_ra_16_1280_1280_1280_1280(act().at(153067520).cast(), act().at(130129920).cast(), act().at(154705920).cast());
+        sync_cores();
+        un_lr_16_1280_1280_b(act().at(154808320).cast(), w().at(811880448).cast(), w().at(815157248).cast(), act().at(156446720).cast());
+        sync_cores();
+        un_ra_16_1280_1280_1280_1280(act().at(156344320).cast(), act().at(106536960).cast(), act().at(157982720).cast());
+        sync_cores();
+        // up1.res1
+        un_cp_16_1280_2560(act().at(157982720).cast(), act().at(159621120).cast());
+        sync_cores();
+        un_cp_16_1280_2560(in_x().at(1916928).cast(), act().at(159623680).cast());
+        sync_cores();
+        un_gs_16_2560(act().at(159621120).cast(), act().at(983040).cast());
+        sync_cores();
+        un_ga_16_2560_silu(act().at(159621120).cast(), act().at(983040).cast(), w().at(815165440).cast(), w().at(815177728).cast(), w().at(335405056).cast(), act().at(162897920).cast());
+        sync_cores();
+        un_lr_16_2560_1280_first(act().at(162995200).cast(), w().at(815190016).cast(), act().at(166174720).cast());
+        sync_cores();
+        un_lr_16_2560_1280_mid(act().at(163000320).cast(), w().at(821743616).cast(), act().at(166174720).cast());
+        sync_cores();
+        un_lr_16_2560_1280_mid(act().at(163005440).cast(), w().at(828297216).cast(), act().at(166174720).cast());
+        sync_cores();
+        un_lr_16_2560_1280_mid(act().at(163097600).cast(), w().at(834850816).cast(), act().at(166174720).cast());
+        sync_cores();
+        un_lr_16_2560_1280_mid(act().at(163102720).cast(), w().at(841404416).cast(), act().at(166174720).cast());
+        sync_cores();
+        un_lr_16_2560_1280_mid(act().at(163107840).cast(), w().at(847958016).cast(), act().at(166174720).cast());
+        sync_cores();
+        un_lr_16_2560_1280_mid(act().at(163200000).cast(), w().at(854511616).cast(), act().at(166174720).cast());
+        sync_cores();
+        un_lr_16_2560_1280_mid(act().at(163205120).cast(), w().at(861065216).cast(), act().at(166174720).cast());
+        sync_cores();
+        un_lr_16_2560_1280_b_last(act().at(163210240).cast(), w().at(867618816).cast(), in_x().at(58880).cast(), act().at(166174720).cast(), act().at(167915520).cast());
+        sync_cores();
+        un_gs_16_1280(act().at(167813120).cast(), act().at(983040).cast());
+        sync_cores();
+        un_ga_16_1280_silu(act().at(167813120).cast(), act().at(983040).cast(), w().at(874172416).cast(), w().at(874180608).cast(), w().at(29515776).cast(), act().at(169451520).cast());
+        sync_cores();
+        un_lr_16_2560_1280_b(act().at(159825920).cast(), w().at(874188800).cast(), w().at(880742400).cast(), act().at(171192320).cast());
+        sync_cores();
+        un_lr_16_1280_1280_first(act().at(169500160).cast(), w().at(880750592).cast(), act().at(172728320).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(169502720).cast(), w().at(884027392).cast(), act().at(172728320).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(169505280).cast(), w().at(887304192).cast(), act().at(172728320).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(169551360).cast(), w().at(890580992).cast(), act().at(172728320).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(169553920).cast(), w().at(893857792).cast(), act().at(172728320).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(169556480).cast(), w().at(897134592).cast(), act().at(172728320).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(169602560).cast(), w().at(900411392).cast(), act().at(172728320).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(169605120).cast(), w().at(903688192).cast(), act().at(172728320).cast());
+        sync_cores();
+        un_lr_16_1280_1280_b_last(act().at(169607680).cast(), w().at(906964992).cast(), w().at(910241792).cast(), act().at(172728320).cast(), act().at(174469120).cast());
+        sync_cores();
+        un_ra_16_1280_1280_1280_1280(act().at(174366720).cast(), act().at(171089920).cast(), act().at(176005120).cast());
+        sync_cores();
+        // up1.attn1
+        un_gs_16_1280(act().at(176005120).cast(), act().at(983040).cast());
+        sync_cores();
+        un_ga_16_1280_none(act().at(176005120).cast(), act().at(983040).cast(), w().at(910249984).cast(), w().at(910258176).cast(), w().at(29515776).cast(), act().at(177643520).cast());
+        sync_cores();
+        un_lr_16_1280_1280_b(act().at(177745920).cast(), w().at(910266368).cast(), w().at(913543168).cast(), act().at(179384320).cast());
+        sync_cores();
+        un_ln_16_1280(act().at(179281920).cast(), w().at(913551360).cast(), w().at(913559552).cast(), act().at(180920320).cast());
+        sync_cores();
+        un_lr_16_1280_1280(act().at(181022720).cast(), w().at(913567744).cast(), act().at(182661120).cast());
+        sync_cores();
+        un_lr_16_1280_1280(act().at(181022720).cast(), w().at(916844544).cast(), act().at(184299520).cast());
+        sync_cores();
+        un_lr_16_1280_1280(act().at(181022720).cast(), w().at(920121344).cast(), act().at(185937920).cast());
+        sync_cores();
+        un_at_16_s(act().at(182558720).cast(), act().at(184197120).cast(), act().at(185835520).cast(), w().at(758693888).cast(), act().at(187473920).cast());
+        sync_cores();
+        un_lr_16_1280_1280_b(act().at(187576320).cast(), w().at(923398144).cast(), w().at(926674944).cast(), act().at(189214720).cast());
+        sync_cores();
+        un_ra_16_1280_1280_1280_1280(act().at(189112320).cast(), act().at(179281920).cast(), act().at(190750720).cast());
+        sync_cores();
+        // up1.attn1.cross
+        un_ln_16_1280(act().at(190750720).cast(), w().at(926683136).cast(), w().at(926691328).cast(), act().at(192389120).cast());
+        sync_cores();
+        un_lr_16_1280_1280(act().at(192491520).cast(), w().at(926699520).cast(), act().at(194129920).cast());
+        sync_cores();
+        un_kv_1280(in_x().at(1720320).cast(), w().at(929976320).cast(), act().at(195665920).cast());
+        sync_cores();
+        un_kv_1280(in_x().at(1720320).cast(), w().at(931942400).cast(), act().at(195993600).cast());
+        sync_cores();
+        un_at_16_x(act().at(194027520).cast(), act().at(195665920).cast(), act().at(195993600).cast(), w().at(230395904).cast(), act().at(196321280).cast());
+        sync_cores();
+        un_lr_16_1280_1280_b(act().at(196423680).cast(), w().at(933908480).cast(), w().at(937185280).cast(), act().at(198062080).cast());
+        sync_cores();
+        un_ra_16_1280_1280_1280_1280(act().at(197959680).cast(), act().at(190750720).cast(), act().at(199598080).cast());
+        sync_cores();
+        // up1.attn1.ff
+        un_ln_16_1280(act().at(199598080).cast(), w().at(937193472).cast(), w().at(937201664).cast(), act().at(201236480).cast());
+        sync_cores();
+        un_lr_16_1280_5120_b(act().at(201338880).cast(), w().at(937209856).cast(), w().at(950317056).cast(), act().at(203284480).cast());
+        sync_cores();
+        un_lr_16_1280_5120_b(act().at(201338880).cast(), w().at(950337536).cast(), w().at(963444736).cast(), act().at(209838080).cast());
+        sync_cores();
+        un_gg_16(act().at(202874880).cast(), act().at(209428480).cast(), act().at(215982080).cast());
+        sync_cores();
+        un_lr_16_5120_1280_b(act().at(216391680).cast(), w().at(963465216).cast(), w().at(976572416).cast(), act().at(222638080).cast());
+        sync_cores();
+        un_ra_16_1280_1280_1280_1280(act().at(222535680).cast(), act().at(199598080).cast(), act().at(224174080).cast());
+        sync_cores();
+        un_lr_16_1280_1280_b(act().at(224276480).cast(), w().at(976580608).cast(), w().at(979857408).cast(), act().at(225914880).cast());
+        sync_cores();
+        un_ra_16_1280_1280_1280_1280(act().at(225812480).cast(), act().at(176005120).cast(), act().at(227450880).cast());
+        sync_cores();
+        // up1.res2
+        un_cp_16_1280_1920(act().at(227450880).cast(), act().at(229089280).cast());
+        sync_cores();
+        un_cp_16_640_1920(in_x().at(3555328).cast(), act().at(229091840).cast());
+        sync_cores();
+        un_gs_16_1920(act().at(229089280).cast(), act().at(983040).cast());
+        sync_cores();
+        un_ga_16_1920_silu(act().at(229089280).cast(), act().at(983040).cast(), w().at(979865600).cast(), w().at(979873792).cast(), w().at(979881984).cast(), act().at(231546880).cast());
+        sync_cores();
+        un_lr_16_1920_1280_first(act().at(231619840).cast(), w().at(980127744).cast(), act().at(234004480).cast());
+        sync_cores();
+        un_lr_16_1920_1280_mid(act().at(231623680).cast(), w().at(985042944).cast(), act().at(234004480).cast());
+        sync_cores();
+        un_lr_16_1920_1280_mid(act().at(231627520).cast(), w().at(989958144).cast(), act().at(234004480).cast());
+        sync_cores();
+        un_lr_16_1920_1280_mid(act().at(231696640).cast(), w().at(994873344).cast(), act().at(234004480).cast());
+        sync_cores();
+        un_lr_16_1920_1280_mid(act().at(231700480).cast(), w().at(999788544).cast(), act().at(234004480).cast());
+        sync_cores();
+        un_lr_16_1920_1280_mid(act().at(231704320).cast(), w().at(1004703744).cast(), act().at(234004480).cast());
+        sync_cores();
+        un_lr_16_1920_1280_mid(act().at(231773440).cast(), w().at(1009618944).cast(), act().at(234004480).cast());
+        sync_cores();
+        un_lr_16_1920_1280_mid(act().at(231777280).cast(), w().at(1014534144).cast(), act().at(234004480).cast());
+        sync_cores();
+        un_lr_16_1920_1280_b_last(act().at(231781120).cast(), w().at(1019449344).cast(), in_x().at(64000).cast(), act().at(234004480).cast(), act().at(235745280).cast());
+        sync_cores();
+        un_gs_16_1280(act().at(235642880).cast(), act().at(983040).cast());
+        sync_cores();
+        un_ga_16_1280_silu(act().at(235642880).cast(), act().at(983040).cast(), w().at(1024364544).cast(), w().at(1024372736).cast(), w().at(29515776).cast(), act().at(237281280).cast());
+        sync_cores();
+        un_lr_16_1920_1280_b(act().at(229242880).cast(), w().at(1024380928).cast(), w().at(1029296128).cast(), act().at(239022080).cast());
+        sync_cores();
+        un_lr_16_1280_1280_first(act().at(237329920).cast(), w().at(1029304320).cast(), act().at(240558080).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(237332480).cast(), w().at(1032581120).cast(), act().at(240558080).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(237335040).cast(), w().at(1035857920).cast(), act().at(240558080).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(237381120).cast(), w().at(1039134720).cast(), act().at(240558080).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(237383680).cast(), w().at(1042411520).cast(), act().at(240558080).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(237386240).cast(), w().at(1045688320).cast(), act().at(240558080).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(237432320).cast(), w().at(1048965120).cast(), act().at(240558080).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(237434880).cast(), w().at(1052241920).cast(), act().at(240558080).cast());
+        sync_cores();
+        un_lr_16_1280_1280_b_last(act().at(237437440).cast(), w().at(1055518720).cast(), w().at(1058795520).cast(), act().at(240558080).cast(), act().at(242298880).cast());
+        sync_cores();
+        un_ra_16_1280_1280_1280_1280(act().at(242196480).cast(), act().at(238919680).cast(), act().at(243834880).cast());
+        sync_cores();
+        // up1.attn2
+        un_gs_16_1280(act().at(243834880).cast(), act().at(983040).cast());
+        sync_cores();
+        un_ga_16_1280_none(act().at(243834880).cast(), act().at(983040).cast(), w().at(1058803712).cast(), w().at(1058811904).cast(), w().at(29515776).cast(), act().at(245473280).cast());
+        sync_cores();
+        un_lr_16_1280_1280_b(act().at(245575680).cast(), w().at(1058820096).cast(), w().at(1062096896).cast(), act().at(247214080).cast());
+        sync_cores();
+        un_ln_16_1280(act().at(247111680).cast(), w().at(1062105088).cast(), w().at(1062113280).cast(), act().at(248750080).cast());
+        sync_cores();
+        un_lr_16_1280_1280(act().at(248852480).cast(), w().at(1062121472).cast(), act().at(250490880).cast());
+        sync_cores();
+        un_lr_16_1280_1280(act().at(248852480).cast(), w().at(1065398272).cast(), act().at(252129280).cast());
+        sync_cores();
+        un_lr_16_1280_1280(act().at(248852480).cast(), w().at(1068675072).cast(), act().at(253767680).cast());
+        sync_cores();
+        un_at_16_s(act().at(250388480).cast(), act().at(252026880).cast(), act().at(253665280).cast(), w().at(758693888).cast(), act().at(255303680).cast());
+        sync_cores();
+        un_lr_16_1280_1280_b(act().at(255406080).cast(), w().at(1071951872).cast(), w().at(1075228672).cast(), act().at(257044480).cast());
+        sync_cores();
+        un_ra_16_1280_1280_1280_1280(act().at(256942080).cast(), act().at(247111680).cast(), act().at(258580480).cast());
+        sync_cores();
+        // up1.attn2.cross
+        un_ln_16_1280(act().at(258580480).cast(), w().at(1075236864).cast(), w().at(1075245056).cast(), act().at(260218880).cast());
+        sync_cores();
+        un_lr_16_1280_1280(act().at(260321280).cast(), w().at(1075253248).cast(), act().at(261959680).cast());
+        sync_cores();
+        un_kv_1280(in_x().at(1720320).cast(), w().at(1078530048).cast(), act().at(263495680).cast());
+        sync_cores();
+        un_kv_1280(in_x().at(1720320).cast(), w().at(1080496128).cast(), act().at(263823360).cast());
+        sync_cores();
+        un_at_16_x(act().at(261857280).cast(), act().at(263495680).cast(), act().at(263823360).cast(), w().at(230395904).cast(), act().at(264151040).cast());
+        sync_cores();
+        un_lr_16_1280_1280_b(act().at(264253440).cast(), w().at(1082462208).cast(), w().at(1085739008).cast(), act().at(265891840).cast());
+        sync_cores();
+        un_ra_16_1280_1280_1280_1280(act().at(265789440).cast(), act().at(258580480).cast(), act().at(267427840).cast());
+        sync_cores();
+        // up1.attn2.ff
+        un_ln_16_1280(act().at(267427840).cast(), w().at(1085747200).cast(), w().at(1085755392).cast(), act().at(269066240).cast());
+        sync_cores();
+        un_lr_16_1280_5120_b(act().at(269168640).cast(), w().at(1085763584).cast(), w().at(1098870784).cast(), act().at(271114240).cast());
+        sync_cores();
+        un_lr_16_1280_5120_b(act().at(269168640).cast(), w().at(1098891264).cast(), w().at(1111998464).cast(), act().at(277667840).cast());
+        sync_cores();
+        un_gg_16(act().at(270704640).cast(), act().at(277258240).cast(), act().at(283811840).cast());
+        sync_cores();
+        un_lr_16_5120_1280_b(act().at(284221440).cast(), w().at(1112018944).cast(), w().at(1125126144).cast(), act().at(290467840).cast());
+        sync_cores();
+        un_ra_16_1280_1280_1280_1280(act().at(290365440).cast(), act().at(267427840).cast(), act().at(292003840).cast());
+        sync_cores();
+        un_lr_16_1280_1280_b(act().at(292106240).cast(), w().at(1125134336).cast(), w().at(1128411136).cast(), act().at(293744640).cast());
+        sync_cores();
+        un_ra_16_1280_1280_1280_1280(act().at(293642240).cast(), act().at(243834880).cast(), act().at(295280640).cast());
+        sync_cores();
+        // up1.up
+        un_up_16_1280_256(act().at(295280640).cast(), act().at(296919040).cast());
+        sync_cores();
+        un_up_16_1280_256(act().at(295281152).cast(), act().at(296919552).cast());
+        sync_cores();
+        un_up_16_1280_256(act().at(295281664).cast(), act().at(296920064).cast());
+        sync_cores();
+        un_up_16_1280_256(act().at(295282176).cast(), act().at(296920576).cast());
+        sync_cores();
+        un_up_16_1280_256(act().at(295282688).cast(), act().at(296921088).cast());
+        sync_cores();
+        un_lr_32_1280_1280_first(act().at(297008640).cast(), w().at(1128419328).cast(), act().at(300851200).cast());
+        sync_cores();
+        un_lr_32_1280_1280_mid(act().at(297011200).cast(), w().at(1131696128).cast(), act().at(300851200).cast());
+        sync_cores();
+        un_lr_32_1280_1280_mid(act().at(297013760).cast(), w().at(1134972928).cast(), act().at(300851200).cast());
+        sync_cores();
+        un_lr_32_1280_1280_mid(act().at(297100800).cast(), w().at(1138249728).cast(), act().at(300851200).cast());
+        sync_cores();
+        un_lr_32_1280_1280_mid(act().at(297103360).cast(), w().at(1141526528).cast(), act().at(300851200).cast());
+        sync_cores();
+        un_lr_32_1280_1280_mid(act().at(297105920).cast(), w().at(1144803328).cast(), act().at(300851200).cast());
+        sync_cores();
+        un_lr_32_1280_1280_mid(act().at(297192960).cast(), w().at(1148080128).cast(), act().at(300851200).cast());
+        sync_cores();
+        un_lr_32_1280_1280_mid(act().at(297195520).cast(), w().at(1151356928).cast(), act().at(300851200).cast());
+        sync_cores();
+        un_lr_32_1280_1280_b_last(act().at(297198080).cast(), w().at(1154633728).cast(), w().at(1157910528).cast(), act().at(300851200).cast(), act().at(306933760).cast());
+        sync_cores();
+        // up2.res0
+        un_cp_32_1280_1920(act().at(306749440).cast(), act().at(310681600).cast());
+        sync_cores();
+        un_cp_32_640_1920(in_x().at(4374528).cast(), act().at(310684160).cast());
+        sync_cores();
+        un_gs_32_1920(act().at(310681600).cast(), act().at(983040).cast());
+        sync_cores();
+        un_ga_32_1920_silu(act().at(310681600).cast(), act().at(983040).cast(), w().at(1157918720).cast(), w().at(1157926912).cast(), w().at(979881984).cast(), act().at(316579840).cast());
+        sync_cores();
+        un_lr_32_1920_640_first(act().at(316714240).cast(), w().at(1157935104).cast(), act().at(322478080).cast());
+        sync_cores();
+        un_lr_32_1920_640_mid(act().at(316718080).cast(), w().at(1160392704).cast(), act().at(322478080).cast());
+        sync_cores();
+        un_lr_32_1920_640_mid(act().at(316721920).cast(), w().at(1162850304).cast(), act().at(322478080).cast());
+        sync_cores();
+        un_lr_32_1920_640_mid(act().at(316852480).cast(), w().at(1165307904).cast(), act().at(322478080).cast());
+        sync_cores();
+        un_lr_32_1920_640_mid(act().at(316856320).cast(), w().at(1167765504).cast(), act().at(322478080).cast());
+        sync_cores();
+        un_lr_32_1920_640_mid(act().at(316860160).cast(), w().at(1170223104).cast(), act().at(322478080).cast());
+        sync_cores();
+        un_lr_32_1920_640_mid(act().at(316990720).cast(), w().at(1172680704).cast(), act().at(322478080).cast());
+        sync_cores();
+        un_lr_32_1920_640_mid(act().at(316994560).cast(), w().at(1175138304).cast(), act().at(322478080).cast());
+        sync_cores();
+        un_lr_32_1920_640_b_last(act().at(316998400).cast(), w().at(1177595904).cast(), in_x().at(69120).cast(), act().at(322478080).cast(), act().at(325519360).cast());
+        sync_cores();
+        un_gs_32_640(act().at(325427200).cast(), act().at(983040).cast());
+        sync_cores();
+        un_ga_32_640_silu(act().at(325427200).cast(), act().at(983040).cast(), w().at(1180053504).cast(), w().at(1180057600).cast(), w().at(1180061696).cast(), act().at(327393280).cast());
+        sync_cores();
+        un_lr_32_1920_640_b(act().at(310958080).cast(), w().at(1180143616).cast(), w().at(1182601216).cast(), act().at(329451520).cast());
+        sync_cores();
+        un_c3_32_640_640_r(act().at(327393280).cast(), w().at(1182605312).cast(), w().at(1189978112).cast(), act().at(329359360).cast(), out_y().at(0).cast());
         sync_cores();
         // ── 第 1 路（空提示词）──
         // down2.down
-        un_c3_8_1280_1280_s2(in_x().at(1916928).cast(), w().at(0).cast(), w().at(29491200).cast(), act().at(0).cast());
+        un_c3_8_1280_1280_s2(in_x().at(6340608).cast(), w().at(0).cast(), w().at(29491200).cast(), act().at(0).cast());
         sync_cores();
         // down3.res0
         un_gs_8_1280(act().at(0).cast(), act().at(983040).cast());
         sync_cores();
         un_ga_8_1280_silu(act().at(0).cast(), act().at(983040).cast(), w().at(29499392).cast(), w().at(29507584).cast(), w().at(29515776).cast(), act().at(1024000).cast());
         sync_cores();
-        un_c3_8_1280_1280(act().at(1024000).cast(), w().at(29679616).cast(), in_x().at(17920).cast(), act().at(2007040).cast());
+        un_lr_8_1280_1280_first(act().at(1052160).cast(), w().at(29679616).cast(), act().at(2007040).cast());
         sync_cores();
-        un_gs_8_1280(act().at(2007040).cast(), act().at(983040).cast());
+        un_lr_8_1280_1280_mid(act().at(1054720).cast(), w().at(32956416).cast(), act().at(2007040).cast());
         sync_cores();
-        un_ga_8_1280_silu(act().at(2007040).cast(), act().at(983040).cast(), w().at(59170816).cast(), w().at(59179008).cast(), w().at(29515776).cast(), act().at(2990080).cast());
+        un_lr_8_1280_1280_mid(act().at(1057280).cast(), w().at(36233216).cast(), act().at(2007040).cast());
         sync_cores();
-        un_c3_8_1280_1280_r(act().at(2990080).cast(), w().at(59187200).cast(), w().at(88678400).cast(), act().at(0).cast(), act().at(3973120).cast());
+        un_lr_8_1280_1280_mid(act().at(1082880).cast(), w().at(39510016).cast(), act().at(2007040).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(1085440).cast(), w().at(42786816).cast(), act().at(2007040).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(1088000).cast(), w().at(46063616).cast(), act().at(2007040).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(1113600).cast(), w().at(49340416).cast(), act().at(2007040).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(1116160).cast(), w().at(52617216).cast(), act().at(2007040).cast());
+        sync_cores();
+        un_lr_8_1280_1280_b_last(act().at(1118720).cast(), w().at(55894016).cast(), in_x().at(17920).cast(), act().at(2007040).cast(), act().at(2560000).cast());
+        sync_cores();
+        un_gs_8_1280(act().at(2498560).cast(), act().at(983040).cast());
+        sync_cores();
+        un_ga_8_1280_silu(act().at(2498560).cast(), act().at(983040).cast(), w().at(59170816).cast(), w().at(59179008).cast(), w().at(29515776).cast(), act().at(3481600).cast());
+        sync_cores();
+        un_lr_8_1280_1280_first(act().at(3509760).cast(), w().at(59187200).cast(), act().at(4464640).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(3512320).cast(), w().at(62464000).cast(), act().at(4464640).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(3514880).cast(), w().at(65740800).cast(), act().at(4464640).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(3540480).cast(), w().at(69017600).cast(), act().at(4464640).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(3543040).cast(), w().at(72294400).cast(), act().at(4464640).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(3545600).cast(), w().at(75571200).cast(), act().at(4464640).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(3571200).cast(), w().at(78848000).cast(), act().at(4464640).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(3573760).cast(), w().at(82124800).cast(), act().at(4464640).cast());
+        sync_cores();
+        un_lr_8_1280_1280_b_last(act().at(3576320).cast(), w().at(85401600).cast(), w().at(88678400).cast(), act().at(4464640).cast(), act().at(5017600).cast());
+        sync_cores();
+        un_ra_8_1280_1280_1280_1280(act().at(4956160).cast(), act().at(0).cast(), act().at(5939200).cast());
         sync_cores();
         // down3.res1
-        un_gs_8_1280(act().at(3973120).cast(), act().at(983040).cast());
-        sync_cores();
-        un_ga_8_1280_silu(act().at(3973120).cast(), act().at(983040).cast(), w().at(88686592).cast(), w().at(88694784).cast(), w().at(29515776).cast(), act().at(4956160).cast());
-        sync_cores();
-        un_c3_8_1280_1280(act().at(4956160).cast(), w().at(88702976).cast(), in_x().at(23040).cast(), act().at(5939200).cast());
-        sync_cores();
         un_gs_8_1280(act().at(5939200).cast(), act().at(983040).cast());
         sync_cores();
-        un_ga_8_1280_silu(act().at(5939200).cast(), act().at(983040).cast(), w().at(118194176).cast(), w().at(118202368).cast(), w().at(29515776).cast(), act().at(6922240).cast());
+        un_ga_8_1280_silu(act().at(5939200).cast(), act().at(983040).cast(), w().at(88686592).cast(), w().at(88694784).cast(), w().at(29515776).cast(), act().at(6922240).cast());
         sync_cores();
-        un_c3_8_1280_1280_r(act().at(6922240).cast(), w().at(118210560).cast(), w().at(147701760).cast(), act().at(3973120).cast(), act().at(7905280).cast());
+        un_lr_8_1280_1280_first(act().at(6950400).cast(), w().at(88702976).cast(), act().at(7905280).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(6952960).cast(), w().at(91979776).cast(), act().at(7905280).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(6955520).cast(), w().at(95256576).cast(), act().at(7905280).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(6981120).cast(), w().at(98533376).cast(), act().at(7905280).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(6983680).cast(), w().at(101810176).cast(), act().at(7905280).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(6986240).cast(), w().at(105086976).cast(), act().at(7905280).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(7011840).cast(), w().at(108363776).cast(), act().at(7905280).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(7014400).cast(), w().at(111640576).cast(), act().at(7905280).cast());
+        sync_cores();
+        un_lr_8_1280_1280_b_last(act().at(7016960).cast(), w().at(114917376).cast(), in_x().at(23040).cast(), act().at(7905280).cast(), act().at(8458240).cast());
+        sync_cores();
+        un_gs_8_1280(act().at(8396800).cast(), act().at(983040).cast());
+        sync_cores();
+        un_ga_8_1280_silu(act().at(8396800).cast(), act().at(983040).cast(), w().at(118194176).cast(), w().at(118202368).cast(), w().at(29515776).cast(), act().at(9379840).cast());
+        sync_cores();
+        un_lr_8_1280_1280_first(act().at(9408000).cast(), w().at(118210560).cast(), act().at(10362880).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(9410560).cast(), w().at(121487360).cast(), act().at(10362880).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(9413120).cast(), w().at(124764160).cast(), act().at(10362880).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(9438720).cast(), w().at(128040960).cast(), act().at(10362880).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(9441280).cast(), w().at(131317760).cast(), act().at(10362880).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(9443840).cast(), w().at(134594560).cast(), act().at(10362880).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(9469440).cast(), w().at(137871360).cast(), act().at(10362880).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(9472000).cast(), w().at(141148160).cast(), act().at(10362880).cast());
+        sync_cores();
+        un_lr_8_1280_1280_b_last(act().at(9474560).cast(), w().at(144424960).cast(), w().at(147701760).cast(), act().at(10362880).cast(), act().at(10915840).cast());
+        sync_cores();
+        un_ra_8_1280_1280_1280_1280(act().at(10854400).cast(), act().at(5939200).cast(), act().at(11837440).cast());
         sync_cores();
         // mid.res0
-        un_gs_8_1280(act().at(7905280).cast(), act().at(983040).cast());
-        sync_cores();
-        un_ga_8_1280_silu(act().at(7905280).cast(), act().at(983040).cast(), w().at(147709952).cast(), w().at(147718144).cast(), w().at(29515776).cast(), act().at(8888320).cast());
-        sync_cores();
-        un_c3_8_1280_1280(act().at(8888320).cast(), w().at(147726336).cast(), in_x().at(28160).cast(), act().at(9871360).cast());
-        sync_cores();
-        un_gs_8_1280(act().at(9871360).cast(), act().at(983040).cast());
-        sync_cores();
-        un_ga_8_1280_silu(act().at(9871360).cast(), act().at(983040).cast(), w().at(177217536).cast(), w().at(177225728).cast(), w().at(29515776).cast(), act().at(10854400).cast());
-        sync_cores();
-        un_c3_8_1280_1280_r(act().at(10854400).cast(), w().at(177233920).cast(), w().at(206725120).cast(), act().at(7905280).cast(), act().at(11837440).cast());
-        sync_cores();
-        // mid.attn
         un_gs_8_1280(act().at(11837440).cast(), act().at(983040).cast());
         sync_cores();
-        un_ga_8_1280_none(act().at(11837440).cast(), act().at(983040).cast(), w().at(206733312).cast(), w().at(206741504).cast(), w().at(29515776).cast(), act().at(12820480).cast());
+        un_ga_8_1280_silu(act().at(11837440).cast(), act().at(983040).cast(), w().at(147709952).cast(), w().at(147718144).cast(), w().at(29515776).cast(), act().at(12820480).cast());
         sync_cores();
-        un_c1_8_1280_1280(act().at(12820480).cast(), w().at(206749696).cast(), w().at(210026496).cast(), act().at(13803520).cast());
+        un_lr_8_1280_1280_first(act().at(12848640).cast(), w().at(147726336).cast(), act().at(13803520).cast());
         sync_cores();
-        un_ln_8_1280(act().at(13803520).cast(), w().at(210034688).cast(), w().at(210042880).cast(), act().at(14786560).cast());
+        un_lr_8_1280_1280_mid(act().at(12851200).cast(), w().at(151003136).cast(), act().at(13803520).cast());
         sync_cores();
-        un_c1_8_1280_1280(act().at(14786560).cast(), w().at(210051072).cast(), w().at(213327872).cast(), act().at(15769600).cast());
+        un_lr_8_1280_1280_mid(act().at(12853760).cast(), w().at(154279936).cast(), act().at(13803520).cast());
         sync_cores();
-        un_c1_8_1280_1280(act().at(14786560).cast(), w().at(213336064).cast(), w().at(213327872).cast(), act().at(16752640).cast());
+        un_lr_8_1280_1280_mid(act().at(12879360).cast(), w().at(157556736).cast(), act().at(13803520).cast());
         sync_cores();
-        un_c1_8_1280_1280(act().at(14786560).cast(), w().at(216612864).cast(), w().at(213327872).cast(), act().at(17735680).cast());
+        un_lr_8_1280_1280_mid(act().at(12881920).cast(), w().at(160833536).cast(), act().at(13803520).cast());
         sync_cores();
-        un_at_8_s(act().at(15769600).cast(), act().at(16752640).cast(), act().at(17735680).cast(), w().at(219889664).cast(), act().at(18718720).cast());
+        un_lr_8_1280_1280_mid(act().at(12884480).cast(), w().at(164110336).cast(), act().at(13803520).cast());
         sync_cores();
-        un_c1_8_1280_1280_r(act().at(18718720).cast(), w().at(219893760).cast(), w().at(223170560).cast(), act().at(13803520).cast(), act().at(19701760).cast());
+        un_lr_8_1280_1280_mid(act().at(12910080).cast(), w().at(167387136).cast(), act().at(13803520).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(12912640).cast(), w().at(170663936).cast(), act().at(13803520).cast());
+        sync_cores();
+        un_lr_8_1280_1280_b_last(act().at(12915200).cast(), w().at(173940736).cast(), in_x().at(28160).cast(), act().at(13803520).cast(), act().at(14356480).cast());
+        sync_cores();
+        un_gs_8_1280(act().at(14295040).cast(), act().at(983040).cast());
+        sync_cores();
+        un_ga_8_1280_silu(act().at(14295040).cast(), act().at(983040).cast(), w().at(177217536).cast(), w().at(177225728).cast(), w().at(29515776).cast(), act().at(15278080).cast());
+        sync_cores();
+        un_lr_8_1280_1280_first(act().at(15306240).cast(), w().at(177233920).cast(), act().at(16261120).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(15308800).cast(), w().at(180510720).cast(), act().at(16261120).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(15311360).cast(), w().at(183787520).cast(), act().at(16261120).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(15336960).cast(), w().at(187064320).cast(), act().at(16261120).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(15339520).cast(), w().at(190341120).cast(), act().at(16261120).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(15342080).cast(), w().at(193617920).cast(), act().at(16261120).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(15367680).cast(), w().at(196894720).cast(), act().at(16261120).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(15370240).cast(), w().at(200171520).cast(), act().at(16261120).cast());
+        sync_cores();
+        un_lr_8_1280_1280_b_last(act().at(15372800).cast(), w().at(203448320).cast(), w().at(206725120).cast(), act().at(16261120).cast(), act().at(16814080).cast());
+        sync_cores();
+        un_ra_8_1280_1280_1280_1280(act().at(16752640).cast(), act().at(11837440).cast(), act().at(17735680).cast());
+        sync_cores();
+        // mid.attn
+        un_gs_8_1280(act().at(17735680).cast(), act().at(983040).cast());
+        sync_cores();
+        un_ga_8_1280_none(act().at(17735680).cast(), act().at(983040).cast(), w().at(206733312).cast(), w().at(206741504).cast(), w().at(29515776).cast(), act().at(18718720).cast());
+        sync_cores();
+        un_lr_8_1280_1280_b(act().at(18780160).cast(), w().at(206749696).cast(), w().at(210026496).cast(), act().at(19763200).cast());
+        sync_cores();
+        un_ln_8_1280(act().at(19701760).cast(), w().at(210034688).cast(), w().at(210042880).cast(), act().at(20684800).cast());
+        sync_cores();
+        un_lr_8_1280_1280(act().at(20746240).cast(), w().at(210051072).cast(), act().at(21729280).cast());
+        sync_cores();
+        un_lr_8_1280_1280(act().at(20746240).cast(), w().at(213327872).cast(), act().at(22712320).cast());
+        sync_cores();
+        un_lr_8_1280_1280(act().at(20746240).cast(), w().at(216604672).cast(), act().at(23695360).cast());
+        sync_cores();
+        un_at_8_s(act().at(21667840).cast(), act().at(22650880).cast(), act().at(23633920).cast(), w().at(219881472).cast(), act().at(24616960).cast());
+        sync_cores();
+        un_lr_8_1280_1280_b(act().at(24678400).cast(), w().at(219885568).cast(), w().at(223162368).cast(), act().at(25661440).cast());
+        sync_cores();
+        un_ra_8_1280_1280_1280_1280(act().at(25600000).cast(), act().at(19701760).cast(), act().at(26583040).cast());
         sync_cores();
         // mid.attn.cross
-        un_ln_8_1280(act().at(19701760).cast(), w().at(223178752).cast(), w().at(223186944).cast(), act().at(20684800).cast());
+        un_ln_8_1280(act().at(26583040).cast(), w().at(223170560).cast(), w().at(223178752).cast(), act().at(27566080).cast());
         sync_cores();
-        un_c1_8_1280_1280(act().at(20684800).cast(), w().at(223195136).cast(), w().at(213327872).cast(), act().at(21667840).cast());
+        un_lr_8_1280_1280(act().at(27627520).cast(), w().at(223186944).cast(), act().at(28610560).cast());
         sync_cores();
-        un_kv_1280(in_x().at(3555328).cast(), w().at(226471936).cast(), act().at(22650880).cast());
+        un_kv_1280(in_x().at(7979008).cast(), w().at(226463744).cast(), act().at(29532160).cast());
         sync_cores();
-        un_kv_1280(in_x().at(3555328).cast(), w().at(228438016).cast(), act().at(22978560).cast());
+        un_kv_1280(in_x().at(7979008).cast(), w().at(228429824).cast(), act().at(29859840).cast());
         sync_cores();
-        un_at_8_x(act().at(21667840).cast(), act().at(22650880).cast(), act().at(22978560).cast(), w().at(230404096).cast(), act().at(23306240).cast());
+        un_at_8_x(act().at(28549120).cast(), act().at(29532160).cast(), act().at(29859840).cast(), w().at(230395904).cast(), act().at(30187520).cast());
         sync_cores();
-        un_c1_8_1280_1280_r(act().at(23306240).cast(), w().at(230408192).cast(), w().at(233684992).cast(), act().at(19701760).cast(), act().at(24289280).cast());
+        un_lr_8_1280_1280_b(act().at(30248960).cast(), w().at(230400000).cast(), w().at(233676800).cast(), act().at(31232000).cast());
+        sync_cores();
+        un_ra_8_1280_1280_1280_1280(act().at(31170560).cast(), act().at(26583040).cast(), act().at(32153600).cast());
         sync_cores();
         // mid.attn.ff
-        un_ln_8_1280(act().at(24289280).cast(), w().at(233693184).cast(), w().at(233701376).cast(), act().at(25272320).cast());
+        un_ln_8_1280(act().at(32153600).cast(), w().at(233684992).cast(), w().at(233693184).cast(), act().at(33136640).cast());
         sync_cores();
-        un_c1_8_1280_5120(act().at(25272320).cast(), w().at(233709568).cast(), w().at(246816768).cast(), act().at(26255360).cast());
+        un_lr_8_1280_5120_b(act().at(33198080).cast(), w().at(233701376).cast(), w().at(246808576).cast(), act().at(34365440).cast());
         sync_cores();
-        un_c1_8_1280_5120(act().at(25272320).cast(), w().at(246837248).cast(), w().at(259944448).cast(), act().at(30187520).cast());
+        un_lr_8_1280_5120_b(act().at(33198080).cast(), w().at(246829056).cast(), w().at(259936256).cast(), act().at(38297600).cast());
         sync_cores();
-        un_gg_8(act().at(26255360).cast(), act().at(30187520).cast(), act().at(34119680).cast());
+        un_gg_8(act().at(34119680).cast(), act().at(38051840).cast(), act().at(41984000).cast());
         sync_cores();
-        un_c1_8_5120_1280_r(act().at(34119680).cast(), w().at(259964928).cast(), w().at(273072128).cast(), act().at(24289280).cast(), act().at(38051840).cast());
+        un_lr_8_5120_1280_b(act().at(42229760).cast(), w().at(259956736).cast(), w().at(273063936).cast(), act().at(45977600).cast());
         sync_cores();
-        un_c1_8_1280_1280_r(act().at(38051840).cast(), w().at(273080320).cast(), w().at(276357120).cast(), act().at(11837440).cast(), act().at(39034880).cast());
+        un_ra_8_1280_1280_1280_1280(act().at(45916160).cast(), act().at(32153600).cast(), act().at(46899200).cast());
+        sync_cores();
+        un_lr_8_1280_1280_b(act().at(46960640).cast(), w().at(273072128).cast(), w().at(276348928).cast(), act().at(47943680).cast());
+        sync_cores();
+        un_ra_8_1280_1280_1280_1280(act().at(47882240).cast(), act().at(17735680).cast(), act().at(48865280).cast());
         sync_cores();
         // mid.res1
-        un_gs_8_1280(act().at(39034880).cast(), act().at(983040).cast());
+        un_gs_8_1280(act().at(48865280).cast(), act().at(983040).cast());
         sync_cores();
-        un_ga_8_1280_silu(act().at(39034880).cast(), act().at(983040).cast(), w().at(276365312).cast(), w().at(276373504).cast(), w().at(29515776).cast(), act().at(40017920).cast());
+        un_ga_8_1280_silu(act().at(48865280).cast(), act().at(983040).cast(), w().at(276357120).cast(), w().at(276365312).cast(), w().at(29515776).cast(), act().at(49848320).cast());
         sync_cores();
-        un_c3_8_1280_1280(act().at(40017920).cast(), w().at(276381696).cast(), in_x().at(33280).cast(), act().at(41000960).cast());
+        un_lr_8_1280_1280_first(act().at(49876480).cast(), w().at(276373504).cast(), act().at(50831360).cast());
         sync_cores();
-        un_gs_8_1280(act().at(41000960).cast(), act().at(983040).cast());
+        un_lr_8_1280_1280_mid(act().at(49879040).cast(), w().at(279650304).cast(), act().at(50831360).cast());
         sync_cores();
-        un_ga_8_1280_silu(act().at(41000960).cast(), act().at(983040).cast(), w().at(305872896).cast(), w().at(305881088).cast(), w().at(29515776).cast(), act().at(41984000).cast());
+        un_lr_8_1280_1280_mid(act().at(49881600).cast(), w().at(282927104).cast(), act().at(50831360).cast());
         sync_cores();
-        un_c3_8_1280_1280_r(act().at(41984000).cast(), w().at(305889280).cast(), w().at(335380480).cast(), act().at(39034880).cast(), act().at(42967040).cast());
+        un_lr_8_1280_1280_mid(act().at(49907200).cast(), w().at(286203904).cast(), act().at(50831360).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(49909760).cast(), w().at(289480704).cast(), act().at(50831360).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(49912320).cast(), w().at(292757504).cast(), act().at(50831360).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(49937920).cast(), w().at(296034304).cast(), act().at(50831360).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(49940480).cast(), w().at(299311104).cast(), act().at(50831360).cast());
+        sync_cores();
+        un_lr_8_1280_1280_b_last(act().at(49943040).cast(), w().at(302587904).cast(), in_x().at(33280).cast(), act().at(50831360).cast(), act().at(51384320).cast());
+        sync_cores();
+        un_gs_8_1280(act().at(51322880).cast(), act().at(983040).cast());
+        sync_cores();
+        un_ga_8_1280_silu(act().at(51322880).cast(), act().at(983040).cast(), w().at(305864704).cast(), w().at(305872896).cast(), w().at(29515776).cast(), act().at(52305920).cast());
+        sync_cores();
+        un_lr_8_1280_1280_first(act().at(52334080).cast(), w().at(305881088).cast(), act().at(53288960).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(52336640).cast(), w().at(309157888).cast(), act().at(53288960).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(52339200).cast(), w().at(312434688).cast(), act().at(53288960).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(52364800).cast(), w().at(315711488).cast(), act().at(53288960).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(52367360).cast(), w().at(318988288).cast(), act().at(53288960).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(52369920).cast(), w().at(322265088).cast(), act().at(53288960).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(52395520).cast(), w().at(325541888).cast(), act().at(53288960).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(52398080).cast(), w().at(328818688).cast(), act().at(53288960).cast());
+        sync_cores();
+        un_lr_8_1280_1280_b_last(act().at(52400640).cast(), w().at(332095488).cast(), w().at(335372288).cast(), act().at(53288960).cast(), act().at(53841920).cast());
+        sync_cores();
+        un_ra_8_1280_1280_1280_1280(act().at(53780480).cast(), act().at(48865280).cast(), act().at(54763520).cast());
         sync_cores();
         // up0.res0
-        un_cp_8_1280_2560(act().at(42967040).cast(), act().at(43950080).cast());
+        un_cp_8_1280_2560(act().at(54763520).cast(), act().at(55746560).cast());
         sync_cores();
-        un_cp_8_1280_2560(act().at(7905280).cast(), act().at(43952640).cast());
+        un_cp_8_1280_2560(act().at(11837440).cast(), act().at(55749120).cast());
         sync_cores();
-        un_gs_8_2560(act().at(43950080).cast(), act().at(983040).cast());
+        un_gs_8_2560(act().at(55746560).cast(), act().at(983040).cast());
         sync_cores();
-        un_ga_8_2560_silu(act().at(43950080).cast(), act().at(983040).cast(), w().at(335388672).cast(), w().at(335400960).cast(), w().at(335413248).cast(), act().at(45916160).cast());
+        un_ga_8_2560_silu(act().at(55746560).cast(), act().at(983040).cast(), w().at(335380480).cast(), w().at(335392768).cast(), w().at(335405056).cast(), act().at(57712640).cast());
         sync_cores();
-        un_c3_8_2560_1280(act().at(45916160).cast(), w().at(335740928).cast(), in_x().at(38400).cast(), act().at(47882240).cast());
+        un_lr_8_2560_1280_first(act().at(57768960).cast(), w().at(335732736).cast(), act().at(59678720).cast());
         sync_cores();
-        un_gs_8_1280(act().at(47882240).cast(), act().at(983040).cast());
+        un_lr_8_2560_1280_mid(act().at(57774080).cast(), w().at(342286336).cast(), act().at(59678720).cast());
         sync_cores();
-        un_ga_8_1280_silu(act().at(47882240).cast(), act().at(983040).cast(), w().at(394723328).cast(), w().at(394731520).cast(), w().at(29515776).cast(), act().at(48865280).cast());
+        un_lr_8_2560_1280_mid(act().at(57779200).cast(), w().at(348839936).cast(), act().at(59678720).cast());
         sync_cores();
-        un_c1_8_2560_1280(act().at(43950080).cast(), w().at(394739712).cast(), w().at(401293312).cast(), act().at(49848320).cast());
+        un_lr_8_2560_1280_mid(act().at(57830400).cast(), w().at(355393536).cast(), act().at(59678720).cast());
         sync_cores();
-        un_c3_8_1280_1280_r(act().at(48865280).cast(), w().at(401301504).cast(), w().at(430792704).cast(), act().at(49848320).cast(), act().at(50831360).cast());
+        un_lr_8_2560_1280_mid(act().at(57835520).cast(), w().at(361947136).cast(), act().at(59678720).cast());
+        sync_cores();
+        un_lr_8_2560_1280_mid(act().at(57840640).cast(), w().at(368500736).cast(), act().at(59678720).cast());
+        sync_cores();
+        un_lr_8_2560_1280_mid(act().at(57891840).cast(), w().at(375054336).cast(), act().at(59678720).cast());
+        sync_cores();
+        un_lr_8_2560_1280_mid(act().at(57896960).cast(), w().at(381607936).cast(), act().at(59678720).cast());
+        sync_cores();
+        un_lr_8_2560_1280_b_last(act().at(57902080).cast(), w().at(388161536).cast(), in_x().at(38400).cast(), act().at(59678720).cast(), act().at(60231680).cast());
+        sync_cores();
+        un_gs_8_1280(act().at(60170240).cast(), act().at(983040).cast());
+        sync_cores();
+        un_ga_8_1280_silu(act().at(60170240).cast(), act().at(983040).cast(), w().at(394715136).cast(), w().at(394723328).cast(), w().at(29515776).cast(), act().at(61153280).cast());
+        sync_cores();
+        un_lr_8_2560_1280_b(act().at(55869440).cast(), w().at(394731520).cast(), w().at(401285120).cast(), act().at(62197760).cast());
+        sync_cores();
+        un_lr_8_1280_1280_first(act().at(61181440).cast(), w().at(401293312).cast(), act().at(63119360).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(61184000).cast(), w().at(404570112).cast(), act().at(63119360).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(61186560).cast(), w().at(407846912).cast(), act().at(63119360).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(61212160).cast(), w().at(411123712).cast(), act().at(63119360).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(61214720).cast(), w().at(414400512).cast(), act().at(63119360).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(61217280).cast(), w().at(417677312).cast(), act().at(63119360).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(61242880).cast(), w().at(420954112).cast(), act().at(63119360).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(61245440).cast(), w().at(424230912).cast(), act().at(63119360).cast());
+        sync_cores();
+        un_lr_8_1280_1280_b_last(act().at(61248000).cast(), w().at(427507712).cast(), w().at(430784512).cast(), act().at(63119360).cast(), act().at(63672320).cast());
+        sync_cores();
+        un_ra_8_1280_1280_1280_1280(act().at(63610880).cast(), act().at(62136320).cast(), act().at(64593920).cast());
         sync_cores();
         // up0.res1
-        un_cp_8_1280_2560(act().at(50831360).cast(), act().at(51814400).cast());
+        un_cp_8_1280_2560(act().at(64593920).cast(), act().at(65576960).cast());
         sync_cores();
-        un_cp_8_1280_2560(act().at(3973120).cast(), act().at(51816960).cast());
+        un_cp_8_1280_2560(act().at(5939200).cast(), act().at(65579520).cast());
         sync_cores();
-        un_gs_8_2560(act().at(51814400).cast(), act().at(983040).cast());
+        un_gs_8_2560(act().at(65576960).cast(), act().at(983040).cast());
         sync_cores();
-        un_ga_8_2560_silu(act().at(51814400).cast(), act().at(983040).cast(), w().at(430800896).cast(), w().at(430813184).cast(), w().at(335413248).cast(), act().at(53780480).cast());
+        un_ga_8_2560_silu(act().at(65576960).cast(), act().at(983040).cast(), w().at(430792704).cast(), w().at(430804992).cast(), w().at(335405056).cast(), act().at(67543040).cast());
         sync_cores();
-        un_c3_8_2560_1280(act().at(53780480).cast(), w().at(430825472).cast(), in_x().at(43520).cast(), act().at(55746560).cast());
+        un_lr_8_2560_1280_first(act().at(67599360).cast(), w().at(430817280).cast(), act().at(69509120).cast());
         sync_cores();
-        un_gs_8_1280(act().at(55746560).cast(), act().at(983040).cast());
+        un_lr_8_2560_1280_mid(act().at(67604480).cast(), w().at(437370880).cast(), act().at(69509120).cast());
         sync_cores();
-        un_ga_8_1280_silu(act().at(55746560).cast(), act().at(983040).cast(), w().at(489807872).cast(), w().at(489816064).cast(), w().at(29515776).cast(), act().at(56729600).cast());
+        un_lr_8_2560_1280_mid(act().at(67609600).cast(), w().at(443924480).cast(), act().at(69509120).cast());
         sync_cores();
-        un_c1_8_2560_1280(act().at(51814400).cast(), w().at(489824256).cast(), w().at(496377856).cast(), act().at(57712640).cast());
+        un_lr_8_2560_1280_mid(act().at(67660800).cast(), w().at(450478080).cast(), act().at(69509120).cast());
         sync_cores();
-        un_c3_8_1280_1280_r(act().at(56729600).cast(), w().at(496386048).cast(), w().at(525877248).cast(), act().at(57712640).cast(), act().at(58695680).cast());
+        un_lr_8_2560_1280_mid(act().at(67665920).cast(), w().at(457031680).cast(), act().at(69509120).cast());
+        sync_cores();
+        un_lr_8_2560_1280_mid(act().at(67671040).cast(), w().at(463585280).cast(), act().at(69509120).cast());
+        sync_cores();
+        un_lr_8_2560_1280_mid(act().at(67722240).cast(), w().at(470138880).cast(), act().at(69509120).cast());
+        sync_cores();
+        un_lr_8_2560_1280_mid(act().at(67727360).cast(), w().at(476692480).cast(), act().at(69509120).cast());
+        sync_cores();
+        un_lr_8_2560_1280_b_last(act().at(67732480).cast(), w().at(483246080).cast(), in_x().at(43520).cast(), act().at(69509120).cast(), act().at(70062080).cast());
+        sync_cores();
+        un_gs_8_1280(act().at(70000640).cast(), act().at(983040).cast());
+        sync_cores();
+        un_ga_8_1280_silu(act().at(70000640).cast(), act().at(983040).cast(), w().at(489799680).cast(), w().at(489807872).cast(), w().at(29515776).cast(), act().at(70983680).cast());
+        sync_cores();
+        un_lr_8_2560_1280_b(act().at(65699840).cast(), w().at(489816064).cast(), w().at(496369664).cast(), act().at(72028160).cast());
+        sync_cores();
+        un_lr_8_1280_1280_first(act().at(71011840).cast(), w().at(496377856).cast(), act().at(72949760).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(71014400).cast(), w().at(499654656).cast(), act().at(72949760).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(71016960).cast(), w().at(502931456).cast(), act().at(72949760).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(71042560).cast(), w().at(506208256).cast(), act().at(72949760).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(71045120).cast(), w().at(509485056).cast(), act().at(72949760).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(71047680).cast(), w().at(512761856).cast(), act().at(72949760).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(71073280).cast(), w().at(516038656).cast(), act().at(72949760).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(71075840).cast(), w().at(519315456).cast(), act().at(72949760).cast());
+        sync_cores();
+        un_lr_8_1280_1280_b_last(act().at(71078400).cast(), w().at(522592256).cast(), w().at(525869056).cast(), act().at(72949760).cast(), act().at(73502720).cast());
+        sync_cores();
+        un_ra_8_1280_1280_1280_1280(act().at(73441280).cast(), act().at(71966720).cast(), act().at(74424320).cast());
         sync_cores();
         // up0.res2
-        un_cp_8_1280_2560(act().at(58695680).cast(), act().at(59678720).cast());
+        un_cp_8_1280_2560(act().at(74424320).cast(), act().at(75407360).cast());
         sync_cores();
-        un_cp_8_1280_2560(act().at(0).cast(), act().at(59681280).cast());
+        un_cp_8_1280_2560(act().at(0).cast(), act().at(75409920).cast());
         sync_cores();
-        un_gs_8_2560(act().at(59678720).cast(), act().at(983040).cast());
+        un_gs_8_2560(act().at(75407360).cast(), act().at(983040).cast());
         sync_cores();
-        un_ga_8_2560_silu(act().at(59678720).cast(), act().at(983040).cast(), w().at(525885440).cast(), w().at(525897728).cast(), w().at(335413248).cast(), act().at(61644800).cast());
+        un_ga_8_2560_silu(act().at(75407360).cast(), act().at(983040).cast(), w().at(525877248).cast(), w().at(525889536).cast(), w().at(335405056).cast(), act().at(77373440).cast());
         sync_cores();
-        un_c3_8_2560_1280(act().at(61644800).cast(), w().at(525910016).cast(), in_x().at(48640).cast(), act().at(63610880).cast());
+        un_lr_8_2560_1280_first(act().at(77429760).cast(), w().at(525901824).cast(), act().at(79339520).cast());
         sync_cores();
-        un_gs_8_1280(act().at(63610880).cast(), act().at(983040).cast());
+        un_lr_8_2560_1280_mid(act().at(77434880).cast(), w().at(532455424).cast(), act().at(79339520).cast());
         sync_cores();
-        un_ga_8_1280_silu(act().at(63610880).cast(), act().at(983040).cast(), w().at(584892416).cast(), w().at(584900608).cast(), w().at(29515776).cast(), act().at(64593920).cast());
+        un_lr_8_2560_1280_mid(act().at(77440000).cast(), w().at(539009024).cast(), act().at(79339520).cast());
         sync_cores();
-        un_c1_8_2560_1280(act().at(59678720).cast(), w().at(584908800).cast(), w().at(591462400).cast(), act().at(65576960).cast());
+        un_lr_8_2560_1280_mid(act().at(77491200).cast(), w().at(545562624).cast(), act().at(79339520).cast());
         sync_cores();
-        un_c3_8_1280_1280_r(act().at(64593920).cast(), w().at(591470592).cast(), w().at(620961792).cast(), act().at(65576960).cast(), out_y().at(983040).cast());
+        un_lr_8_2560_1280_mid(act().at(77496320).cast(), w().at(552116224).cast(), act().at(79339520).cast());
         sync_cores();
-    }
-}
-
-/// s8：up0.up、up1.res0、up1.attn0、up1.attn0.cross
-#[cfg(feature = "s8")]
-mod s8 {
-    use super::*;
-    npu::decls! {
-        in_x: input, bytes = 5718016;
-        out_y: output, bytes = 6553600;
-        w: weights, bytes = 152035328;
-        act: workspace, bytes = 33472512;
-    }
-    #[npu::program(chiplets = 1, cores = 2)]
-    pub fn step() {
-        // 入口第一步：@act 与 out_y 整块清零（两核各清一半）：边框、token 的补齐行、余量都靠它是 0
-        if core_rank() == 0 {
-            un_zero(act().cast(), 1021);
-            un_zero(out_y().cast(), 200);
-        } else {
-            un_zero(act().at(16728064).cast(), 1022);
-            un_zero(out_y().at(3276800).cast(), 200);
-        }
+        un_lr_8_2560_1280_mid(act().at(77501440).cast(), w().at(558669824).cast(), act().at(79339520).cast());
         sync_cores();
-        // ── 第 0 路（有提示词）──
+        un_lr_8_2560_1280_mid(act().at(77552640).cast(), w().at(565223424).cast(), act().at(79339520).cast());
+        sync_cores();
+        un_lr_8_2560_1280_mid(act().at(77557760).cast(), w().at(571777024).cast(), act().at(79339520).cast());
+        sync_cores();
+        un_lr_8_2560_1280_b_last(act().at(77562880).cast(), w().at(578330624).cast(), in_x().at(48640).cast(), act().at(79339520).cast(), act().at(79892480).cast());
+        sync_cores();
+        un_gs_8_1280(act().at(79831040).cast(), act().at(983040).cast());
+        sync_cores();
+        un_ga_8_1280_silu(act().at(79831040).cast(), act().at(983040).cast(), w().at(584884224).cast(), w().at(584892416).cast(), w().at(29515776).cast(), act().at(80814080).cast());
+        sync_cores();
+        un_lr_8_2560_1280_b(act().at(75530240).cast(), w().at(584900608).cast(), w().at(591454208).cast(), act().at(81858560).cast());
+        sync_cores();
+        un_lr_8_1280_1280_first(act().at(80842240).cast(), w().at(591462400).cast(), act().at(82780160).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(80844800).cast(), w().at(594739200).cast(), act().at(82780160).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(80847360).cast(), w().at(598016000).cast(), act().at(82780160).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(80872960).cast(), w().at(601292800).cast(), act().at(82780160).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(80875520).cast(), w().at(604569600).cast(), act().at(82780160).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(80878080).cast(), w().at(607846400).cast(), act().at(82780160).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(80903680).cast(), w().at(611123200).cast(), act().at(82780160).cast());
+        sync_cores();
+        un_lr_8_1280_1280_mid(act().at(80906240).cast(), w().at(614400000).cast(), act().at(82780160).cast());
+        sync_cores();
+        un_lr_8_1280_1280_b_last(act().at(80908800).cast(), w().at(617676800).cast(), w().at(620953600).cast(), act().at(82780160).cast(), act().at(83333120).cast());
+        sync_cores();
+        un_ra_8_1280_1280_1280_1280(act().at(83271680).cast(), act().at(81797120).cast(), act().at(84254720).cast());
+        sync_cores();
         // up0.up
-        un_up_8_1280_256(in_x().at(81920).cast(), act().at(0).cast());
+        un_up_8_1280_256(act().at(84254720).cast(), act().at(85237760).cast());
         sync_cores();
-        un_up_8_1280_256(in_x().at(82432).cast(), act().at(512).cast());
+        un_up_8_1280_256(act().at(84255232).cast(), act().at(85238272).cast());
         sync_cores();
-        un_up_8_1280_256(in_x().at(82944).cast(), act().at(1024).cast());
+        un_up_8_1280_256(act().at(84255744).cast(), act().at(85238784).cast());
         sync_cores();
-        un_up_8_1280_256(in_x().at(83456).cast(), act().at(1536).cast());
+        un_up_8_1280_256(act().at(84256256).cast(), act().at(85239296).cast());
         sync_cores();
-        un_up_8_1280_256(in_x().at(83968).cast(), act().at(2048).cast());
+        un_up_8_1280_256(act().at(84256768).cast(), act().at(85239808).cast());
         sync_cores();
-        un_c3_16_1280_1280(act().at(0).cast(), w().at(0).cast(), w().at(29491200).cast(), act().at(1638400).cast());
+        un_lr_16_1280_1280_first(act().at(85286400).cast(), w().at(620961792).cast(), act().at(86876160).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(85288960).cast(), w().at(624238592).cast(), act().at(86876160).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(85291520).cast(), w().at(627515392).cast(), act().at(86876160).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(85337600).cast(), w().at(630792192).cast(), act().at(86876160).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(85340160).cast(), w().at(634068992).cast(), act().at(86876160).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(85342720).cast(), w().at(637345792).cast(), act().at(86876160).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(85388800).cast(), w().at(640622592).cast(), act().at(86876160).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(85391360).cast(), w().at(643899392).cast(), act().at(86876160).cast());
+        sync_cores();
+        un_lr_16_1280_1280_b_last(act().at(85393920).cast(), w().at(647176192).cast(), w().at(650452992).cast(), act().at(86876160).cast(), act().at(88616960).cast());
         sync_cores();
         // up1.res0
-        un_cp_16_1280_2560(act().at(1638400).cast(), act().at(3276800).cast());
+        un_cp_16_1280_2560(act().at(88514560).cast(), act().at(90152960).cast());
         sync_cores();
-        un_cp_16_1280_2560(in_x().at(1064960).cast(), act().at(3279360).cast());
+        un_cp_16_1280_2560(in_x().at(6340608).cast(), act().at(90155520).cast());
         sync_cores();
-        un_gs_16_2560(act().at(3276800).cast(), act().at(6553600).cast());
+        un_gs_16_2560(act().at(90152960).cast(), act().at(983040).cast());
         sync_cores();
-        un_ga_16_2560_silu(act().at(3276800).cast(), act().at(6553600).cast(), w().at(29499392).cast(), w().at(29511680).cast(), w().at(29523968).cast(), act().at(6594560).cast());
+        un_ga_16_2560_silu(act().at(90152960).cast(), act().at(983040).cast(), w().at(650461184).cast(), w().at(650473472).cast(), w().at(335405056).cast(), act().at(93429760).cast());
         sync_cores();
-        un_c3_16_2560_1280(act().at(6594560).cast(), w().at(29851648).cast(), in_x().at(53760).cast(), act().at(9871360).cast());
+        un_lr_16_2560_1280_first(act().at(93527040).cast(), w().at(650485760).cast(), act().at(96706560).cast());
         sync_cores();
-        un_gs_16_1280(act().at(9871360).cast(), act().at(6553600).cast());
+        un_lr_16_2560_1280_mid(act().at(93532160).cast(), w().at(657039360).cast(), act().at(96706560).cast());
         sync_cores();
-        un_ga_16_1280_silu(act().at(9871360).cast(), act().at(6553600).cast(), w().at(88834048).cast(), w().at(88842240).cast(), w().at(88850432).cast(), act().at(11509760).cast());
+        un_lr_16_2560_1280_mid(act().at(93537280).cast(), w().at(663592960).cast(), act().at(96706560).cast());
         sync_cores();
-        un_c1_16_2560_1280(act().at(3276800).cast(), w().at(89014272).cast(), w().at(95567872).cast(), act().at(13148160).cast());
+        un_lr_16_2560_1280_mid(act().at(93629440).cast(), w().at(670146560).cast(), act().at(96706560).cast());
         sync_cores();
-        un_c3_16_1280_1280_r(act().at(11509760).cast(), w().at(95576064).cast(), w().at(125067264).cast(), act().at(13148160).cast(), out_y().at(0).cast());
+        un_lr_16_2560_1280_mid(act().at(93634560).cast(), w().at(676700160).cast(), act().at(96706560).cast());
         sync_cores();
-        // up1.attn0
-        un_gs_16_1280(out_y().at(0).cast(), act().at(6553600).cast());
+        un_lr_16_2560_1280_mid(act().at(93639680).cast(), w().at(683253760).cast(), act().at(96706560).cast());
         sync_cores();
-        un_ga_16_1280_none(out_y().at(0).cast(), act().at(6553600).cast(), w().at(125075456).cast(), w().at(125083648).cast(), w().at(88850432).cast(), act().at(14786560).cast());
+        un_lr_16_2560_1280_mid(act().at(93731840).cast(), w().at(689807360).cast(), act().at(96706560).cast());
         sync_cores();
-        un_c1_16_1280_1280(act().at(14786560).cast(), w().at(125091840).cast(), w().at(128368640).cast(), act().at(16424960).cast());
+        un_lr_16_2560_1280_mid(act().at(93736960).cast(), w().at(696360960).cast(), act().at(96706560).cast());
         sync_cores();
-        un_ln_16_1280(act().at(16424960).cast(), w().at(128376832).cast(), w().at(128385024).cast(), act().at(18063360).cast());
+        un_lr_16_2560_1280_b_last(act().at(93742080).cast(), w().at(702914560).cast(), in_x().at(53760).cast(), act().at(96706560).cast(), act().at(98447360).cast());
         sync_cores();
-        un_c1_16_1280_1280(act().at(18063360).cast(), w().at(128393216).cast(), w().at(131670016).cast(), act().at(19701760).cast());
+        un_gs_16_1280(act().at(98344960).cast(), act().at(983040).cast());
         sync_cores();
-        un_c1_16_1280_1280(act().at(18063360).cast(), w().at(131678208).cast(), w().at(131670016).cast(), act().at(21340160).cast());
+        un_ga_16_1280_silu(act().at(98344960).cast(), act().at(983040).cast(), w().at(709468160).cast(), w().at(709476352).cast(), w().at(29515776).cast(), act().at(99983360).cast());
         sync_cores();
-        un_c1_16_1280_1280(act().at(18063360).cast(), w().at(134955008).cast(), w().at(131670016).cast(), act().at(22978560).cast());
+        un_lr_16_2560_1280_b(act().at(90357760).cast(), w().at(709484544).cast(), w().at(716038144).cast(), act().at(101724160).cast());
         sync_cores();
-        un_at_16_s(act().at(19701760).cast(), act().at(21340160).cast(), act().at(22978560).cast(), w().at(138231808).cast(), act().at(24616960).cast());
+        un_lr_16_1280_1280_first(act().at(100032000).cast(), w().at(716046336).cast(), act().at(103260160).cast());
         sync_cores();
-        un_c1_16_1280_1280_r(act().at(24616960).cast(), w().at(138235904).cast(), w().at(141512704).cast(), act().at(16424960).cast(), act().at(26255360).cast());
+        un_lr_16_1280_1280_mid(act().at(100034560).cast(), w().at(719323136).cast(), act().at(103260160).cast());
         sync_cores();
-        // up1.attn0.cross
-        un_ln_16_1280(act().at(26255360).cast(), w().at(141520896).cast(), w().at(141529088).cast(), act().at(27893760).cast());
+        un_lr_16_1280_1280_mid(act().at(100037120).cast(), w().at(722599936).cast(), act().at(103260160).cast());
         sync_cores();
-        un_c1_16_1280_1280(act().at(27893760).cast(), w().at(141537280).cast(), w().at(131670016).cast(), act().at(29532160).cast());
+        un_lr_16_1280_1280_mid(act().at(100083200).cast(), w().at(725876736).cast(), act().at(103260160).cast());
         sync_cores();
-        un_kv_1280(in_x().at(2703360).cast(), w().at(144814080).cast(), act().at(31170560).cast());
+        un_lr_16_1280_1280_mid(act().at(100085760).cast(), w().at(729153536).cast(), act().at(103260160).cast());
         sync_cores();
-        un_kv_1280(in_x().at(2703360).cast(), w().at(146780160).cast(), act().at(31498240).cast());
+        un_lr_16_1280_1280_mid(act().at(100088320).cast(), w().at(732430336).cast(), act().at(103260160).cast());
         sync_cores();
-        un_at_16_x(act().at(29532160).cast(), act().at(31170560).cast(), act().at(31498240).cast(), w().at(148746240).cast(), act().at(31825920).cast());
+        un_lr_16_1280_1280_mid(act().at(100134400).cast(), w().at(735707136).cast(), act().at(103260160).cast());
         sync_cores();
-        un_c1_16_1280_1280_r(act().at(31825920).cast(), w().at(148750336).cast(), w().at(152027136).cast(), act().at(26255360).cast(), out_y().at(1638400).cast());
+        un_lr_16_1280_1280_mid(act().at(100136960).cast(), w().at(738983936).cast(), act().at(103260160).cast());
         sync_cores();
-        // ── 第 1 路（空提示词）──
-        // up0.up
-        un_up_8_1280_256(in_x().at(2899968).cast(), act().at(0).cast());
+        un_lr_16_1280_1280_b_last(act().at(100139520).cast(), w().at(742260736).cast(), w().at(745537536).cast(), act().at(103260160).cast(), act().at(105000960).cast());
         sync_cores();
-        un_up_8_1280_256(in_x().at(2900480).cast(), act().at(512).cast());
-        sync_cores();
-        un_up_8_1280_256(in_x().at(2900992).cast(), act().at(1024).cast());
-        sync_cores();
-        un_up_8_1280_256(in_x().at(2901504).cast(), act().at(1536).cast());
-        sync_cores();
-        un_up_8_1280_256(in_x().at(2902016).cast(), act().at(2048).cast());
-        sync_cores();
-        un_c3_16_1280_1280(act().at(0).cast(), w().at(0).cast(), w().at(29491200).cast(), act().at(1638400).cast());
-        sync_cores();
-        // up1.res0
-        un_cp_16_1280_2560(act().at(1638400).cast(), act().at(3276800).cast());
-        sync_cores();
-        un_cp_16_1280_2560(in_x().at(3883008).cast(), act().at(3279360).cast());
-        sync_cores();
-        un_gs_16_2560(act().at(3276800).cast(), act().at(6553600).cast());
-        sync_cores();
-        un_ga_16_2560_silu(act().at(3276800).cast(), act().at(6553600).cast(), w().at(29499392).cast(), w().at(29511680).cast(), w().at(29523968).cast(), act().at(6594560).cast());
-        sync_cores();
-        un_c3_16_2560_1280(act().at(6594560).cast(), w().at(29851648).cast(), in_x().at(53760).cast(), act().at(9871360).cast());
-        sync_cores();
-        un_gs_16_1280(act().at(9871360).cast(), act().at(6553600).cast());
-        sync_cores();
-        un_ga_16_1280_silu(act().at(9871360).cast(), act().at(6553600).cast(), w().at(88834048).cast(), w().at(88842240).cast(), w().at(88850432).cast(), act().at(11509760).cast());
-        sync_cores();
-        un_c1_16_2560_1280(act().at(3276800).cast(), w().at(89014272).cast(), w().at(95567872).cast(), act().at(13148160).cast());
-        sync_cores();
-        un_c3_16_1280_1280_r(act().at(11509760).cast(), w().at(95576064).cast(), w().at(125067264).cast(), act().at(13148160).cast(), out_y().at(3276800).cast());
+        un_ra_16_1280_1280_1280_1280(act().at(104898560).cast(), act().at(101621760).cast(), act().at(106536960).cast());
         sync_cores();
         // up1.attn0
-        un_gs_16_1280(out_y().at(3276800).cast(), act().at(6553600).cast());
+        un_gs_16_1280(act().at(106536960).cast(), act().at(983040).cast());
         sync_cores();
-        un_ga_16_1280_none(out_y().at(3276800).cast(), act().at(6553600).cast(), w().at(125075456).cast(), w().at(125083648).cast(), w().at(88850432).cast(), act().at(14786560).cast());
+        un_ga_16_1280_none(act().at(106536960).cast(), act().at(983040).cast(), w().at(745545728).cast(), w().at(745553920).cast(), w().at(29515776).cast(), act().at(108175360).cast());
         sync_cores();
-        un_c1_16_1280_1280(act().at(14786560).cast(), w().at(125091840).cast(), w().at(128368640).cast(), act().at(16424960).cast());
+        un_lr_16_1280_1280_b(act().at(108277760).cast(), w().at(745562112).cast(), w().at(748838912).cast(), act().at(109916160).cast());
         sync_cores();
-        un_ln_16_1280(act().at(16424960).cast(), w().at(128376832).cast(), w().at(128385024).cast(), act().at(18063360).cast());
+        un_ln_16_1280(act().at(109813760).cast(), w().at(748847104).cast(), w().at(748855296).cast(), act().at(111452160).cast());
         sync_cores();
-        un_c1_16_1280_1280(act().at(18063360).cast(), w().at(128393216).cast(), w().at(131670016).cast(), act().at(19701760).cast());
+        un_lr_16_1280_1280(act().at(111554560).cast(), w().at(748863488).cast(), act().at(113192960).cast());
         sync_cores();
-        un_c1_16_1280_1280(act().at(18063360).cast(), w().at(131678208).cast(), w().at(131670016).cast(), act().at(21340160).cast());
+        un_lr_16_1280_1280(act().at(111554560).cast(), w().at(752140288).cast(), act().at(114831360).cast());
         sync_cores();
-        un_c1_16_1280_1280(act().at(18063360).cast(), w().at(134955008).cast(), w().at(131670016).cast(), act().at(22978560).cast());
+        un_lr_16_1280_1280(act().at(111554560).cast(), w().at(755417088).cast(), act().at(116469760).cast());
         sync_cores();
-        un_at_16_s(act().at(19701760).cast(), act().at(21340160).cast(), act().at(22978560).cast(), w().at(138231808).cast(), act().at(24616960).cast());
+        un_at_16_s(act().at(113090560).cast(), act().at(114728960).cast(), act().at(116367360).cast(), w().at(758693888).cast(), act().at(118005760).cast());
         sync_cores();
-        un_c1_16_1280_1280_r(act().at(24616960).cast(), w().at(138235904).cast(), w().at(141512704).cast(), act().at(16424960).cast(), act().at(26255360).cast());
+        un_lr_16_1280_1280_b(act().at(118108160).cast(), w().at(758697984).cast(), w().at(761974784).cast(), act().at(119746560).cast());
+        sync_cores();
+        un_ra_16_1280_1280_1280_1280(act().at(119644160).cast(), act().at(109813760).cast(), act().at(121282560).cast());
         sync_cores();
         // up1.attn0.cross
-        un_ln_16_1280(act().at(26255360).cast(), w().at(141520896).cast(), w().at(141529088).cast(), act().at(27893760).cast());
+        un_ln_16_1280(act().at(121282560).cast(), w().at(761982976).cast(), w().at(761991168).cast(), act().at(122920960).cast());
         sync_cores();
-        un_c1_16_1280_1280(act().at(27893760).cast(), w().at(141537280).cast(), w().at(131670016).cast(), act().at(29532160).cast());
+        un_lr_16_1280_1280(act().at(123023360).cast(), w().at(761999360).cast(), act().at(124661760).cast());
         sync_cores();
-        un_kv_1280(in_x().at(5521408).cast(), w().at(144814080).cast(), act().at(31170560).cast());
+        un_kv_1280(in_x().at(7979008).cast(), w().at(765276160).cast(), act().at(126197760).cast());
         sync_cores();
-        un_kv_1280(in_x().at(5521408).cast(), w().at(146780160).cast(), act().at(31498240).cast());
+        un_kv_1280(in_x().at(7979008).cast(), w().at(767242240).cast(), act().at(126525440).cast());
         sync_cores();
-        un_at_16_x(act().at(29532160).cast(), act().at(31170560).cast(), act().at(31498240).cast(), w().at(148746240).cast(), act().at(31825920).cast());
+        un_at_16_x(act().at(124559360).cast(), act().at(126197760).cast(), act().at(126525440).cast(), w().at(230395904).cast(), act().at(126853120).cast());
         sync_cores();
-        un_c1_16_1280_1280_r(act().at(31825920).cast(), w().at(148750336).cast(), w().at(152027136).cast(), act().at(26255360).cast(), out_y().at(4915200).cast());
+        un_lr_16_1280_1280_b(act().at(126955520).cast(), w().at(769208320).cast(), w().at(772485120).cast(), act().at(128593920).cast());
         sync_cores();
-    }
-}
-
-/// s9：up1.attn0.ff、up1.res1、up1.attn1、up1.attn1.cross、up1.attn1.ff
-#[cfg(feature = "s9")]
-mod s9 {
-    use super::*;
-    npu::decls! {
-        in_x: input, bytes = 10305536;
-        out_y: output, bytes = 3276800;
-        w: weights, bytes = 207880192;
-        act: workspace, bytes = 80986112;
-    }
-    #[npu::program(chiplets = 1, cores = 2)]
-    pub fn step() {
-        // 入口第一步：@act 与 out_y 整块清零（两核各清一半）：边框、token 的补齐行、余量都靠它是 0
-        if core_rank() == 0 {
-            un_zero(act().cast(), 2471);
-            un_zero(out_y().cast(), 100);
-        } else {
-            un_zero(act().at(40484864).cast(), 2472);
-            un_zero(out_y().at(1638400).cast(), 100);
-        }
+        un_ra_16_1280_1280_1280_1280(act().at(128491520).cast(), act().at(121282560).cast(), act().at(130129920).cast());
         sync_cores();
-        // ── 第 0 路（有提示词）──
         // up1.attn0.ff
-        un_ln_16_1280(in_x().at(81920).cast(), w().at(0).cast(), w().at(8192).cast(), act().at(0).cast());
+        un_ln_16_1280(act().at(130129920).cast(), w().at(772493312).cast(), w().at(772501504).cast(), act().at(131768320).cast());
         sync_cores();
-        un_c1_16_1280_5120(act().at(0).cast(), w().at(16384).cast(), w().at(13123584).cast(), act().at(1638400).cast());
+        un_lr_16_1280_5120_b(act().at(131870720).cast(), w().at(772509696).cast(), w().at(785616896).cast(), act().at(133816320).cast());
         sync_cores();
-        un_c1_16_1280_5120(act().at(0).cast(), w().at(13144064).cast(), w().at(26251264).cast(), act().at(8192000).cast());
+        un_lr_16_1280_5120_b(act().at(131870720).cast(), w().at(785637376).cast(), w().at(798744576).cast(), act().at(140369920).cast());
         sync_cores();
-        un_gg_16(act().at(1638400).cast(), act().at(8192000).cast(), act().at(14745600).cast());
+        un_gg_16(act().at(133406720).cast(), act().at(139960320).cast(), act().at(146513920).cast());
         sync_cores();
-        un_c1_16_5120_1280_r(act().at(14745600).cast(), w().at(26271744).cast(), w().at(39378944).cast(), in_x().at(81920).cast(), act().at(21299200).cast());
+        un_lr_16_5120_1280_b(act().at(146923520).cast(), w().at(798765056).cast(), w().at(811872256).cast(), act().at(153169920).cast());
         sync_cores();
-        un_c1_16_1280_1280_r(act().at(21299200).cast(), w().at(39387136).cast(), w().at(42663936).cast(), in_x().at(1720320).cast(), act().at(22937600).cast());
+        un_ra_16_1280_1280_1280_1280(act().at(153067520).cast(), act().at(130129920).cast(), act().at(154705920).cast());
+        sync_cores();
+        un_lr_16_1280_1280_b(act().at(154808320).cast(), w().at(811880448).cast(), w().at(815157248).cast(), act().at(156446720).cast());
+        sync_cores();
+        un_ra_16_1280_1280_1280_1280(act().at(156344320).cast(), act().at(106536960).cast(), act().at(157982720).cast());
         sync_cores();
         // up1.res1
-        un_cp_16_1280_2560(act().at(22937600).cast(), act().at(24576000).cast());
+        un_cp_16_1280_2560(act().at(157982720).cast(), act().at(159621120).cast());
         sync_cores();
-        un_cp_16_1280_2560(in_x().at(3358720).cast(), act().at(24578560).cast());
+        un_cp_16_1280_2560(in_x().at(8175616).cast(), act().at(159623680).cast());
         sync_cores();
-        un_gs_16_2560(act().at(24576000).cast(), act().at(27852800).cast());
+        un_gs_16_2560(act().at(159621120).cast(), act().at(983040).cast());
         sync_cores();
-        un_ga_16_2560_silu(act().at(24576000).cast(), act().at(27852800).cast(), w().at(42672128).cast(), w().at(42684416).cast(), w().at(42696704).cast(), act().at(27893760).cast());
+        un_ga_16_2560_silu(act().at(159621120).cast(), act().at(983040).cast(), w().at(815165440).cast(), w().at(815177728).cast(), w().at(335405056).cast(), act().at(162897920).cast());
         sync_cores();
-        un_c3_16_2560_1280(act().at(27893760).cast(), w().at(43024384).cast(), in_x().at(58880).cast(), act().at(31170560).cast());
+        un_lr_16_2560_1280_first(act().at(162995200).cast(), w().at(815190016).cast(), act().at(166174720).cast());
         sync_cores();
-        un_gs_16_1280(act().at(31170560).cast(), act().at(27852800).cast());
+        un_lr_16_2560_1280_mid(act().at(163000320).cast(), w().at(821743616).cast(), act().at(166174720).cast());
         sync_cores();
-        un_ga_16_1280_silu(act().at(31170560).cast(), act().at(27852800).cast(), w().at(102006784).cast(), w().at(102014976).cast(), w().at(102023168).cast(), act().at(32808960).cast());
+        un_lr_16_2560_1280_mid(act().at(163005440).cast(), w().at(828297216).cast(), act().at(166174720).cast());
         sync_cores();
-        un_c1_16_2560_1280(act().at(24576000).cast(), w().at(102187008).cast(), w().at(108740608).cast(), act().at(34447360).cast());
+        un_lr_16_2560_1280_mid(act().at(163097600).cast(), w().at(834850816).cast(), act().at(166174720).cast());
         sync_cores();
-        un_c3_16_1280_1280_r(act().at(32808960).cast(), w().at(108748800).cast(), w().at(138240000).cast(), act().at(34447360).cast(), act().at(36085760).cast());
+        un_lr_16_2560_1280_mid(act().at(163102720).cast(), w().at(841404416).cast(), act().at(166174720).cast());
         sync_cores();
-        // up1.attn1
-        un_gs_16_1280(act().at(36085760).cast(), act().at(27852800).cast());
+        un_lr_16_2560_1280_mid(act().at(163107840).cast(), w().at(847958016).cast(), act().at(166174720).cast());
         sync_cores();
-        un_ga_16_1280_none(act().at(36085760).cast(), act().at(27852800).cast(), w().at(138248192).cast(), w().at(138256384).cast(), w().at(102023168).cast(), act().at(37724160).cast());
+        un_lr_16_2560_1280_mid(act().at(163200000).cast(), w().at(854511616).cast(), act().at(166174720).cast());
         sync_cores();
-        un_c1_16_1280_1280(act().at(37724160).cast(), w().at(138264576).cast(), w().at(141541376).cast(), act().at(39362560).cast());
+        un_lr_16_2560_1280_mid(act().at(163205120).cast(), w().at(861065216).cast(), act().at(166174720).cast());
         sync_cores();
-        un_ln_16_1280(act().at(39362560).cast(), w().at(141549568).cast(), w().at(141557760).cast(), act().at(41000960).cast());
+        un_lr_16_2560_1280_b_last(act().at(163210240).cast(), w().at(867618816).cast(), in_x().at(58880).cast(), act().at(166174720).cast(), act().at(167915520).cast());
         sync_cores();
-        un_c1_16_1280_1280(act().at(41000960).cast(), w().at(141565952).cast(), w().at(144842752).cast(), act().at(42639360).cast());
+        un_gs_16_1280(act().at(167813120).cast(), act().at(983040).cast());
         sync_cores();
-        un_c1_16_1280_1280(act().at(41000960).cast(), w().at(144850944).cast(), w().at(144842752).cast(), act().at(44277760).cast());
+        un_ga_16_1280_silu(act().at(167813120).cast(), act().at(983040).cast(), w().at(874172416).cast(), w().at(874180608).cast(), w().at(29515776).cast(), act().at(169451520).cast());
         sync_cores();
-        un_c1_16_1280_1280(act().at(41000960).cast(), w().at(148127744).cast(), w().at(144842752).cast(), act().at(45916160).cast());
+        un_lr_16_2560_1280_b(act().at(159825920).cast(), w().at(874188800).cast(), w().at(880742400).cast(), act().at(171192320).cast());
         sync_cores();
-        un_at_16_s(act().at(42639360).cast(), act().at(44277760).cast(), act().at(45916160).cast(), w().at(151404544).cast(), act().at(47554560).cast());
+        un_lr_16_1280_1280_first(act().at(169500160).cast(), w().at(880750592).cast(), act().at(172728320).cast());
         sync_cores();
-        un_c1_16_1280_1280_r(act().at(47554560).cast(), w().at(151408640).cast(), w().at(154685440).cast(), act().at(39362560).cast(), act().at(49192960).cast());
+        un_lr_16_1280_1280_mid(act().at(169502720).cast(), w().at(884027392).cast(), act().at(172728320).cast());
         sync_cores();
-        // up1.attn1.cross
-        un_ln_16_1280(act().at(49192960).cast(), w().at(154693632).cast(), w().at(154701824).cast(), act().at(50831360).cast());
+        un_lr_16_1280_1280_mid(act().at(169505280).cast(), w().at(887304192).cast(), act().at(172728320).cast());
         sync_cores();
-        un_c1_16_1280_1280(act().at(50831360).cast(), w().at(154710016).cast(), w().at(144842752).cast(), act().at(52469760).cast());
+        un_lr_16_1280_1280_mid(act().at(169551360).cast(), w().at(890580992).cast(), act().at(172728320).cast());
         sync_cores();
-        un_kv_1280(in_x().at(4997120).cast(), w().at(157986816).cast(), act().at(54108160).cast());
+        un_lr_16_1280_1280_mid(act().at(169553920).cast(), w().at(893857792).cast(), act().at(172728320).cast());
         sync_cores();
-        un_kv_1280(in_x().at(4997120).cast(), w().at(159952896).cast(), act().at(54435840).cast());
+        un_lr_16_1280_1280_mid(act().at(169556480).cast(), w().at(897134592).cast(), act().at(172728320).cast());
         sync_cores();
-        un_at_16_x(act().at(52469760).cast(), act().at(54108160).cast(), act().at(54435840).cast(), w().at(161918976).cast(), act().at(54763520).cast());
+        un_lr_16_1280_1280_mid(act().at(169602560).cast(), w().at(900411392).cast(), act().at(172728320).cast());
         sync_cores();
-        un_c1_16_1280_1280_r(act().at(54763520).cast(), w().at(161923072).cast(), w().at(165199872).cast(), act().at(49192960).cast(), act().at(56401920).cast());
+        un_lr_16_1280_1280_mid(act().at(169605120).cast(), w().at(903688192).cast(), act().at(172728320).cast());
         sync_cores();
-        // up1.attn1.ff
-        un_ln_16_1280(act().at(56401920).cast(), w().at(165208064).cast(), w().at(165216256).cast(), act().at(58040320).cast());
+        un_lr_16_1280_1280_b_last(act().at(169607680).cast(), w().at(906964992).cast(), w().at(910241792).cast(), act().at(172728320).cast(), act().at(174469120).cast());
         sync_cores();
-        un_c1_16_1280_5120(act().at(58040320).cast(), w().at(165224448).cast(), w().at(178331648).cast(), act().at(59678720).cast());
-        sync_cores();
-        un_c1_16_1280_5120(act().at(58040320).cast(), w().at(178352128).cast(), w().at(191459328).cast(), act().at(66232320).cast());
-        sync_cores();
-        un_gg_16(act().at(59678720).cast(), act().at(66232320).cast(), act().at(72785920).cast());
-        sync_cores();
-        un_c1_16_5120_1280_r(act().at(72785920).cast(), w().at(191479808).cast(), w().at(204587008).cast(), act().at(56401920).cast(), act().at(79339520).cast());
-        sync_cores();
-        un_c1_16_1280_1280_r(act().at(79339520).cast(), w().at(204595200).cast(), w().at(207872000).cast(), act().at(36085760).cast(), out_y().at(0).cast());
-        sync_cores();
-        // ── 第 1 路（空提示词）──
-        // up1.attn0.ff
-        un_ln_16_1280(in_x().at(5193728).cast(), w().at(0).cast(), w().at(8192).cast(), act().at(0).cast());
-        sync_cores();
-        un_c1_16_1280_5120(act().at(0).cast(), w().at(16384).cast(), w().at(13123584).cast(), act().at(1638400).cast());
-        sync_cores();
-        un_c1_16_1280_5120(act().at(0).cast(), w().at(13144064).cast(), w().at(26251264).cast(), act().at(8192000).cast());
-        sync_cores();
-        un_gg_16(act().at(1638400).cast(), act().at(8192000).cast(), act().at(14745600).cast());
-        sync_cores();
-        un_c1_16_5120_1280_r(act().at(14745600).cast(), w().at(26271744).cast(), w().at(39378944).cast(), in_x().at(5193728).cast(), act().at(21299200).cast());
-        sync_cores();
-        un_c1_16_1280_1280_r(act().at(21299200).cast(), w().at(39387136).cast(), w().at(42663936).cast(), in_x().at(6832128).cast(), act().at(22937600).cast());
-        sync_cores();
-        // up1.res1
-        un_cp_16_1280_2560(act().at(22937600).cast(), act().at(24576000).cast());
-        sync_cores();
-        un_cp_16_1280_2560(in_x().at(8470528).cast(), act().at(24578560).cast());
-        sync_cores();
-        un_gs_16_2560(act().at(24576000).cast(), act().at(27852800).cast());
-        sync_cores();
-        un_ga_16_2560_silu(act().at(24576000).cast(), act().at(27852800).cast(), w().at(42672128).cast(), w().at(42684416).cast(), w().at(42696704).cast(), act().at(27893760).cast());
-        sync_cores();
-        un_c3_16_2560_1280(act().at(27893760).cast(), w().at(43024384).cast(), in_x().at(58880).cast(), act().at(31170560).cast());
-        sync_cores();
-        un_gs_16_1280(act().at(31170560).cast(), act().at(27852800).cast());
-        sync_cores();
-        un_ga_16_1280_silu(act().at(31170560).cast(), act().at(27852800).cast(), w().at(102006784).cast(), w().at(102014976).cast(), w().at(102023168).cast(), act().at(32808960).cast());
-        sync_cores();
-        un_c1_16_2560_1280(act().at(24576000).cast(), w().at(102187008).cast(), w().at(108740608).cast(), act().at(34447360).cast());
-        sync_cores();
-        un_c3_16_1280_1280_r(act().at(32808960).cast(), w().at(108748800).cast(), w().at(138240000).cast(), act().at(34447360).cast(), act().at(36085760).cast());
+        un_ra_16_1280_1280_1280_1280(act().at(174366720).cast(), act().at(171089920).cast(), act().at(176005120).cast());
         sync_cores();
         // up1.attn1
-        un_gs_16_1280(act().at(36085760).cast(), act().at(27852800).cast());
+        un_gs_16_1280(act().at(176005120).cast(), act().at(983040).cast());
         sync_cores();
-        un_ga_16_1280_none(act().at(36085760).cast(), act().at(27852800).cast(), w().at(138248192).cast(), w().at(138256384).cast(), w().at(102023168).cast(), act().at(37724160).cast());
+        un_ga_16_1280_none(act().at(176005120).cast(), act().at(983040).cast(), w().at(910249984).cast(), w().at(910258176).cast(), w().at(29515776).cast(), act().at(177643520).cast());
         sync_cores();
-        un_c1_16_1280_1280(act().at(37724160).cast(), w().at(138264576).cast(), w().at(141541376).cast(), act().at(39362560).cast());
+        un_lr_16_1280_1280_b(act().at(177745920).cast(), w().at(910266368).cast(), w().at(913543168).cast(), act().at(179384320).cast());
         sync_cores();
-        un_ln_16_1280(act().at(39362560).cast(), w().at(141549568).cast(), w().at(141557760).cast(), act().at(41000960).cast());
+        un_ln_16_1280(act().at(179281920).cast(), w().at(913551360).cast(), w().at(913559552).cast(), act().at(180920320).cast());
         sync_cores();
-        un_c1_16_1280_1280(act().at(41000960).cast(), w().at(141565952).cast(), w().at(144842752).cast(), act().at(42639360).cast());
+        un_lr_16_1280_1280(act().at(181022720).cast(), w().at(913567744).cast(), act().at(182661120).cast());
         sync_cores();
-        un_c1_16_1280_1280(act().at(41000960).cast(), w().at(144850944).cast(), w().at(144842752).cast(), act().at(44277760).cast());
+        un_lr_16_1280_1280(act().at(181022720).cast(), w().at(916844544).cast(), act().at(184299520).cast());
         sync_cores();
-        un_c1_16_1280_1280(act().at(41000960).cast(), w().at(148127744).cast(), w().at(144842752).cast(), act().at(45916160).cast());
+        un_lr_16_1280_1280(act().at(181022720).cast(), w().at(920121344).cast(), act().at(185937920).cast());
         sync_cores();
-        un_at_16_s(act().at(42639360).cast(), act().at(44277760).cast(), act().at(45916160).cast(), w().at(151404544).cast(), act().at(47554560).cast());
+        un_at_16_s(act().at(182558720).cast(), act().at(184197120).cast(), act().at(185835520).cast(), w().at(758693888).cast(), act().at(187473920).cast());
         sync_cores();
-        un_c1_16_1280_1280_r(act().at(47554560).cast(), w().at(151408640).cast(), w().at(154685440).cast(), act().at(39362560).cast(), act().at(49192960).cast());
+        un_lr_16_1280_1280_b(act().at(187576320).cast(), w().at(923398144).cast(), w().at(926674944).cast(), act().at(189214720).cast());
+        sync_cores();
+        un_ra_16_1280_1280_1280_1280(act().at(189112320).cast(), act().at(179281920).cast(), act().at(190750720).cast());
         sync_cores();
         // up1.attn1.cross
-        un_ln_16_1280(act().at(49192960).cast(), w().at(154693632).cast(), w().at(154701824).cast(), act().at(50831360).cast());
+        un_ln_16_1280(act().at(190750720).cast(), w().at(926683136).cast(), w().at(926691328).cast(), act().at(192389120).cast());
         sync_cores();
-        un_c1_16_1280_1280(act().at(50831360).cast(), w().at(154710016).cast(), w().at(144842752).cast(), act().at(52469760).cast());
+        un_lr_16_1280_1280(act().at(192491520).cast(), w().at(926699520).cast(), act().at(194129920).cast());
         sync_cores();
-        un_kv_1280(in_x().at(10108928).cast(), w().at(157986816).cast(), act().at(54108160).cast());
+        un_kv_1280(in_x().at(7979008).cast(), w().at(929976320).cast(), act().at(195665920).cast());
         sync_cores();
-        un_kv_1280(in_x().at(10108928).cast(), w().at(159952896).cast(), act().at(54435840).cast());
+        un_kv_1280(in_x().at(7979008).cast(), w().at(931942400).cast(), act().at(195993600).cast());
         sync_cores();
-        un_at_16_x(act().at(52469760).cast(), act().at(54108160).cast(), act().at(54435840).cast(), w().at(161918976).cast(), act().at(54763520).cast());
+        un_at_16_x(act().at(194027520).cast(), act().at(195665920).cast(), act().at(195993600).cast(), w().at(230395904).cast(), act().at(196321280).cast());
         sync_cores();
-        un_c1_16_1280_1280_r(act().at(54763520).cast(), w().at(161923072).cast(), w().at(165199872).cast(), act().at(49192960).cast(), act().at(56401920).cast());
+        un_lr_16_1280_1280_b(act().at(196423680).cast(), w().at(933908480).cast(), w().at(937185280).cast(), act().at(198062080).cast());
+        sync_cores();
+        un_ra_16_1280_1280_1280_1280(act().at(197959680).cast(), act().at(190750720).cast(), act().at(199598080).cast());
         sync_cores();
         // up1.attn1.ff
-        un_ln_16_1280(act().at(56401920).cast(), w().at(165208064).cast(), w().at(165216256).cast(), act().at(58040320).cast());
+        un_ln_16_1280(act().at(199598080).cast(), w().at(937193472).cast(), w().at(937201664).cast(), act().at(201236480).cast());
         sync_cores();
-        un_c1_16_1280_5120(act().at(58040320).cast(), w().at(165224448).cast(), w().at(178331648).cast(), act().at(59678720).cast());
+        un_lr_16_1280_5120_b(act().at(201338880).cast(), w().at(937209856).cast(), w().at(950317056).cast(), act().at(203284480).cast());
         sync_cores();
-        un_c1_16_1280_5120(act().at(58040320).cast(), w().at(178352128).cast(), w().at(191459328).cast(), act().at(66232320).cast());
+        un_lr_16_1280_5120_b(act().at(201338880).cast(), w().at(950337536).cast(), w().at(963444736).cast(), act().at(209838080).cast());
         sync_cores();
-        un_gg_16(act().at(59678720).cast(), act().at(66232320).cast(), act().at(72785920).cast());
+        un_gg_16(act().at(202874880).cast(), act().at(209428480).cast(), act().at(215982080).cast());
         sync_cores();
-        un_c1_16_5120_1280_r(act().at(72785920).cast(), w().at(191479808).cast(), w().at(204587008).cast(), act().at(56401920).cast(), act().at(79339520).cast());
+        un_lr_16_5120_1280_b(act().at(216391680).cast(), w().at(963465216).cast(), w().at(976572416).cast(), act().at(222638080).cast());
         sync_cores();
-        un_c1_16_1280_1280_r(act().at(79339520).cast(), w().at(204595200).cast(), w().at(207872000).cast(), act().at(36085760).cast(), out_y().at(1638400).cast());
+        un_ra_16_1280_1280_1280_1280(act().at(222535680).cast(), act().at(199598080).cast(), act().at(224174080).cast());
         sync_cores();
-    }
-}
-
-/// s10：up1.res2、up1.attn2、up1.attn2.cross、up1.attn2.ff、up1.up
-#[cfg(feature = "s10")]
-mod s10 {
-    use super::*;
-    npu::decls! {
-        in_x: input, bytes = 5390336;
-        out_y: output, bytes = 7864320;
-        w: weights, bytes = 178233344;
-        act: workspace, bytes = 60342272;
-    }
-    #[npu::program(chiplets = 1, cores = 2)]
-    pub fn step() {
-        // 入口第一步：@act 与 out_y 整块清零（两核各清一半）：边框、token 的补齐行、余量都靠它是 0
-        if core_rank() == 0 {
-            un_zero(act().cast(), 1841);
-            un_zero(out_y().cast(), 240);
-        } else {
-            un_zero(act().at(30162944).cast(), 1842);
-            un_zero(out_y().at(3932160).cast(), 240);
-        }
+        un_lr_16_1280_1280_b(act().at(224276480).cast(), w().at(976580608).cast(), w().at(979857408).cast(), act().at(225914880).cast());
         sync_cores();
-        // ── 第 0 路（有提示词）──
+        un_ra_16_1280_1280_1280_1280(act().at(225812480).cast(), act().at(176005120).cast(), act().at(227450880).cast());
+        sync_cores();
         // up1.res2
-        un_cp_16_1280_1920(in_x().at(81920).cast(), act().at(0).cast());
+        un_cp_16_1280_1920(act().at(227450880).cast(), act().at(229089280).cast());
         sync_cores();
-        un_cp_16_640_1920(in_x().at(1720320).cast(), act().at(2560).cast());
+        un_cp_16_640_1920(in_x().at(9814016).cast(), act().at(229091840).cast());
         sync_cores();
-        un_gs_16_1920(act().at(0).cast(), act().at(2457600).cast());
+        un_gs_16_1920(act().at(229089280).cast(), act().at(983040).cast());
         sync_cores();
-        un_ga_16_1920_silu(act().at(0).cast(), act().at(2457600).cast(), w().at(0).cast(), w().at(8192).cast(), w().at(16384).cast(), act().at(2498560).cast());
+        un_ga_16_1920_silu(act().at(229089280).cast(), act().at(983040).cast(), w().at(979865600).cast(), w().at(979873792).cast(), w().at(979881984).cast(), act().at(231546880).cast());
         sync_cores();
-        un_c3_16_1920_1280(act().at(2498560).cast(), w().at(262144).cast(), in_x().at(64000).cast(), act().at(4956160).cast());
+        un_lr_16_1920_1280_first(act().at(231619840).cast(), w().at(980127744).cast(), act().at(234004480).cast());
         sync_cores();
-        un_gs_16_1280(act().at(4956160).cast(), act().at(2457600).cast());
+        un_lr_16_1920_1280_mid(act().at(231623680).cast(), w().at(985042944).cast(), act().at(234004480).cast());
         sync_cores();
-        un_ga_16_1280_silu(act().at(4956160).cast(), act().at(2457600).cast(), w().at(44498944).cast(), w().at(44507136).cast(), w().at(44515328).cast(), act().at(6594560).cast());
+        un_lr_16_1920_1280_mid(act().at(231627520).cast(), w().at(989958144).cast(), act().at(234004480).cast());
         sync_cores();
-        un_c1_16_1920_1280(act().at(0).cast(), w().at(44679168).cast(), w().at(49594368).cast(), act().at(8232960).cast());
+        un_lr_16_1920_1280_mid(act().at(231696640).cast(), w().at(994873344).cast(), act().at(234004480).cast());
         sync_cores();
-        un_c3_16_1280_1280_r(act().at(6594560).cast(), w().at(49602560).cast(), w().at(79093760).cast(), act().at(8232960).cast(), act().at(9871360).cast());
+        un_lr_16_1920_1280_mid(act().at(231700480).cast(), w().at(999788544).cast(), act().at(234004480).cast());
+        sync_cores();
+        un_lr_16_1920_1280_mid(act().at(231704320).cast(), w().at(1004703744).cast(), act().at(234004480).cast());
+        sync_cores();
+        un_lr_16_1920_1280_mid(act().at(231773440).cast(), w().at(1009618944).cast(), act().at(234004480).cast());
+        sync_cores();
+        un_lr_16_1920_1280_mid(act().at(231777280).cast(), w().at(1014534144).cast(), act().at(234004480).cast());
+        sync_cores();
+        un_lr_16_1920_1280_b_last(act().at(231781120).cast(), w().at(1019449344).cast(), in_x().at(64000).cast(), act().at(234004480).cast(), act().at(235745280).cast());
+        sync_cores();
+        un_gs_16_1280(act().at(235642880).cast(), act().at(983040).cast());
+        sync_cores();
+        un_ga_16_1280_silu(act().at(235642880).cast(), act().at(983040).cast(), w().at(1024364544).cast(), w().at(1024372736).cast(), w().at(29515776).cast(), act().at(237281280).cast());
+        sync_cores();
+        un_lr_16_1920_1280_b(act().at(229242880).cast(), w().at(1024380928).cast(), w().at(1029296128).cast(), act().at(239022080).cast());
+        sync_cores();
+        un_lr_16_1280_1280_first(act().at(237329920).cast(), w().at(1029304320).cast(), act().at(240558080).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(237332480).cast(), w().at(1032581120).cast(), act().at(240558080).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(237335040).cast(), w().at(1035857920).cast(), act().at(240558080).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(237381120).cast(), w().at(1039134720).cast(), act().at(240558080).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(237383680).cast(), w().at(1042411520).cast(), act().at(240558080).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(237386240).cast(), w().at(1045688320).cast(), act().at(240558080).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(237432320).cast(), w().at(1048965120).cast(), act().at(240558080).cast());
+        sync_cores();
+        un_lr_16_1280_1280_mid(act().at(237434880).cast(), w().at(1052241920).cast(), act().at(240558080).cast());
+        sync_cores();
+        un_lr_16_1280_1280_b_last(act().at(237437440).cast(), w().at(1055518720).cast(), w().at(1058795520).cast(), act().at(240558080).cast(), act().at(242298880).cast());
+        sync_cores();
+        un_ra_16_1280_1280_1280_1280(act().at(242196480).cast(), act().at(238919680).cast(), act().at(243834880).cast());
         sync_cores();
         // up1.attn2
-        un_gs_16_1280(act().at(9871360).cast(), act().at(2457600).cast());
+        un_gs_16_1280(act().at(243834880).cast(), act().at(983040).cast());
         sync_cores();
-        un_ga_16_1280_none(act().at(9871360).cast(), act().at(2457600).cast(), w().at(79101952).cast(), w().at(79110144).cast(), w().at(44515328).cast(), act().at(11509760).cast());
+        un_ga_16_1280_none(act().at(243834880).cast(), act().at(983040).cast(), w().at(1058803712).cast(), w().at(1058811904).cast(), w().at(29515776).cast(), act().at(245473280).cast());
         sync_cores();
-        un_c1_16_1280_1280(act().at(11509760).cast(), w().at(79118336).cast(), w().at(82395136).cast(), act().at(13148160).cast());
+        un_lr_16_1280_1280_b(act().at(245575680).cast(), w().at(1058820096).cast(), w().at(1062096896).cast(), act().at(247214080).cast());
         sync_cores();
-        un_ln_16_1280(act().at(13148160).cast(), w().at(82403328).cast(), w().at(82411520).cast(), act().at(14786560).cast());
+        un_ln_16_1280(act().at(247111680).cast(), w().at(1062105088).cast(), w().at(1062113280).cast(), act().at(248750080).cast());
         sync_cores();
-        un_c1_16_1280_1280(act().at(14786560).cast(), w().at(82419712).cast(), w().at(85696512).cast(), act().at(16424960).cast());
+        un_lr_16_1280_1280(act().at(248852480).cast(), w().at(1062121472).cast(), act().at(250490880).cast());
         sync_cores();
-        un_c1_16_1280_1280(act().at(14786560).cast(), w().at(85704704).cast(), w().at(85696512).cast(), act().at(18063360).cast());
+        un_lr_16_1280_1280(act().at(248852480).cast(), w().at(1065398272).cast(), act().at(252129280).cast());
         sync_cores();
-        un_c1_16_1280_1280(act().at(14786560).cast(), w().at(88981504).cast(), w().at(85696512).cast(), act().at(19701760).cast());
+        un_lr_16_1280_1280(act().at(248852480).cast(), w().at(1068675072).cast(), act().at(253767680).cast());
         sync_cores();
-        un_at_16_s(act().at(16424960).cast(), act().at(18063360).cast(), act().at(19701760).cast(), w().at(92258304).cast(), act().at(21340160).cast());
+        un_at_16_s(act().at(250388480).cast(), act().at(252026880).cast(), act().at(253665280).cast(), w().at(758693888).cast(), act().at(255303680).cast());
         sync_cores();
-        un_c1_16_1280_1280_r(act().at(21340160).cast(), w().at(92262400).cast(), w().at(95539200).cast(), act().at(13148160).cast(), act().at(22978560).cast());
+        un_lr_16_1280_1280_b(act().at(255406080).cast(), w().at(1071951872).cast(), w().at(1075228672).cast(), act().at(257044480).cast());
         sync_cores();
-        // up1.attn2.cross
-        un_ln_16_1280(act().at(22978560).cast(), w().at(95547392).cast(), w().at(95555584).cast(), act().at(24616960).cast());
-        sync_cores();
-        un_c1_16_1280_1280(act().at(24616960).cast(), w().at(95563776).cast(), w().at(85696512).cast(), act().at(26255360).cast());
-        sync_cores();
-        un_kv_1280(in_x().at(2539520).cast(), w().at(98840576).cast(), act().at(27893760).cast());
-        sync_cores();
-        un_kv_1280(in_x().at(2539520).cast(), w().at(100806656).cast(), act().at(28221440).cast());
-        sync_cores();
-        un_at_16_x(act().at(26255360).cast(), act().at(27893760).cast(), act().at(28221440).cast(), w().at(102772736).cast(), act().at(28549120).cast());
-        sync_cores();
-        un_c1_16_1280_1280_r(act().at(28549120).cast(), w().at(102776832).cast(), w().at(106053632).cast(), act().at(22978560).cast(), act().at(30187520).cast());
-        sync_cores();
-        // up1.attn2.ff
-        un_ln_16_1280(act().at(30187520).cast(), w().at(106061824).cast(), w().at(106070016).cast(), act().at(31825920).cast());
-        sync_cores();
-        un_c1_16_1280_5120(act().at(31825920).cast(), w().at(106078208).cast(), w().at(119185408).cast(), act().at(33464320).cast());
-        sync_cores();
-        un_c1_16_1280_5120(act().at(31825920).cast(), w().at(119205888).cast(), w().at(132313088).cast(), act().at(40017920).cast());
-        sync_cores();
-        un_gg_16(act().at(33464320).cast(), act().at(40017920).cast(), act().at(46571520).cast());
-        sync_cores();
-        un_c1_16_5120_1280_r(act().at(46571520).cast(), w().at(132333568).cast(), w().at(145440768).cast(), act().at(30187520).cast(), act().at(53125120).cast());
-        sync_cores();
-        un_c1_16_1280_1280_r(act().at(53125120).cast(), w().at(145448960).cast(), w().at(148725760).cast(), act().at(9871360).cast(), act().at(54763520).cast());
-        sync_cores();
-        // up1.up
-        un_up_16_1280_256(act().at(54763520).cast(), act().at(56401920).cast());
-        sync_cores();
-        un_up_16_1280_256(act().at(54764032).cast(), act().at(56402432).cast());
-        sync_cores();
-        un_up_16_1280_256(act().at(54764544).cast(), act().at(56402944).cast());
-        sync_cores();
-        un_up_16_1280_256(act().at(54765056).cast(), act().at(56403456).cast());
-        sync_cores();
-        un_up_16_1280_256(act().at(54765568).cast(), act().at(56403968).cast());
-        sync_cores();
-        un_c3_32_1280_1280(act().at(56401920).cast(), w().at(148733952).cast(), w().at(178225152).cast(), out_y().at(0).cast());
-        sync_cores();
-        // ── 第 1 路（空提示词）──
-        // up1.res2
-        un_cp_16_1280_1920(in_x().at(2736128).cast(), act().at(0).cast());
-        sync_cores();
-        un_cp_16_640_1920(in_x().at(4374528).cast(), act().at(2560).cast());
-        sync_cores();
-        un_gs_16_1920(act().at(0).cast(), act().at(2457600).cast());
-        sync_cores();
-        un_ga_16_1920_silu(act().at(0).cast(), act().at(2457600).cast(), w().at(0).cast(), w().at(8192).cast(), w().at(16384).cast(), act().at(2498560).cast());
-        sync_cores();
-        un_c3_16_1920_1280(act().at(2498560).cast(), w().at(262144).cast(), in_x().at(64000).cast(), act().at(4956160).cast());
-        sync_cores();
-        un_gs_16_1280(act().at(4956160).cast(), act().at(2457600).cast());
-        sync_cores();
-        un_ga_16_1280_silu(act().at(4956160).cast(), act().at(2457600).cast(), w().at(44498944).cast(), w().at(44507136).cast(), w().at(44515328).cast(), act().at(6594560).cast());
-        sync_cores();
-        un_c1_16_1920_1280(act().at(0).cast(), w().at(44679168).cast(), w().at(49594368).cast(), act().at(8232960).cast());
-        sync_cores();
-        un_c3_16_1280_1280_r(act().at(6594560).cast(), w().at(49602560).cast(), w().at(79093760).cast(), act().at(8232960).cast(), act().at(9871360).cast());
-        sync_cores();
-        // up1.attn2
-        un_gs_16_1280(act().at(9871360).cast(), act().at(2457600).cast());
-        sync_cores();
-        un_ga_16_1280_none(act().at(9871360).cast(), act().at(2457600).cast(), w().at(79101952).cast(), w().at(79110144).cast(), w().at(44515328).cast(), act().at(11509760).cast());
-        sync_cores();
-        un_c1_16_1280_1280(act().at(11509760).cast(), w().at(79118336).cast(), w().at(82395136).cast(), act().at(13148160).cast());
-        sync_cores();
-        un_ln_16_1280(act().at(13148160).cast(), w().at(82403328).cast(), w().at(82411520).cast(), act().at(14786560).cast());
-        sync_cores();
-        un_c1_16_1280_1280(act().at(14786560).cast(), w().at(82419712).cast(), w().at(85696512).cast(), act().at(16424960).cast());
-        sync_cores();
-        un_c1_16_1280_1280(act().at(14786560).cast(), w().at(85704704).cast(), w().at(85696512).cast(), act().at(18063360).cast());
-        sync_cores();
-        un_c1_16_1280_1280(act().at(14786560).cast(), w().at(88981504).cast(), w().at(85696512).cast(), act().at(19701760).cast());
-        sync_cores();
-        un_at_16_s(act().at(16424960).cast(), act().at(18063360).cast(), act().at(19701760).cast(), w().at(92258304).cast(), act().at(21340160).cast());
-        sync_cores();
-        un_c1_16_1280_1280_r(act().at(21340160).cast(), w().at(92262400).cast(), w().at(95539200).cast(), act().at(13148160).cast(), act().at(22978560).cast());
+        un_ra_16_1280_1280_1280_1280(act().at(256942080).cast(), act().at(247111680).cast(), act().at(258580480).cast());
         sync_cores();
         // up1.attn2.cross
-        un_ln_16_1280(act().at(22978560).cast(), w().at(95547392).cast(), w().at(95555584).cast(), act().at(24616960).cast());
+        un_ln_16_1280(act().at(258580480).cast(), w().at(1075236864).cast(), w().at(1075245056).cast(), act().at(260218880).cast());
         sync_cores();
-        un_c1_16_1280_1280(act().at(24616960).cast(), w().at(95563776).cast(), w().at(85696512).cast(), act().at(26255360).cast());
+        un_lr_16_1280_1280(act().at(260321280).cast(), w().at(1075253248).cast(), act().at(261959680).cast());
         sync_cores();
-        un_kv_1280(in_x().at(5193728).cast(), w().at(98840576).cast(), act().at(27893760).cast());
+        un_kv_1280(in_x().at(7979008).cast(), w().at(1078530048).cast(), act().at(263495680).cast());
         sync_cores();
-        un_kv_1280(in_x().at(5193728).cast(), w().at(100806656).cast(), act().at(28221440).cast());
+        un_kv_1280(in_x().at(7979008).cast(), w().at(1080496128).cast(), act().at(263823360).cast());
         sync_cores();
-        un_at_16_x(act().at(26255360).cast(), act().at(27893760).cast(), act().at(28221440).cast(), w().at(102772736).cast(), act().at(28549120).cast());
+        un_at_16_x(act().at(261857280).cast(), act().at(263495680).cast(), act().at(263823360).cast(), w().at(230395904).cast(), act().at(264151040).cast());
         sync_cores();
-        un_c1_16_1280_1280_r(act().at(28549120).cast(), w().at(102776832).cast(), w().at(106053632).cast(), act().at(22978560).cast(), act().at(30187520).cast());
+        un_lr_16_1280_1280_b(act().at(264253440).cast(), w().at(1082462208).cast(), w().at(1085739008).cast(), act().at(265891840).cast());
+        sync_cores();
+        un_ra_16_1280_1280_1280_1280(act().at(265789440).cast(), act().at(258580480).cast(), act().at(267427840).cast());
         sync_cores();
         // up1.attn2.ff
-        un_ln_16_1280(act().at(30187520).cast(), w().at(106061824).cast(), w().at(106070016).cast(), act().at(31825920).cast());
+        un_ln_16_1280(act().at(267427840).cast(), w().at(1085747200).cast(), w().at(1085755392).cast(), act().at(269066240).cast());
         sync_cores();
-        un_c1_16_1280_5120(act().at(31825920).cast(), w().at(106078208).cast(), w().at(119185408).cast(), act().at(33464320).cast());
+        un_lr_16_1280_5120_b(act().at(269168640).cast(), w().at(1085763584).cast(), w().at(1098870784).cast(), act().at(271114240).cast());
         sync_cores();
-        un_c1_16_1280_5120(act().at(31825920).cast(), w().at(119205888).cast(), w().at(132313088).cast(), act().at(40017920).cast());
+        un_lr_16_1280_5120_b(act().at(269168640).cast(), w().at(1098891264).cast(), w().at(1111998464).cast(), act().at(277667840).cast());
         sync_cores();
-        un_gg_16(act().at(33464320).cast(), act().at(40017920).cast(), act().at(46571520).cast());
+        un_gg_16(act().at(270704640).cast(), act().at(277258240).cast(), act().at(283811840).cast());
         sync_cores();
-        un_c1_16_5120_1280_r(act().at(46571520).cast(), w().at(132333568).cast(), w().at(145440768).cast(), act().at(30187520).cast(), act().at(53125120).cast());
+        un_lr_16_5120_1280_b(act().at(284221440).cast(), w().at(1112018944).cast(), w().at(1125126144).cast(), act().at(290467840).cast());
         sync_cores();
-        un_c1_16_1280_1280_r(act().at(53125120).cast(), w().at(145448960).cast(), w().at(148725760).cast(), act().at(9871360).cast(), act().at(54763520).cast());
+        un_ra_16_1280_1280_1280_1280(act().at(290365440).cast(), act().at(267427840).cast(), act().at(292003840).cast());
+        sync_cores();
+        un_lr_16_1280_1280_b(act().at(292106240).cast(), w().at(1125134336).cast(), w().at(1128411136).cast(), act().at(293744640).cast());
+        sync_cores();
+        un_ra_16_1280_1280_1280_1280(act().at(293642240).cast(), act().at(243834880).cast(), act().at(295280640).cast());
         sync_cores();
         // up1.up
-        un_up_16_1280_256(act().at(54763520).cast(), act().at(56401920).cast());
+        un_up_16_1280_256(act().at(295280640).cast(), act().at(296919040).cast());
         sync_cores();
-        un_up_16_1280_256(act().at(54764032).cast(), act().at(56402432).cast());
+        un_up_16_1280_256(act().at(295281152).cast(), act().at(296919552).cast());
         sync_cores();
-        un_up_16_1280_256(act().at(54764544).cast(), act().at(56402944).cast());
+        un_up_16_1280_256(act().at(295281664).cast(), act().at(296920064).cast());
         sync_cores();
-        un_up_16_1280_256(act().at(54765056).cast(), act().at(56403456).cast());
+        un_up_16_1280_256(act().at(295282176).cast(), act().at(296920576).cast());
         sync_cores();
-        un_up_16_1280_256(act().at(54765568).cast(), act().at(56403968).cast());
+        un_up_16_1280_256(act().at(295282688).cast(), act().at(296921088).cast());
         sync_cores();
-        un_c3_32_1280_1280(act().at(56401920).cast(), w().at(148733952).cast(), w().at(178225152).cast(), out_y().at(3932160).cast());
+        un_lr_32_1280_1280_first(act().at(297008640).cast(), w().at(1128419328).cast(), act().at(300851200).cast());
         sync_cores();
-    }
-}
-
-/// s11：up2.res0、up2.attn0、up2.attn0.cross
-#[cfg(feature = "s11")]
-mod s11 {
-    use super::*;
-    npu::decls! {
-        in_x: input, bytes = 12271616;
-        out_y: output, bytes = 7864320;
-        w: weights, bytes = 41431040;
-        act: workspace, bytes = 42123264;
-    }
-    #[npu::program(chiplets = 1, cores = 2)]
-    pub fn step() {
-        // 入口第一步：@act 与 out_y 整块清零（两核各清一半）：边框、token 的补齐行、余量都靠它是 0
-        if core_rank() == 0 {
-            un_zero(act().cast(), 1285);
-            un_zero(out_y().cast(), 240);
-        } else {
-            un_zero(act().at(21053440).cast(), 1286);
-            un_zero(out_y().at(3932160).cast(), 240);
-        }
+        un_lr_32_1280_1280_mid(act().at(297011200).cast(), w().at(1131696128).cast(), act().at(300851200).cast());
         sync_cores();
-        // ── 第 0 路（有提示词）──
+        un_lr_32_1280_1280_mid(act().at(297013760).cast(), w().at(1134972928).cast(), act().at(300851200).cast());
+        sync_cores();
+        un_lr_32_1280_1280_mid(act().at(297100800).cast(), w().at(1138249728).cast(), act().at(300851200).cast());
+        sync_cores();
+        un_lr_32_1280_1280_mid(act().at(297103360).cast(), w().at(1141526528).cast(), act().at(300851200).cast());
+        sync_cores();
+        un_lr_32_1280_1280_mid(act().at(297105920).cast(), w().at(1144803328).cast(), act().at(300851200).cast());
+        sync_cores();
+        un_lr_32_1280_1280_mid(act().at(297192960).cast(), w().at(1148080128).cast(), act().at(300851200).cast());
+        sync_cores();
+        un_lr_32_1280_1280_mid(act().at(297195520).cast(), w().at(1151356928).cast(), act().at(300851200).cast());
+        sync_cores();
+        un_lr_32_1280_1280_b_last(act().at(297198080).cast(), w().at(1154633728).cast(), w().at(1157910528).cast(), act().at(300851200).cast(), act().at(306933760).cast());
+        sync_cores();
         // up2.res0
-        un_cp_32_1280_1920(in_x().at(81920).cast(), act().at(0).cast());
+        un_cp_32_1280_1920(act().at(306749440).cast(), act().at(310681600).cast());
         sync_cores();
-        un_cp_32_640_1920(in_x().at(4014080).cast(), act().at(2560).cast());
+        un_cp_32_640_1920(in_x().at(10633216).cast(), act().at(310684160).cast());
         sync_cores();
-        un_gs_32_1920(act().at(0).cast(), act().at(5898240).cast());
+        un_gs_32_1920(act().at(310681600).cast(), act().at(983040).cast());
         sync_cores();
-        un_ga_32_1920_silu(act().at(0).cast(), act().at(5898240).cast(), w().at(0).cast(), w().at(8192).cast(), w().at(16384).cast(), act().at(5939200).cast());
+        un_ga_32_1920_silu(act().at(310681600).cast(), act().at(983040).cast(), w().at(1157918720).cast(), w().at(1157926912).cast(), w().at(979881984).cast(), act().at(316579840).cast());
         sync_cores();
-        un_c3_32_1920_640(act().at(5939200).cast(), w().at(262144).cast(), in_x().at(69120).cast(), act().at(11837440).cast());
+        un_lr_32_1920_640_first(act().at(316714240).cast(), w().at(1157935104).cast(), act().at(322478080).cast());
         sync_cores();
-        un_gs_32_640(act().at(11837440).cast(), act().at(5898240).cast());
+        un_lr_32_1920_640_mid(act().at(316718080).cast(), w().at(1160392704).cast(), act().at(322478080).cast());
         sync_cores();
-        un_ga_32_640_silu(act().at(11837440).cast(), act().at(5898240).cast(), w().at(22380544).cast(), w().at(22384640).cast(), w().at(22388736).cast(), act().at(13803520).cast());
+        un_lr_32_1920_640_mid(act().at(316721920).cast(), w().at(1162850304).cast(), act().at(322478080).cast());
         sync_cores();
-        un_c1_32_1920_640(act().at(0).cast(), w().at(22470656).cast(), w().at(24928256).cast(), act().at(15769600).cast());
+        un_lr_32_1920_640_mid(act().at(316852480).cast(), w().at(1165307904).cast(), act().at(322478080).cast());
         sync_cores();
-        un_c3_32_640_640_r(act().at(13803520).cast(), w().at(24932352).cast(), w().at(32305152).cast(), act().at(15769600).cast(), out_y().at(0).cast());
+        un_lr_32_1920_640_mid(act().at(316856320).cast(), w().at(1167765504).cast(), act().at(322478080).cast());
         sync_cores();
-        // up2.attn0
-        un_gs_32_640(out_y().at(0).cast(), act().at(5898240).cast());
+        un_lr_32_1920_640_mid(act().at(316860160).cast(), w().at(1170223104).cast(), act().at(322478080).cast());
         sync_cores();
-        un_ga_32_640_none(out_y().at(0).cast(), act().at(5898240).cast(), w().at(32309248).cast(), w().at(32313344).cast(), w().at(22388736).cast(), act().at(17735680).cast());
+        un_lr_32_1920_640_mid(act().at(316990720).cast(), w().at(1172680704).cast(), act().at(322478080).cast());
         sync_cores();
-        un_lr_32_640_640_b(act().at(17735680).cast(), w().at(32317440).cast(), w().at(33136640).cast(), act().at(19701760).cast());
+        un_lr_32_1920_640_mid(act().at(316994560).cast(), w().at(1175138304).cast(), act().at(322478080).cast());
         sync_cores();
-        un_ln_32_640(act().at(19701760).cast(), w().at(33140736).cast(), w().at(33144832).cast(), act().at(21667840).cast());
+        un_lr_32_1920_640_b_last(act().at(316998400).cast(), w().at(1177595904).cast(), in_x().at(69120).cast(), act().at(322478080).cast(), act().at(325519360).cast());
         sync_cores();
-        un_lr_32_640_768(act().at(21667840).cast(), w().at(33148928).cast(), act().at(23633920).cast());
+        un_gs_32_640(act().at(325427200).cast(), act().at(983040).cast());
         sync_cores();
-        un_lr_32_640_768(act().at(21667840).cast(), w().at(34131968).cast(), act().at(25993216).cast());
+        un_ga_32_640_silu(act().at(325427200).cast(), act().at(983040).cast(), w().at(1180053504).cast(), w().at(1180057600).cast(), w().at(1180061696).cast(), act().at(327393280).cast());
         sync_cores();
-        un_lr_32_640_768(act().at(21667840).cast(), w().at(35115008).cast(), act().at(28352512).cast());
+        un_lr_32_1920_640_b(act().at(310958080).cast(), w().at(1180143616).cast(), w().at(1182601216).cast(), act().at(329451520).cast());
         sync_cores();
-        un_at_32_s(act().at(23633920).cast(), act().at(25993216).cast(), act().at(28352512).cast(), w().at(36098048).cast(), act().at(30711808).cast());
-        sync_cores();
-        un_c1_32_768_640_r(act().at(30711808).cast(), w().at(36102144).cast(), w().at(37085184).cast(), act().at(19701760).cast(), act().at(33071104).cast());
-        sync_cores();
-        // up2.attn0.cross
-        un_ln_32_640(act().at(33071104).cast(), w().at(37089280).cast(), w().at(37093376).cast(), act().at(35037184).cast());
-        sync_cores();
-        un_lr_32_640_768(act().at(35037184).cast(), w().at(37097472).cast(), act().at(37003264).cast());
-        sync_cores();
-        un_kv_768(in_x().at(5980160).cast(), w().at(38080512).cast(), act().at(39362560).cast());
-        sync_cores();
-        un_kv_768(in_x().at(5980160).cast(), w().at(39260160).cast(), act().at(39559168).cast());
-        sync_cores();
-        un_at_32_x(act().at(37003264).cast(), act().at(39362560).cast(), act().at(39559168).cast(), w().at(40439808).cast(), act().at(39755776).cast());
-        sync_cores();
-        un_c1_32_768_640_r(act().at(39755776).cast(), w().at(40443904).cast(), w().at(41426944).cast(), act().at(33071104).cast(), out_y().at(1966080).cast());
-        sync_cores();
-        // ── 第 1 路（空提示词）──
-        // up2.res0
-        un_cp_32_1280_1920(in_x().at(6176768).cast(), act().at(0).cast());
-        sync_cores();
-        un_cp_32_640_1920(in_x().at(10108928).cast(), act().at(2560).cast());
-        sync_cores();
-        un_gs_32_1920(act().at(0).cast(), act().at(5898240).cast());
-        sync_cores();
-        un_ga_32_1920_silu(act().at(0).cast(), act().at(5898240).cast(), w().at(0).cast(), w().at(8192).cast(), w().at(16384).cast(), act().at(5939200).cast());
-        sync_cores();
-        un_c3_32_1920_640(act().at(5939200).cast(), w().at(262144).cast(), in_x().at(69120).cast(), act().at(11837440).cast());
-        sync_cores();
-        un_gs_32_640(act().at(11837440).cast(), act().at(5898240).cast());
-        sync_cores();
-        un_ga_32_640_silu(act().at(11837440).cast(), act().at(5898240).cast(), w().at(22380544).cast(), w().at(22384640).cast(), w().at(22388736).cast(), act().at(13803520).cast());
-        sync_cores();
-        un_c1_32_1920_640(act().at(0).cast(), w().at(22470656).cast(), w().at(24928256).cast(), act().at(15769600).cast());
-        sync_cores();
-        un_c3_32_640_640_r(act().at(13803520).cast(), w().at(24932352).cast(), w().at(32305152).cast(), act().at(15769600).cast(), out_y().at(3932160).cast());
-        sync_cores();
-        // up2.attn0
-        un_gs_32_640(out_y().at(3932160).cast(), act().at(5898240).cast());
-        sync_cores();
-        un_ga_32_640_none(out_y().at(3932160).cast(), act().at(5898240).cast(), w().at(32309248).cast(), w().at(32313344).cast(), w().at(22388736).cast(), act().at(17735680).cast());
-        sync_cores();
-        un_lr_32_640_640_b(act().at(17735680).cast(), w().at(32317440).cast(), w().at(33136640).cast(), act().at(19701760).cast());
-        sync_cores();
-        un_ln_32_640(act().at(19701760).cast(), w().at(33140736).cast(), w().at(33144832).cast(), act().at(21667840).cast());
-        sync_cores();
-        un_lr_32_640_768(act().at(21667840).cast(), w().at(33148928).cast(), act().at(23633920).cast());
-        sync_cores();
-        un_lr_32_640_768(act().at(21667840).cast(), w().at(34131968).cast(), act().at(25993216).cast());
-        sync_cores();
-        un_lr_32_640_768(act().at(21667840).cast(), w().at(35115008).cast(), act().at(28352512).cast());
-        sync_cores();
-        un_at_32_s(act().at(23633920).cast(), act().at(25993216).cast(), act().at(28352512).cast(), w().at(36098048).cast(), act().at(30711808).cast());
-        sync_cores();
-        un_c1_32_768_640_r(act().at(30711808).cast(), w().at(36102144).cast(), w().at(37085184).cast(), act().at(19701760).cast(), act().at(33071104).cast());
-        sync_cores();
-        // up2.attn0.cross
-        un_ln_32_640(act().at(33071104).cast(), w().at(37089280).cast(), w().at(37093376).cast(), act().at(35037184).cast());
-        sync_cores();
-        un_lr_32_640_768(act().at(35037184).cast(), w().at(37097472).cast(), act().at(37003264).cast());
-        sync_cores();
-        un_kv_768(in_x().at(12075008).cast(), w().at(38080512).cast(), act().at(39362560).cast());
-        sync_cores();
-        un_kv_768(in_x().at(12075008).cast(), w().at(39260160).cast(), act().at(39559168).cast());
-        sync_cores();
-        un_at_32_x(act().at(37003264).cast(), act().at(39362560).cast(), act().at(39559168).cast(), w().at(40439808).cast(), act().at(39755776).cast());
-        sync_cores();
-        un_c1_32_768_640_r(act().at(39755776).cast(), w().at(40443904).cast(), w().at(41426944).cast(), act().at(33071104).cast(), out_y().at(5898240).cast());
+        un_c3_32_640_640_r(act().at(327393280).cast(), w().at(1182605312).cast(), w().at(1189978112).cast(), act().at(329359360).cast(), out_y().at(1966080).cast());
         sync_cores();
     }
 }
 
-/// s12：up2.attn0.ff、up2.res1、up2.attn1、up2.attn1.cross
-#[cfg(feature = "s12")]
-mod s12 {
+/// s6：up2.attn0、up2.attn0.cross、up2.attn0.ff、up2.res1、up2.attn1、up2.attn1.cross、up2.attn1.ff、up2.res2、up2.attn2、up2.attn2.cross、up2.attn2.ff、up2.up、up3.res0
+#[cfg(feature = "s6")]
+mod s6 {
     use super::*;
     npu::decls! {
-        in_x: input, bytes = 12271616;
-        out_y: output, bytes = 7864320;
-        w: weights, bytes = 44011520;
-        act: workspace, bytes = 68075520;
-    }
-    #[npu::program(chiplets = 1, cores = 2)]
-    pub fn step() {
-        // 入口第一步：@act 与 out_y 整块清零（两核各清一半）：边框、token 的补齐行、余量都靠它是 0
-        if core_rank() == 0 {
-            un_zero(act().cast(), 2077);
-            un_zero(out_y().cast(), 240);
-        } else {
-            un_zero(act().at(34029568).cast(), 2078);
-            un_zero(out_y().at(3932160).cast(), 240);
-        }
-        sync_cores();
-        // ── 第 0 路（有提示词）──
-        // up2.attn0.ff
-        un_ln_32_640(in_x().at(81920).cast(), w().at(0).cast(), w().at(4096).cast(), act().at(0).cast());
-        sync_cores();
-        un_lr_32_640_2560_b(act().at(0).cast(), w().at(8192).cast(), w().at(3284992).cast(), act().at(1966080).cast());
-        sync_cores();
-        un_lr_32_640_2560_b(act().at(0).cast(), w().at(3297280).cast(), w().at(6574080).cast(), act().at(9830400).cast());
-        sync_cores();
-        un_gg_32(act().at(1966080).cast(), act().at(9830400).cast(), act().at(17694720).cast());
-        sync_cores();
-        un_c1_32_2560_640_r_o768_q640(act().at(17694720).cast(), w().at(6586368).cast(), w().at(9863168).cast(), in_x().at(81920).cast(), act().at(25559040).cast());
-        sync_cores();
-        un_c1_32_768_640_r(act().at(25559040).cast(), w().at(9867264).cast(), w().at(10850304).cast(), in_x().at(2048000).cast(), act().at(27918336).cast());
-        sync_cores();
-        // up2.res1
-        un_cp_32_640_1280(act().at(27918336).cast(), act().at(29884416).cast());
-        sync_cores();
-        un_cp_32_640_1280(in_x().at(4014080).cast(), act().at(29885696).cast());
-        sync_cores();
-        un_gs_32_1280(act().at(29884416).cast(), act().at(33816576).cast());
-        sync_cores();
-        un_ga_32_1280_silu(act().at(29884416).cast(), act().at(33816576).cast(), w().at(10854400).cast(), w().at(10862592).cast(), w().at(10870784).cast(), act().at(33857536).cast());
-        sync_cores();
-        un_c3_32_1280_640(act().at(33857536).cast(), w().at(11034624).cast(), in_x().at(71680).cast(), act().at(37789696).cast());
-        sync_cores();
-        un_gs_32_640(act().at(37789696).cast(), act().at(33816576).cast());
-        sync_cores();
-        un_ga_32_640_silu(act().at(37789696).cast(), act().at(33816576).cast(), w().at(25780224).cast(), w().at(25784320).cast(), w().at(25788416).cast(), act().at(39755776).cast());
-        sync_cores();
-        un_c1_32_1280_640(act().at(29884416).cast(), w().at(25870336).cast(), w().at(27508736).cast(), act().at(41721856).cast());
-        sync_cores();
-        un_c3_32_640_640_r(act().at(39755776).cast(), w().at(27512832).cast(), w().at(34885632).cast(), act().at(41721856).cast(), out_y().at(0).cast());
-        sync_cores();
-        // up2.attn1
-        un_gs_32_640(out_y().at(0).cast(), act().at(33816576).cast());
-        sync_cores();
-        un_ga_32_640_none(out_y().at(0).cast(), act().at(33816576).cast(), w().at(34889728).cast(), w().at(34893824).cast(), w().at(25788416).cast(), act().at(43687936).cast());
-        sync_cores();
-        un_lr_32_640_640_b(act().at(43687936).cast(), w().at(34897920).cast(), w().at(35717120).cast(), act().at(45654016).cast());
-        sync_cores();
-        un_ln_32_640(act().at(45654016).cast(), w().at(35721216).cast(), w().at(35725312).cast(), act().at(47620096).cast());
-        sync_cores();
-        un_lr_32_640_768(act().at(47620096).cast(), w().at(35729408).cast(), act().at(49586176).cast());
-        sync_cores();
-        un_lr_32_640_768(act().at(47620096).cast(), w().at(36712448).cast(), act().at(51945472).cast());
-        sync_cores();
-        un_lr_32_640_768(act().at(47620096).cast(), w().at(37695488).cast(), act().at(54304768).cast());
-        sync_cores();
-        un_at_32_s(act().at(49586176).cast(), act().at(51945472).cast(), act().at(54304768).cast(), w().at(38678528).cast(), act().at(56664064).cast());
-        sync_cores();
-        un_c1_32_768_640_r(act().at(56664064).cast(), w().at(38682624).cast(), w().at(39665664).cast(), act().at(45654016).cast(), act().at(59023360).cast());
-        sync_cores();
-        // up2.attn1.cross
-        un_ln_32_640(act().at(59023360).cast(), w().at(39669760).cast(), w().at(39673856).cast(), act().at(60989440).cast());
-        sync_cores();
-        un_lr_32_640_768(act().at(60989440).cast(), w().at(39677952).cast(), act().at(62955520).cast());
-        sync_cores();
-        un_kv_768(in_x().at(5980160).cast(), w().at(40660992).cast(), act().at(65314816).cast());
-        sync_cores();
-        un_kv_768(in_x().at(5980160).cast(), w().at(41840640).cast(), act().at(65511424).cast());
-        sync_cores();
-        un_at_32_x(act().at(62955520).cast(), act().at(65314816).cast(), act().at(65511424).cast(), w().at(43020288).cast(), act().at(65708032).cast());
-        sync_cores();
-        un_c1_32_768_640_r(act().at(65708032).cast(), w().at(43024384).cast(), w().at(44007424).cast(), act().at(59023360).cast(), out_y().at(1966080).cast());
-        sync_cores();
-        // ── 第 1 路（空提示词）──
-        // up2.attn0.ff
-        un_ln_32_640(in_x().at(6176768).cast(), w().at(0).cast(), w().at(4096).cast(), act().at(0).cast());
-        sync_cores();
-        un_lr_32_640_2560_b(act().at(0).cast(), w().at(8192).cast(), w().at(3284992).cast(), act().at(1966080).cast());
-        sync_cores();
-        un_lr_32_640_2560_b(act().at(0).cast(), w().at(3297280).cast(), w().at(6574080).cast(), act().at(9830400).cast());
-        sync_cores();
-        un_gg_32(act().at(1966080).cast(), act().at(9830400).cast(), act().at(17694720).cast());
-        sync_cores();
-        un_c1_32_2560_640_r_o768_q640(act().at(17694720).cast(), w().at(6586368).cast(), w().at(9863168).cast(), in_x().at(6176768).cast(), act().at(25559040).cast());
-        sync_cores();
-        un_c1_32_768_640_r(act().at(25559040).cast(), w().at(9867264).cast(), w().at(10850304).cast(), in_x().at(8142848).cast(), act().at(27918336).cast());
-        sync_cores();
-        // up2.res1
-        un_cp_32_640_1280(act().at(27918336).cast(), act().at(29884416).cast());
-        sync_cores();
-        un_cp_32_640_1280(in_x().at(10108928).cast(), act().at(29885696).cast());
-        sync_cores();
-        un_gs_32_1280(act().at(29884416).cast(), act().at(33816576).cast());
-        sync_cores();
-        un_ga_32_1280_silu(act().at(29884416).cast(), act().at(33816576).cast(), w().at(10854400).cast(), w().at(10862592).cast(), w().at(10870784).cast(), act().at(33857536).cast());
-        sync_cores();
-        un_c3_32_1280_640(act().at(33857536).cast(), w().at(11034624).cast(), in_x().at(71680).cast(), act().at(37789696).cast());
-        sync_cores();
-        un_gs_32_640(act().at(37789696).cast(), act().at(33816576).cast());
-        sync_cores();
-        un_ga_32_640_silu(act().at(37789696).cast(), act().at(33816576).cast(), w().at(25780224).cast(), w().at(25784320).cast(), w().at(25788416).cast(), act().at(39755776).cast());
-        sync_cores();
-        un_c1_32_1280_640(act().at(29884416).cast(), w().at(25870336).cast(), w().at(27508736).cast(), act().at(41721856).cast());
-        sync_cores();
-        un_c3_32_640_640_r(act().at(39755776).cast(), w().at(27512832).cast(), w().at(34885632).cast(), act().at(41721856).cast(), out_y().at(3932160).cast());
-        sync_cores();
-        // up2.attn1
-        un_gs_32_640(out_y().at(3932160).cast(), act().at(33816576).cast());
-        sync_cores();
-        un_ga_32_640_none(out_y().at(3932160).cast(), act().at(33816576).cast(), w().at(34889728).cast(), w().at(34893824).cast(), w().at(25788416).cast(), act().at(43687936).cast());
-        sync_cores();
-        un_lr_32_640_640_b(act().at(43687936).cast(), w().at(34897920).cast(), w().at(35717120).cast(), act().at(45654016).cast());
-        sync_cores();
-        un_ln_32_640(act().at(45654016).cast(), w().at(35721216).cast(), w().at(35725312).cast(), act().at(47620096).cast());
-        sync_cores();
-        un_lr_32_640_768(act().at(47620096).cast(), w().at(35729408).cast(), act().at(49586176).cast());
-        sync_cores();
-        un_lr_32_640_768(act().at(47620096).cast(), w().at(36712448).cast(), act().at(51945472).cast());
-        sync_cores();
-        un_lr_32_640_768(act().at(47620096).cast(), w().at(37695488).cast(), act().at(54304768).cast());
-        sync_cores();
-        un_at_32_s(act().at(49586176).cast(), act().at(51945472).cast(), act().at(54304768).cast(), w().at(38678528).cast(), act().at(56664064).cast());
-        sync_cores();
-        un_c1_32_768_640_r(act().at(56664064).cast(), w().at(38682624).cast(), w().at(39665664).cast(), act().at(45654016).cast(), act().at(59023360).cast());
-        sync_cores();
-        // up2.attn1.cross
-        un_ln_32_640(act().at(59023360).cast(), w().at(39669760).cast(), w().at(39673856).cast(), act().at(60989440).cast());
-        sync_cores();
-        un_lr_32_640_768(act().at(60989440).cast(), w().at(39677952).cast(), act().at(62955520).cast());
-        sync_cores();
-        un_kv_768(in_x().at(12075008).cast(), w().at(40660992).cast(), act().at(65314816).cast());
-        sync_cores();
-        un_kv_768(in_x().at(12075008).cast(), w().at(41840640).cast(), act().at(65511424).cast());
-        sync_cores();
-        un_at_32_x(act().at(62955520).cast(), act().at(65314816).cast(), act().at(65511424).cast(), w().at(43020288).cast(), act().at(65708032).cast());
-        sync_cores();
-        un_c1_32_768_640_r(act().at(65708032).cast(), w().at(43024384).cast(), w().at(44007424).cast(), act().at(59023360).cast(), out_y().at(5898240).cast());
-        sync_cores();
-    }
-}
-
-/// s13：up2.attn1.ff、up2.res2、up2.attn2、up2.attn2.cross、up2.attn2.ff、up2.up
-#[cfg(feature = "s13")]
-mod s13 {
-    use super::*;
-    npu::decls! {
-        in_x: input, bytes = 10305536;
-        out_y: output, bytes = 12451840;
-        w: weights, bytes = 58097664;
-        act: workspace, bytes = 106151936;
-    }
-    #[npu::program(chiplets = 1, cores = 2)]
-    pub fn step() {
-        // 入口第一步：@act 与 out_y 整块清零（两核各清一半）：边框、token 的补齐行、余量都靠它是 0
-        if core_rank() == 0 {
-            un_zero(act().cast(), 3239);
-            un_zero(out_y().cast(), 380);
-        } else {
-            un_zero(act().at(53067776).cast(), 3240);
-            un_zero(out_y().at(6225920).cast(), 380);
-        }
-        sync_cores();
-        // ── 第 0 路（有提示词）──
-        // up2.attn1.ff
-        un_ln_32_640(in_x().at(81920).cast(), w().at(0).cast(), w().at(4096).cast(), act().at(0).cast());
-        sync_cores();
-        un_lr_32_640_2560_b(act().at(0).cast(), w().at(8192).cast(), w().at(3284992).cast(), act().at(1966080).cast());
-        sync_cores();
-        un_lr_32_640_2560_b(act().at(0).cast(), w().at(3297280).cast(), w().at(6574080).cast(), act().at(9830400).cast());
-        sync_cores();
-        un_gg_32(act().at(1966080).cast(), act().at(9830400).cast(), act().at(17694720).cast());
-        sync_cores();
-        un_c1_32_2560_640_r_o768_q640(act().at(17694720).cast(), w().at(6586368).cast(), w().at(9863168).cast(), in_x().at(81920).cast(), act().at(25559040).cast());
-        sync_cores();
-        un_c1_32_768_640_r(act().at(25559040).cast(), w().at(9867264).cast(), w().at(10850304).cast(), in_x().at(2048000).cast(), act().at(27918336).cast());
-        sync_cores();
-        // up2.res2
-        un_cp_32_640_960(act().at(27918336).cast(), act().at(29884416).cast());
-        sync_cores();
-        un_cp_32_320_960(in_x().at(4014080).cast(), act().at(29885696).cast());
-        sync_cores();
-        un_gs_32_960(act().at(29884416).cast(), act().at(32833536).cast());
-        sync_cores();
-        un_ga_32_960_silu(act().at(29884416).cast(), act().at(32833536).cast(), w().at(10854400).cast(), w().at(10858496).cast(), w().at(10862592).cast(), act().at(32874496).cast());
-        sync_cores();
-        un_c3_32_960_640(act().at(32874496).cast(), w().at(10985472).cast(), in_x().at(74240).cast(), act().at(35823616).cast());
-        sync_cores();
-        un_gs_32_640(act().at(35823616).cast(), act().at(32833536).cast());
-        sync_cores();
-        un_ga_32_640_silu(act().at(35823616).cast(), act().at(32833536).cast(), w().at(22044672).cast(), w().at(22048768).cast(), w().at(22052864).cast(), act().at(37789696).cast());
-        sync_cores();
-        un_c1_32_960_640(act().at(29884416).cast(), w().at(22134784).cast(), w().at(23363584).cast(), act().at(39755776).cast());
-        sync_cores();
-        un_c3_32_640_640_r(act().at(37789696).cast(), w().at(23367680).cast(), w().at(30740480).cast(), act().at(39755776).cast(), act().at(41721856).cast());
-        sync_cores();
-        // up2.attn2
-        un_gs_32_640(act().at(41721856).cast(), act().at(32833536).cast());
-        sync_cores();
-        un_ga_32_640_none(act().at(41721856).cast(), act().at(32833536).cast(), w().at(30744576).cast(), w().at(30748672).cast(), w().at(22052864).cast(), act().at(43687936).cast());
-        sync_cores();
-        un_lr_32_640_640_b(act().at(43687936).cast(), w().at(30752768).cast(), w().at(31571968).cast(), act().at(45654016).cast());
-        sync_cores();
-        un_ln_32_640(act().at(45654016).cast(), w().at(31576064).cast(), w().at(31580160).cast(), act().at(47620096).cast());
-        sync_cores();
-        un_lr_32_640_768(act().at(47620096).cast(), w().at(31584256).cast(), act().at(49586176).cast());
-        sync_cores();
-        un_lr_32_640_768(act().at(47620096).cast(), w().at(32567296).cast(), act().at(51945472).cast());
-        sync_cores();
-        un_lr_32_640_768(act().at(47620096).cast(), w().at(33550336).cast(), act().at(54304768).cast());
-        sync_cores();
-        un_at_32_s(act().at(49586176).cast(), act().at(51945472).cast(), act().at(54304768).cast(), w().at(34533376).cast(), act().at(56664064).cast());
-        sync_cores();
-        un_c1_32_768_640_r(act().at(56664064).cast(), w().at(34537472).cast(), w().at(35520512).cast(), act().at(45654016).cast(), act().at(59023360).cast());
-        sync_cores();
-        // up2.attn2.cross
-        un_ln_32_640(act().at(59023360).cast(), w().at(35524608).cast(), w().at(35528704).cast(), act().at(60989440).cast());
-        sync_cores();
-        un_lr_32_640_768(act().at(60989440).cast(), w().at(35532800).cast(), act().at(62955520).cast());
-        sync_cores();
-        un_kv_768(in_x().at(4997120).cast(), w().at(36515840).cast(), act().at(65314816).cast());
-        sync_cores();
-        un_kv_768(in_x().at(4997120).cast(), w().at(37695488).cast(), act().at(65511424).cast());
-        sync_cores();
-        un_at_32_x(act().at(62955520).cast(), act().at(65314816).cast(), act().at(65511424).cast(), w().at(38875136).cast(), act().at(65708032).cast());
-        sync_cores();
-        un_c1_32_768_640_r(act().at(65708032).cast(), w().at(38879232).cast(), w().at(39862272).cast(), act().at(59023360).cast(), act().at(68067328).cast());
-        sync_cores();
-        // up2.attn2.ff
-        un_ln_32_640(act().at(68067328).cast(), w().at(39866368).cast(), w().at(39870464).cast(), act().at(70033408).cast());
-        sync_cores();
-        un_lr_32_640_2560_b(act().at(70033408).cast(), w().at(39874560).cast(), w().at(43151360).cast(), act().at(71999488).cast());
-        sync_cores();
-        un_lr_32_640_2560_b(act().at(70033408).cast(), w().at(43163648).cast(), w().at(46440448).cast(), act().at(79863808).cast());
-        sync_cores();
-        un_gg_32(act().at(71999488).cast(), act().at(79863808).cast(), act().at(87728128).cast());
-        sync_cores();
-        un_c1_32_2560_640_r_o768_q640(act().at(87728128).cast(), w().at(46452736).cast(), w().at(49729536).cast(), act().at(68067328).cast(), act().at(95592448).cast());
-        sync_cores();
-        un_c1_32_768_640_r(act().at(95592448).cast(), w().at(49733632).cast(), w().at(50716672).cast(), act().at(41721856).cast(), act().at(97951744).cast());
-        sync_cores();
-        // up2.up
-        un_up_32_640_256(act().at(97951744).cast(), act().at(99917824).cast());
-        sync_cores();
-        un_up_32_640_256(act().at(97952256).cast(), act().at(99918336).cast());
-        sync_cores();
-        un_up_32_640_128(act().at(97952768).cast(), act().at(99918848).cast());
-        sync_cores();
-        un_c3_64_640_640(act().at(99917824).cast(), w().at(50720768).cast(), w().at(58093568).cast(), out_y().at(0).cast());
-        sync_cores();
-        // ── 第 1 路（空提示词）──
-        // up2.attn1.ff
-        un_ln_32_640(in_x().at(5193728).cast(), w().at(0).cast(), w().at(4096).cast(), act().at(0).cast());
-        sync_cores();
-        un_lr_32_640_2560_b(act().at(0).cast(), w().at(8192).cast(), w().at(3284992).cast(), act().at(1966080).cast());
-        sync_cores();
-        un_lr_32_640_2560_b(act().at(0).cast(), w().at(3297280).cast(), w().at(6574080).cast(), act().at(9830400).cast());
-        sync_cores();
-        un_gg_32(act().at(1966080).cast(), act().at(9830400).cast(), act().at(17694720).cast());
-        sync_cores();
-        un_c1_32_2560_640_r_o768_q640(act().at(17694720).cast(), w().at(6586368).cast(), w().at(9863168).cast(), in_x().at(5193728).cast(), act().at(25559040).cast());
-        sync_cores();
-        un_c1_32_768_640_r(act().at(25559040).cast(), w().at(9867264).cast(), w().at(10850304).cast(), in_x().at(7159808).cast(), act().at(27918336).cast());
-        sync_cores();
-        // up2.res2
-        un_cp_32_640_960(act().at(27918336).cast(), act().at(29884416).cast());
-        sync_cores();
-        un_cp_32_320_960(in_x().at(9125888).cast(), act().at(29885696).cast());
-        sync_cores();
-        un_gs_32_960(act().at(29884416).cast(), act().at(32833536).cast());
-        sync_cores();
-        un_ga_32_960_silu(act().at(29884416).cast(), act().at(32833536).cast(), w().at(10854400).cast(), w().at(10858496).cast(), w().at(10862592).cast(), act().at(32874496).cast());
-        sync_cores();
-        un_c3_32_960_640(act().at(32874496).cast(), w().at(10985472).cast(), in_x().at(74240).cast(), act().at(35823616).cast());
-        sync_cores();
-        un_gs_32_640(act().at(35823616).cast(), act().at(32833536).cast());
-        sync_cores();
-        un_ga_32_640_silu(act().at(35823616).cast(), act().at(32833536).cast(), w().at(22044672).cast(), w().at(22048768).cast(), w().at(22052864).cast(), act().at(37789696).cast());
-        sync_cores();
-        un_c1_32_960_640(act().at(29884416).cast(), w().at(22134784).cast(), w().at(23363584).cast(), act().at(39755776).cast());
-        sync_cores();
-        un_c3_32_640_640_r(act().at(37789696).cast(), w().at(23367680).cast(), w().at(30740480).cast(), act().at(39755776).cast(), act().at(41721856).cast());
-        sync_cores();
-        // up2.attn2
-        un_gs_32_640(act().at(41721856).cast(), act().at(32833536).cast());
-        sync_cores();
-        un_ga_32_640_none(act().at(41721856).cast(), act().at(32833536).cast(), w().at(30744576).cast(), w().at(30748672).cast(), w().at(22052864).cast(), act().at(43687936).cast());
-        sync_cores();
-        un_lr_32_640_640_b(act().at(43687936).cast(), w().at(30752768).cast(), w().at(31571968).cast(), act().at(45654016).cast());
-        sync_cores();
-        un_ln_32_640(act().at(45654016).cast(), w().at(31576064).cast(), w().at(31580160).cast(), act().at(47620096).cast());
-        sync_cores();
-        un_lr_32_640_768(act().at(47620096).cast(), w().at(31584256).cast(), act().at(49586176).cast());
-        sync_cores();
-        un_lr_32_640_768(act().at(47620096).cast(), w().at(32567296).cast(), act().at(51945472).cast());
-        sync_cores();
-        un_lr_32_640_768(act().at(47620096).cast(), w().at(33550336).cast(), act().at(54304768).cast());
-        sync_cores();
-        un_at_32_s(act().at(49586176).cast(), act().at(51945472).cast(), act().at(54304768).cast(), w().at(34533376).cast(), act().at(56664064).cast());
-        sync_cores();
-        un_c1_32_768_640_r(act().at(56664064).cast(), w().at(34537472).cast(), w().at(35520512).cast(), act().at(45654016).cast(), act().at(59023360).cast());
-        sync_cores();
-        // up2.attn2.cross
-        un_ln_32_640(act().at(59023360).cast(), w().at(35524608).cast(), w().at(35528704).cast(), act().at(60989440).cast());
-        sync_cores();
-        un_lr_32_640_768(act().at(60989440).cast(), w().at(35532800).cast(), act().at(62955520).cast());
-        sync_cores();
-        un_kv_768(in_x().at(10108928).cast(), w().at(36515840).cast(), act().at(65314816).cast());
-        sync_cores();
-        un_kv_768(in_x().at(10108928).cast(), w().at(37695488).cast(), act().at(65511424).cast());
-        sync_cores();
-        un_at_32_x(act().at(62955520).cast(), act().at(65314816).cast(), act().at(65511424).cast(), w().at(38875136).cast(), act().at(65708032).cast());
-        sync_cores();
-        un_c1_32_768_640_r(act().at(65708032).cast(), w().at(38879232).cast(), w().at(39862272).cast(), act().at(59023360).cast(), act().at(68067328).cast());
-        sync_cores();
-        // up2.attn2.ff
-        un_ln_32_640(act().at(68067328).cast(), w().at(39866368).cast(), w().at(39870464).cast(), act().at(70033408).cast());
-        sync_cores();
-        un_lr_32_640_2560_b(act().at(70033408).cast(), w().at(39874560).cast(), w().at(43151360).cast(), act().at(71999488).cast());
-        sync_cores();
-        un_lr_32_640_2560_b(act().at(70033408).cast(), w().at(43163648).cast(), w().at(46440448).cast(), act().at(79863808).cast());
-        sync_cores();
-        un_gg_32(act().at(71999488).cast(), act().at(79863808).cast(), act().at(87728128).cast());
-        sync_cores();
-        un_c1_32_2560_640_r_o768_q640(act().at(87728128).cast(), w().at(46452736).cast(), w().at(49729536).cast(), act().at(68067328).cast(), act().at(95592448).cast());
-        sync_cores();
-        un_c1_32_768_640_r(act().at(95592448).cast(), w().at(49733632).cast(), w().at(50716672).cast(), act().at(41721856).cast(), act().at(97951744).cast());
-        sync_cores();
-        // up2.up
-        un_up_32_640_256(act().at(97951744).cast(), act().at(99917824).cast());
-        sync_cores();
-        un_up_32_640_256(act().at(97952256).cast(), act().at(99918336).cast());
-        sync_cores();
-        un_up_32_640_128(act().at(97952768).cast(), act().at(99918848).cast());
-        sync_cores();
-        un_c3_64_640_640(act().at(99917824).cast(), w().at(50720768).cast(), w().at(58093568).cast(), out_y().at(6225920).cast());
-        sync_cores();
-    }
-}
-
-/// s14：up3.res0、up3.attn0、up3.attn0.cross
-#[cfg(feature = "s14")]
-mod s14 {
-    use super::*;
-    npu::decls! {
-        in_x: input, bytes = 19152896;
-        out_y: output, bytes = 12451840;
-        w: weights, bytes = 11976704;
-        act: workspace, bytes = 73777152;
-    }
-    #[npu::program(chiplets = 1, cores = 2)]
-    pub fn step() {
-        // 入口第一步：@act 与 out_y 整块清零（两核各清一半）：边框、token 的补齐行、余量都靠它是 0
-        if core_rank() == 0 {
-            un_zero(act().cast(), 2251);
-            un_zero(out_y().cast(), 380);
-        } else {
-            un_zero(act().at(36880384).cast(), 2252);
-            un_zero(out_y().at(6225920).cast(), 380);
-        }
-        sync_cores();
-        // ── 第 0 路（有提示词）──
-        // up3.res0
-        un_cp_64_640_960(in_x().at(81920).cast(), act().at(0).cast());
-        sync_cores();
-        un_cp_64_320_960(in_x().at(6307840).cast(), act().at(1280).cast());
-        sync_cores();
-        un_gs_64_960(act().at(0).cast(), act().at(9338880).cast());
-        sync_cores();
-        un_ga_64_960_silu(act().at(0).cast(), act().at(9338880).cast(), w().at(0).cast(), w().at(4096).cast(), w().at(8192).cast(), act().at(9379840).cast());
-        sync_cores();
-        un_c3_64_960_320(act().at(9379840).cast(), w().at(131072).cast(), in_x().at(76800).cast(), act().at(18718720).cast());
-        sync_cores();
-        un_gs_64_320(act().at(18718720).cast(), act().at(9338880).cast());
-        sync_cores();
-        un_ga_64_320_silu(act().at(18718720).cast(), act().at(9338880).cast(), w().at(5660672).cast(), w().at(5664768).cast(), w().at(5668864).cast(), act().at(21831680).cast());
-        sync_cores();
-        un_c1_64_960_320(act().at(0).cast(), w().at(5709824).cast(), w().at(6324224).cast(), act().at(24944640).cast());
-        sync_cores();
-        un_c3_64_320_320_r(act().at(21831680).cast(), w().at(6328320).cast(), w().at(8171520).cast(), act().at(24944640).cast(), out_y().at(0).cast());
-        sync_cores();
-        // up3.attn0
-        un_gs_64_320(out_y().at(0).cast(), act().at(9338880).cast());
-        sync_cores();
-        un_ga_64_320_none(out_y().at(0).cast(), act().at(9338880).cast(), w().at(8175616).cast(), w().at(8179712).cast(), w().at(5668864).cast(), act().at(28057600).cast());
-        sync_cores();
-        un_c1_64_320_320(act().at(28057600).cast(), w().at(8183808).cast(), w().at(8388608).cast(), act().at(31170560).cast());
-        sync_cores();
-        un_ln_64_320(act().at(31170560).cast(), w().at(8392704).cast(), w().at(8396800).cast(), act().at(34283520).cast());
-        sync_cores();
-        un_c1_64_320_512(act().at(34283520).cast(), w().at(8400896).cast(), w().at(8728576).cast(), act().at(37396480).cast());
-        sync_cores();
-        un_c1_64_320_512(act().at(34283520).cast(), w().at(8732672).cast(), w().at(8728576).cast(), act().at(42377216).cast());
-        sync_cores();
-        un_c1_64_320_512(act().at(34283520).cast(), w().at(9060352).cast(), w().at(8728576).cast(), act().at(47357952).cast());
-        sync_cores();
-        un_at_64_s(act().at(37396480).cast(), act().at(42377216).cast(), act().at(47357952).cast(), w().at(9388032).cast(), act().at(52338688).cast());
-        sync_cores();
-        un_c1_64_512_320_r(act().at(52338688).cast(), w().at(9400320).cast(), w().at(9728000).cast(), act().at(31170560).cast(), act().at(57319424).cast());
-        sync_cores();
-        // up3.attn0.cross
-        un_ln_64_320(act().at(57319424).cast(), w().at(9732096).cast(), w().at(9736192).cast(), act().at(60432384).cast());
-        sync_cores();
-        un_c1_64_320_512(act().at(60432384).cast(), w().at(9740288).cast(), w().at(8728576).cast(), act().at(63545344).cast());
-        sync_cores();
-        un_kv_512(in_x().at(9420800).cast(), w().at(10067968).cast(), act().at(68526080).cast());
-        sync_cores();
-        un_kv_512(in_x().at(9420800).cast(), w().at(10854400).cast(), act().at(68657152).cast());
-        sync_cores();
-        un_at_64_x(act().at(63545344).cast(), act().at(68526080).cast(), act().at(68657152).cast(), w().at(11640832).cast(), act().at(68788224).cast());
-        sync_cores();
-        un_c1_64_512_320_r(act().at(68788224).cast(), w().at(11644928).cast(), w().at(11972608).cast(), act().at(57319424).cast(), out_y().at(3112960).cast());
-        sync_cores();
-        // ── 第 1 路（空提示词）──
-        // up3.res0
-        un_cp_64_640_960(in_x().at(9617408).cast(), act().at(0).cast());
-        sync_cores();
-        un_cp_64_320_960(in_x().at(15843328).cast(), act().at(1280).cast());
-        sync_cores();
-        un_gs_64_960(act().at(0).cast(), act().at(9338880).cast());
-        sync_cores();
-        un_ga_64_960_silu(act().at(0).cast(), act().at(9338880).cast(), w().at(0).cast(), w().at(4096).cast(), w().at(8192).cast(), act().at(9379840).cast());
-        sync_cores();
-        un_c3_64_960_320(act().at(9379840).cast(), w().at(131072).cast(), in_x().at(76800).cast(), act().at(18718720).cast());
-        sync_cores();
-        un_gs_64_320(act().at(18718720).cast(), act().at(9338880).cast());
-        sync_cores();
-        un_ga_64_320_silu(act().at(18718720).cast(), act().at(9338880).cast(), w().at(5660672).cast(), w().at(5664768).cast(), w().at(5668864).cast(), act().at(21831680).cast());
-        sync_cores();
-        un_c1_64_960_320(act().at(0).cast(), w().at(5709824).cast(), w().at(6324224).cast(), act().at(24944640).cast());
-        sync_cores();
-        un_c3_64_320_320_r(act().at(21831680).cast(), w().at(6328320).cast(), w().at(8171520).cast(), act().at(24944640).cast(), out_y().at(6225920).cast());
-        sync_cores();
-        // up3.attn0
-        un_gs_64_320(out_y().at(6225920).cast(), act().at(9338880).cast());
-        sync_cores();
-        un_ga_64_320_none(out_y().at(6225920).cast(), act().at(9338880).cast(), w().at(8175616).cast(), w().at(8179712).cast(), w().at(5668864).cast(), act().at(28057600).cast());
-        sync_cores();
-        un_c1_64_320_320(act().at(28057600).cast(), w().at(8183808).cast(), w().at(8388608).cast(), act().at(31170560).cast());
-        sync_cores();
-        un_ln_64_320(act().at(31170560).cast(), w().at(8392704).cast(), w().at(8396800).cast(), act().at(34283520).cast());
-        sync_cores();
-        un_c1_64_320_512(act().at(34283520).cast(), w().at(8400896).cast(), w().at(8728576).cast(), act().at(37396480).cast());
-        sync_cores();
-        un_c1_64_320_512(act().at(34283520).cast(), w().at(8732672).cast(), w().at(8728576).cast(), act().at(42377216).cast());
-        sync_cores();
-        un_c1_64_320_512(act().at(34283520).cast(), w().at(9060352).cast(), w().at(8728576).cast(), act().at(47357952).cast());
-        sync_cores();
-        un_at_64_s(act().at(37396480).cast(), act().at(42377216).cast(), act().at(47357952).cast(), w().at(9388032).cast(), act().at(52338688).cast());
-        sync_cores();
-        un_c1_64_512_320_r(act().at(52338688).cast(), w().at(9400320).cast(), w().at(9728000).cast(), act().at(31170560).cast(), act().at(57319424).cast());
-        sync_cores();
-        // up3.attn0.cross
-        un_ln_64_320(act().at(57319424).cast(), w().at(9732096).cast(), w().at(9736192).cast(), act().at(60432384).cast());
-        sync_cores();
-        un_c1_64_320_512(act().at(60432384).cast(), w().at(9740288).cast(), w().at(8728576).cast(), act().at(63545344).cast());
-        sync_cores();
-        un_kv_512(in_x().at(18956288).cast(), w().at(10067968).cast(), act().at(68526080).cast());
-        sync_cores();
-        un_kv_512(in_x().at(18956288).cast(), w().at(10854400).cast(), act().at(68657152).cast());
-        sync_cores();
-        un_at_64_x(act().at(63545344).cast(), act().at(68526080).cast(), act().at(68657152).cast(), w().at(11640832).cast(), act().at(68788224).cast());
-        sync_cores();
-        un_c1_64_512_320_r(act().at(68788224).cast(), w().at(11644928).cast(), w().at(11972608).cast(), act().at(57319424).cast(), out_y().at(9338880).cast());
-        sync_cores();
-    }
-}
-
-/// s15：up3.attn0.ff、up3.res1
-#[cfg(feature = "s15")]
-mod s15 {
-    use super::*;
-    npu::decls! {
-        in_x: input, bytes = 18759680;
+        in_x: input, bytes = 16531456;
         out_y: output, bytes = 6225920;
-        w: weights, bytes = 8781824;
-        act: workspace, bytes = 68534272;
+        w: weights, bytes = 119185408;
+        act: workspace, bytes = 247545856;
     }
     #[npu::program(chiplets = 1, cores = 2)]
     pub fn step() {
         // 入口第一步：@act 与 out_y 整块清零（两核各清一半）：边框、token 的补齐行、余量都靠它是 0
         if core_rank() == 0 {
-            un_zero(act().cast(), 2091);
+            un_zero(act().cast(), 7554);
             un_zero(out_y().cast(), 190);
         } else {
-            un_zero(act().at(34258944).cast(), 2092);
+            un_zero(act().at(123764736).cast(), 7555);
             un_zero(out_y().at(3112960).cast(), 190);
         }
         sync_cores();
         // ── 第 0 路（有提示词）──
-        // up3.attn0.ff
-        un_ln_64_320(in_x().at(81920).cast(), w().at(0).cast(), w().at(4096).cast(), act().at(0).cast());
+        // up2.attn0
+        un_gs_32_640(in_x().at(81920).cast(), act().at(0).cast());
         sync_cores();
-        un_c1_64_320_1280(act().at(0).cast(), w().at(8192).cast(), w().at(827392).cast(), act().at(3112960).cast());
+        un_ga_32_640_none(in_x().at(81920).cast(), act().at(0).cast(), w().at(0).cast(), w().at(4096).cast(), w().at(8192).cast(), act().at(40960).cast());
         sync_cores();
-        un_c1_64_320_1280(act().at(0).cast(), w().at(835584).cast(), w().at(1654784).cast(), act().at(15564800).cast());
+        un_lr_32_640_640_b(act().at(133120).cast(), w().at(90112).cast(), w().at(909312).cast(), act().at(2099200).cast());
         sync_cores();
-        un_gg_64(act().at(3112960).cast(), act().at(15564800).cast(), act().at(28016640).cast());
+        un_ln_32_640(act().at(2007040).cast(), w().at(913408).cast(), w().at(917504).cast(), act().at(3973120).cast());
         sync_cores();
-        un_c1_64_1280_320_r(act().at(28016640).cast(), w().at(1662976).cast(), w().at(2482176).cast(), in_x().at(81920).cast(), act().at(40468480).cast());
+        un_lr_32_640_768(act().at(4065280).cast(), w().at(921600).cast(), act().at(6049792).cast());
         sync_cores();
-        un_c1_64_320_320_r(act().at(40468480).cast(), w().at(2486272).cast(), w().at(2691072).cast(), in_x().at(3194880).cast(), act().at(43581440).cast());
+        un_lr_32_640_768(act().at(4065280).cast(), w().at(1904640).cast(), act().at(8409088).cast());
         sync_cores();
-        // up3.res1
-        un_cp_64_320_640(act().at(43581440).cast(), act().at(46694400).cast());
+        un_lr_32_640_768(act().at(4065280).cast(), w().at(2887680).cast(), act().at(10768384).cast());
         sync_cores();
-        un_cp_64_320_640(in_x().at(6307840).cast(), act().at(46695040).cast());
+        un_at_32_s(act().at(5939200).cast(), act().at(8298496).cast(), act().at(10657792).cast(), w().at(3870720).cast(), act().at(13017088).cast());
         sync_cores();
-        un_gs_64_640(act().at(46694400).cast(), act().at(52920320).cast());
+        un_c1_32_768_640_r(act().at(13017088).cast(), w().at(3874816).cast(), w().at(4857856).cast(), act().at(2007040).cast(), act().at(15376384).cast());
         sync_cores();
-        un_ga_64_640_silu(act().at(46694400).cast(), act().at(52920320).cast(), w().at(2695168).cast(), w().at(2699264).cast(), w().at(2703360).cast(), act().at(52961280).cast());
+        // up2.attn0.cross
+        un_ln_32_640(act().at(15376384).cast(), w().at(4861952).cast(), w().at(4866048).cast(), act().at(17342464).cast());
         sync_cores();
-        un_c3_64_640_320(act().at(52961280).cast(), w().at(2785280).cast(), in_x().at(78080).cast(), act().at(59187200).cast());
+        un_lr_32_640_768(act().at(17434624).cast(), w().at(4870144).cast(), act().at(19419136).cast());
         sync_cores();
-        un_gs_64_320(act().at(59187200).cast(), act().at(52920320).cast());
+        un_kv_768(in_x().at(2048000).cast(), w().at(5853184).cast(), act().at(21667840).cast());
         sync_cores();
-        un_ga_64_320_silu(act().at(59187200).cast(), act().at(52920320).cast(), w().at(6471680).cast(), w().at(6475776).cast(), w().at(6479872).cast(), act().at(62300160).cast());
+        un_kv_768(in_x().at(2048000).cast(), w().at(7032832).cast(), act().at(21864448).cast());
         sync_cores();
-        un_c1_64_640_320(act().at(46694400).cast(), w().at(6520832).cast(), w().at(6930432).cast(), act().at(65413120).cast());
+        un_at_32_x(act().at(19308544).cast(), act().at(21667840).cast(), act().at(21864448).cast(), w().at(8212480).cast(), act().at(22061056).cast());
         sync_cores();
-        un_c3_64_320_320_r(act().at(62300160).cast(), w().at(6934528).cast(), w().at(8777728).cast(), act().at(65413120).cast(), out_y().at(0).cast());
+        un_c1_32_768_640_r(act().at(22061056).cast(), w().at(8216576).cast(), w().at(9199616).cast(), act().at(15376384).cast(), act().at(24420352).cast());
+        sync_cores();
+        // up2.attn0.ff
+        un_ln_32_640(act().at(24420352).cast(), w().at(9203712).cast(), w().at(9207808).cast(), act().at(26386432).cast());
+        sync_cores();
+        un_lr_32_640_2560_b(act().at(26478592).cast(), w().at(9211904).cast(), w().at(12488704).cast(), act().at(28721152).cast());
+        sync_cores();
+        un_lr_32_640_2560_b(act().at(26478592).cast(), w().at(12500992).cast(), w().at(15777792).cast(), act().at(36585472).cast());
+        sync_cores();
+        un_gg_32(act().at(28352512).cast(), act().at(36216832).cast(), act().at(44081152).cast());
+        sync_cores();
+        un_lr_32_2560_640_b(act().at(44449792).cast(), w().at(15790080).cast(), w().at(19066880).cast(), act().at(52037632).cast());
+        sync_cores();
+        un_ra_32_640_640_640_768(act().at(51945472).cast(), act().at(24420352).cast(), act().at(53911552).cast());
+        sync_cores();
+        un_c1_32_768_640_r(act().at(53911552).cast(), w().at(19070976).cast(), w().at(20054016).cast(), in_x().at(81920).cast(), act().at(56270848).cast());
+        sync_cores();
+        // up2.res1
+        un_cp_32_640_1280(act().at(56270848).cast(), act().at(58236928).cast());
+        sync_cores();
+        un_cp_32_640_1280(in_x().at(2244608).cast(), act().at(58238208).cast());
+        sync_cores();
+        un_gs_32_1280(act().at(58236928).cast(), act().at(0).cast());
+        sync_cores();
+        un_ga_32_1280_silu(act().at(58236928).cast(), act().at(0).cast(), w().at(20058112).cast(), w().at(20066304).cast(), w().at(20074496).cast(), act().at(62169088).cast());
+        sync_cores();
+        un_lr_32_1280_640_first(act().at(62258688).cast(), w().at(20238336).cast(), act().at(66101248).cast());
+        sync_cores();
+        un_lr_32_1280_640_mid(act().at(62261248).cast(), w().at(21876736).cast(), act().at(66101248).cast());
+        sync_cores();
+        un_lr_32_1280_640_mid(act().at(62263808).cast(), w().at(23515136).cast(), act().at(66101248).cast());
+        sync_cores();
+        un_lr_32_1280_640_mid(act().at(62350848).cast(), w().at(25153536).cast(), act().at(66101248).cast());
+        sync_cores();
+        un_lr_32_1280_640_mid(act().at(62353408).cast(), w().at(26791936).cast(), act().at(66101248).cast());
+        sync_cores();
+        un_lr_32_1280_640_mid(act().at(62355968).cast(), w().at(28430336).cast(), act().at(66101248).cast());
+        sync_cores();
+        un_lr_32_1280_640_mid(act().at(62443008).cast(), w().at(30068736).cast(), act().at(66101248).cast());
+        sync_cores();
+        un_lr_32_1280_640_mid(act().at(62445568).cast(), w().at(31707136).cast(), act().at(66101248).cast());
+        sync_cores();
+        un_lr_32_1280_640_b_last(act().at(62448128).cast(), w().at(33345536).cast(), in_x().at(71680).cast(), act().at(66101248).cast(), act().at(69142528).cast());
+        sync_cores();
+        un_gs_32_640(act().at(69050368).cast(), act().at(0).cast());
+        sync_cores();
+        un_ga_32_640_silu(act().at(69050368).cast(), act().at(0).cast(), w().at(34983936).cast(), w().at(34988032).cast(), w().at(8192).cast(), act().at(71016448).cast());
+        sync_cores();
+        un_lr_32_1280_640_b(act().at(58421248).cast(), w().at(34992128).cast(), w().at(36630528).cast(), act().at(73074688).cast());
+        sync_cores();
+        un_c3_32_640_640_r(act().at(71016448).cast(), w().at(36634624).cast(), w().at(44007424).cast(), act().at(72982528).cast(), act().at(74948608).cast());
+        sync_cores();
+        // up2.attn1
+        un_gs_32_640(act().at(74948608).cast(), act().at(0).cast());
+        sync_cores();
+        un_ga_32_640_none(act().at(74948608).cast(), act().at(0).cast(), w().at(44011520).cast(), w().at(44015616).cast(), w().at(8192).cast(), act().at(76914688).cast());
+        sync_cores();
+        un_lr_32_640_640_b(act().at(77006848).cast(), w().at(44019712).cast(), w().at(44838912).cast(), act().at(78972928).cast());
+        sync_cores();
+        un_ln_32_640(act().at(78880768).cast(), w().at(44843008).cast(), w().at(44847104).cast(), act().at(80846848).cast());
+        sync_cores();
+        un_lr_32_640_768(act().at(80939008).cast(), w().at(44851200).cast(), act().at(82923520).cast());
+        sync_cores();
+        un_lr_32_640_768(act().at(80939008).cast(), w().at(45834240).cast(), act().at(85282816).cast());
+        sync_cores();
+        un_lr_32_640_768(act().at(80939008).cast(), w().at(46817280).cast(), act().at(87642112).cast());
+        sync_cores();
+        un_at_32_s(act().at(82812928).cast(), act().at(85172224).cast(), act().at(87531520).cast(), w().at(3870720).cast(), act().at(89890816).cast());
+        sync_cores();
+        un_c1_32_768_640_r(act().at(89890816).cast(), w().at(47800320).cast(), w().at(48783360).cast(), act().at(78880768).cast(), act().at(92250112).cast());
+        sync_cores();
+        // up2.attn1.cross
+        un_ln_32_640(act().at(92250112).cast(), w().at(48787456).cast(), w().at(48791552).cast(), act().at(94216192).cast());
+        sync_cores();
+        un_lr_32_640_768(act().at(94308352).cast(), w().at(48795648).cast(), act().at(96292864).cast());
+        sync_cores();
+        un_kv_768(in_x().at(2048000).cast(), w().at(49778688).cast(), act().at(98541568).cast());
+        sync_cores();
+        un_kv_768(in_x().at(2048000).cast(), w().at(50958336).cast(), act().at(98738176).cast());
+        sync_cores();
+        un_at_32_x(act().at(96182272).cast(), act().at(98541568).cast(), act().at(98738176).cast(), w().at(8212480).cast(), act().at(98934784).cast());
+        sync_cores();
+        un_c1_32_768_640_r(act().at(98934784).cast(), w().at(52137984).cast(), w().at(53121024).cast(), act().at(92250112).cast(), act().at(101294080).cast());
+        sync_cores();
+        // up2.attn1.ff
+        un_ln_32_640(act().at(101294080).cast(), w().at(53125120).cast(), w().at(53129216).cast(), act().at(103260160).cast());
+        sync_cores();
+        un_lr_32_640_2560_b(act().at(103352320).cast(), w().at(53133312).cast(), w().at(56410112).cast(), act().at(105594880).cast());
+        sync_cores();
+        un_lr_32_640_2560_b(act().at(103352320).cast(), w().at(56422400).cast(), w().at(59699200).cast(), act().at(113459200).cast());
+        sync_cores();
+        un_gg_32(act().at(105226240).cast(), act().at(113090560).cast(), act().at(120954880).cast());
+        sync_cores();
+        un_lr_32_2560_640_b(act().at(121323520).cast(), w().at(59711488).cast(), w().at(62988288).cast(), act().at(128911360).cast());
+        sync_cores();
+        un_ra_32_640_640_640_768(act().at(128819200).cast(), act().at(101294080).cast(), act().at(130785280).cast());
+        sync_cores();
+        un_c1_32_768_640_r(act().at(130785280).cast(), w().at(62992384).cast(), w().at(63975424).cast(), act().at(74948608).cast(), act().at(133144576).cast());
+        sync_cores();
+        // up2.res2
+        un_cp_32_640_960(act().at(133144576).cast(), act().at(135110656).cast());
+        sync_cores();
+        un_cp_32_320_960(in_x().at(4210688).cast(), act().at(135111936).cast());
+        sync_cores();
+        un_gs_32_960(act().at(135110656).cast(), act().at(0).cast());
+        sync_cores();
+        un_ga_32_960_silu(act().at(135110656).cast(), act().at(0).cast(), w().at(63979520).cast(), w().at(63983616).cast(), w().at(63987712).cast(), act().at(138059776).cast());
+        sync_cores();
+        un_c3_32_960_640(act().at(138059776).cast(), w().at(64110592).cast(), in_x().at(74240).cast(), act().at(141008896).cast());
+        sync_cores();
+        un_gs_32_640(act().at(141008896).cast(), act().at(0).cast());
+        sync_cores();
+        un_ga_32_640_silu(act().at(141008896).cast(), act().at(0).cast(), w().at(75169792).cast(), w().at(75173888).cast(), w().at(8192).cast(), act().at(142974976).cast());
+        sync_cores();
+        un_c1_32_960_640(act().at(135110656).cast(), w().at(75177984).cast(), w().at(76406784).cast(), act().at(144941056).cast());
+        sync_cores();
+        un_c3_32_640_640_r(act().at(142974976).cast(), w().at(76410880).cast(), w().at(83783680).cast(), act().at(144941056).cast(), act().at(146907136).cast());
+        sync_cores();
+        // up2.attn2
+        un_gs_32_640(act().at(146907136).cast(), act().at(0).cast());
+        sync_cores();
+        un_ga_32_640_none(act().at(146907136).cast(), act().at(0).cast(), w().at(83787776).cast(), w().at(83791872).cast(), w().at(8192).cast(), act().at(148873216).cast());
+        sync_cores();
+        un_lr_32_640_640_b(act().at(148965376).cast(), w().at(83795968).cast(), w().at(84615168).cast(), act().at(150931456).cast());
+        sync_cores();
+        un_ln_32_640(act().at(150839296).cast(), w().at(84619264).cast(), w().at(84623360).cast(), act().at(152805376).cast());
+        sync_cores();
+        un_lr_32_640_768(act().at(152897536).cast(), w().at(84627456).cast(), act().at(154882048).cast());
+        sync_cores();
+        un_lr_32_640_768(act().at(152897536).cast(), w().at(85610496).cast(), act().at(157241344).cast());
+        sync_cores();
+        un_lr_32_640_768(act().at(152897536).cast(), w().at(86593536).cast(), act().at(159600640).cast());
+        sync_cores();
+        un_at_32_s(act().at(154771456).cast(), act().at(157130752).cast(), act().at(159490048).cast(), w().at(3870720).cast(), act().at(161849344).cast());
+        sync_cores();
+        un_c1_32_768_640_r(act().at(161849344).cast(), w().at(87576576).cast(), w().at(88559616).cast(), act().at(150839296).cast(), act().at(164208640).cast());
+        sync_cores();
+        // up2.attn2.cross
+        un_ln_32_640(act().at(164208640).cast(), w().at(88563712).cast(), w().at(88567808).cast(), act().at(166174720).cast());
+        sync_cores();
+        un_lr_32_640_768(act().at(166266880).cast(), w().at(88571904).cast(), act().at(168251392).cast());
+        sync_cores();
+        un_kv_768(in_x().at(2048000).cast(), w().at(89554944).cast(), act().at(170500096).cast());
+        sync_cores();
+        un_kv_768(in_x().at(2048000).cast(), w().at(90734592).cast(), act().at(170696704).cast());
+        sync_cores();
+        un_at_32_x(act().at(168140800).cast(), act().at(170500096).cast(), act().at(170696704).cast(), w().at(8212480).cast(), act().at(170893312).cast());
+        sync_cores();
+        un_c1_32_768_640_r(act().at(170893312).cast(), w().at(91914240).cast(), w().at(92897280).cast(), act().at(164208640).cast(), act().at(173252608).cast());
+        sync_cores();
+        // up2.attn2.ff
+        un_ln_32_640(act().at(173252608).cast(), w().at(92901376).cast(), w().at(92905472).cast(), act().at(175218688).cast());
+        sync_cores();
+        un_lr_32_640_2560_b(act().at(175310848).cast(), w().at(92909568).cast(), w().at(96186368).cast(), act().at(177553408).cast());
+        sync_cores();
+        un_lr_32_640_2560_b(act().at(175310848).cast(), w().at(96198656).cast(), w().at(99475456).cast(), act().at(185417728).cast());
+        sync_cores();
+        un_gg_32(act().at(177184768).cast(), act().at(185049088).cast(), act().at(192913408).cast());
+        sync_cores();
+        un_lr_32_2560_640_b(act().at(193282048).cast(), w().at(99487744).cast(), w().at(102764544).cast(), act().at(200869888).cast());
+        sync_cores();
+        un_ra_32_640_640_640_768(act().at(200777728).cast(), act().at(173252608).cast(), act().at(202743808).cast());
+        sync_cores();
+        un_c1_32_768_640_r(act().at(202743808).cast(), w().at(102768640).cast(), w().at(103751680).cast(), act().at(146907136).cast(), act().at(205103104).cast());
+        sync_cores();
+        // up2.up
+        un_up_32_640_256(act().at(205103104).cast(), act().at(207069184).cast());
+        sync_cores();
+        un_up_32_640_256(act().at(205103616).cast(), act().at(207069696).cast());
+        sync_cores();
+        un_up_32_640_128(act().at(205104128).cast(), act().at(207070208).cast());
+        sync_cores();
+        un_c3_64_640_640(act().at(207069184).cast(), w().at(103755776).cast(), w().at(111128576).cast(), act().at(213295104).cast());
+        sync_cores();
+        // up3.res0
+        un_cp_64_640_960(act().at(213295104).cast(), act().at(219521024).cast());
+        sync_cores();
+        un_cp_64_320_960(in_x().at(5193728).cast(), act().at(219522304).cast());
+        sync_cores();
+        un_gs_64_960(act().at(219521024).cast(), act().at(0).cast());
+        sync_cores();
+        un_ga_64_960_silu(act().at(219521024).cast(), act().at(0).cast(), w().at(111132672).cast(), w().at(111136768).cast(), w().at(63987712).cast(), act().at(228859904).cast());
+        sync_cores();
+        un_c3_64_960_320(act().at(228859904).cast(), w().at(111140864).cast(), in_x().at(76800).cast(), act().at(238198784).cast());
+        sync_cores();
+        un_gs_64_320(act().at(238198784).cast(), act().at(0).cast());
+        sync_cores();
+        un_ga_64_320_silu(act().at(238198784).cast(), act().at(0).cast(), w().at(116670464).cast(), w().at(116674560).cast(), w().at(116678656).cast(), act().at(241311744).cast());
+        sync_cores();
+        un_c1_64_960_320(act().at(219521024).cast(), w().at(116719616).cast(), w().at(117334016).cast(), act().at(244424704).cast());
+        sync_cores();
+        un_c3_64_320_320_r(act().at(241311744).cast(), w().at(117338112).cast(), w().at(119181312).cast(), act().at(244424704).cast(), out_y().at(0).cast());
         sync_cores();
         // ── 第 1 路（空提示词）──
-        // up3.attn0.ff
-        un_ln_64_320(in_x().at(9420800).cast(), w().at(0).cast(), w().at(4096).cast(), act().at(0).cast());
+        // up2.attn0
+        un_gs_32_640(in_x().at(8306688).cast(), act().at(0).cast());
         sync_cores();
-        un_c1_64_320_1280(act().at(0).cast(), w().at(8192).cast(), w().at(827392).cast(), act().at(3112960).cast());
+        un_ga_32_640_none(in_x().at(8306688).cast(), act().at(0).cast(), w().at(0).cast(), w().at(4096).cast(), w().at(8192).cast(), act().at(40960).cast());
         sync_cores();
-        un_c1_64_320_1280(act().at(0).cast(), w().at(835584).cast(), w().at(1654784).cast(), act().at(15564800).cast());
+        un_lr_32_640_640_b(act().at(133120).cast(), w().at(90112).cast(), w().at(909312).cast(), act().at(2099200).cast());
         sync_cores();
-        un_gg_64(act().at(3112960).cast(), act().at(15564800).cast(), act().at(28016640).cast());
+        un_ln_32_640(act().at(2007040).cast(), w().at(913408).cast(), w().at(917504).cast(), act().at(3973120).cast());
         sync_cores();
-        un_c1_64_1280_320_r(act().at(28016640).cast(), w().at(1662976).cast(), w().at(2482176).cast(), in_x().at(9420800).cast(), act().at(40468480).cast());
+        un_lr_32_640_768(act().at(4065280).cast(), w().at(921600).cast(), act().at(6049792).cast());
         sync_cores();
-        un_c1_64_320_320_r(act().at(40468480).cast(), w().at(2486272).cast(), w().at(2691072).cast(), in_x().at(12533760).cast(), act().at(43581440).cast());
+        un_lr_32_640_768(act().at(4065280).cast(), w().at(1904640).cast(), act().at(8409088).cast());
         sync_cores();
-        // up3.res1
-        un_cp_64_320_640(act().at(43581440).cast(), act().at(46694400).cast());
+        un_lr_32_640_768(act().at(4065280).cast(), w().at(2887680).cast(), act().at(10768384).cast());
         sync_cores();
-        un_cp_64_320_640(in_x().at(15646720).cast(), act().at(46695040).cast());
+        un_at_32_s(act().at(5939200).cast(), act().at(8298496).cast(), act().at(10657792).cast(), w().at(3870720).cast(), act().at(13017088).cast());
         sync_cores();
-        un_gs_64_640(act().at(46694400).cast(), act().at(52920320).cast());
+        un_c1_32_768_640_r(act().at(13017088).cast(), w().at(3874816).cast(), w().at(4857856).cast(), act().at(2007040).cast(), act().at(15376384).cast());
         sync_cores();
-        un_ga_64_640_silu(act().at(46694400).cast(), act().at(52920320).cast(), w().at(2695168).cast(), w().at(2699264).cast(), w().at(2703360).cast(), act().at(52961280).cast());
+        // up2.attn0.cross
+        un_ln_32_640(act().at(15376384).cast(), w().at(4861952).cast(), w().at(4866048).cast(), act().at(17342464).cast());
         sync_cores();
-        un_c3_64_640_320(act().at(52961280).cast(), w().at(2785280).cast(), in_x().at(78080).cast(), act().at(59187200).cast());
+        un_lr_32_640_768(act().at(17434624).cast(), w().at(4870144).cast(), act().at(19419136).cast());
         sync_cores();
-        un_gs_64_320(act().at(59187200).cast(), act().at(52920320).cast());
+        un_kv_768(in_x().at(10272768).cast(), w().at(5853184).cast(), act().at(21667840).cast());
         sync_cores();
-        un_ga_64_320_silu(act().at(59187200).cast(), act().at(52920320).cast(), w().at(6471680).cast(), w().at(6475776).cast(), w().at(6479872).cast(), act().at(62300160).cast());
+        un_kv_768(in_x().at(10272768).cast(), w().at(7032832).cast(), act().at(21864448).cast());
         sync_cores();
-        un_c1_64_640_320(act().at(46694400).cast(), w().at(6520832).cast(), w().at(6930432).cast(), act().at(65413120).cast());
+        un_at_32_x(act().at(19308544).cast(), act().at(21667840).cast(), act().at(21864448).cast(), w().at(8212480).cast(), act().at(22061056).cast());
         sync_cores();
-        un_c3_64_320_320_r(act().at(62300160).cast(), w().at(6934528).cast(), w().at(8777728).cast(), act().at(65413120).cast(), out_y().at(3112960).cast());
+        un_c1_32_768_640_r(act().at(22061056).cast(), w().at(8216576).cast(), w().at(9199616).cast(), act().at(15376384).cast(), act().at(24420352).cast());
+        sync_cores();
+        // up2.attn0.ff
+        un_ln_32_640(act().at(24420352).cast(), w().at(9203712).cast(), w().at(9207808).cast(), act().at(26386432).cast());
+        sync_cores();
+        un_lr_32_640_2560_b(act().at(26478592).cast(), w().at(9211904).cast(), w().at(12488704).cast(), act().at(28721152).cast());
+        sync_cores();
+        un_lr_32_640_2560_b(act().at(26478592).cast(), w().at(12500992).cast(), w().at(15777792).cast(), act().at(36585472).cast());
+        sync_cores();
+        un_gg_32(act().at(28352512).cast(), act().at(36216832).cast(), act().at(44081152).cast());
+        sync_cores();
+        un_lr_32_2560_640_b(act().at(44449792).cast(), w().at(15790080).cast(), w().at(19066880).cast(), act().at(52037632).cast());
+        sync_cores();
+        un_ra_32_640_640_640_768(act().at(51945472).cast(), act().at(24420352).cast(), act().at(53911552).cast());
+        sync_cores();
+        un_c1_32_768_640_r(act().at(53911552).cast(), w().at(19070976).cast(), w().at(20054016).cast(), in_x().at(8306688).cast(), act().at(56270848).cast());
+        sync_cores();
+        // up2.res1
+        un_cp_32_640_1280(act().at(56270848).cast(), act().at(58236928).cast());
+        sync_cores();
+        un_cp_32_640_1280(in_x().at(10469376).cast(), act().at(58238208).cast());
+        sync_cores();
+        un_gs_32_1280(act().at(58236928).cast(), act().at(0).cast());
+        sync_cores();
+        un_ga_32_1280_silu(act().at(58236928).cast(), act().at(0).cast(), w().at(20058112).cast(), w().at(20066304).cast(), w().at(20074496).cast(), act().at(62169088).cast());
+        sync_cores();
+        un_lr_32_1280_640_first(act().at(62258688).cast(), w().at(20238336).cast(), act().at(66101248).cast());
+        sync_cores();
+        un_lr_32_1280_640_mid(act().at(62261248).cast(), w().at(21876736).cast(), act().at(66101248).cast());
+        sync_cores();
+        un_lr_32_1280_640_mid(act().at(62263808).cast(), w().at(23515136).cast(), act().at(66101248).cast());
+        sync_cores();
+        un_lr_32_1280_640_mid(act().at(62350848).cast(), w().at(25153536).cast(), act().at(66101248).cast());
+        sync_cores();
+        un_lr_32_1280_640_mid(act().at(62353408).cast(), w().at(26791936).cast(), act().at(66101248).cast());
+        sync_cores();
+        un_lr_32_1280_640_mid(act().at(62355968).cast(), w().at(28430336).cast(), act().at(66101248).cast());
+        sync_cores();
+        un_lr_32_1280_640_mid(act().at(62443008).cast(), w().at(30068736).cast(), act().at(66101248).cast());
+        sync_cores();
+        un_lr_32_1280_640_mid(act().at(62445568).cast(), w().at(31707136).cast(), act().at(66101248).cast());
+        sync_cores();
+        un_lr_32_1280_640_b_last(act().at(62448128).cast(), w().at(33345536).cast(), in_x().at(71680).cast(), act().at(66101248).cast(), act().at(69142528).cast());
+        sync_cores();
+        un_gs_32_640(act().at(69050368).cast(), act().at(0).cast());
+        sync_cores();
+        un_ga_32_640_silu(act().at(69050368).cast(), act().at(0).cast(), w().at(34983936).cast(), w().at(34988032).cast(), w().at(8192).cast(), act().at(71016448).cast());
+        sync_cores();
+        un_lr_32_1280_640_b(act().at(58421248).cast(), w().at(34992128).cast(), w().at(36630528).cast(), act().at(73074688).cast());
+        sync_cores();
+        un_c3_32_640_640_r(act().at(71016448).cast(), w().at(36634624).cast(), w().at(44007424).cast(), act().at(72982528).cast(), act().at(74948608).cast());
+        sync_cores();
+        // up2.attn1
+        un_gs_32_640(act().at(74948608).cast(), act().at(0).cast());
+        sync_cores();
+        un_ga_32_640_none(act().at(74948608).cast(), act().at(0).cast(), w().at(44011520).cast(), w().at(44015616).cast(), w().at(8192).cast(), act().at(76914688).cast());
+        sync_cores();
+        un_lr_32_640_640_b(act().at(77006848).cast(), w().at(44019712).cast(), w().at(44838912).cast(), act().at(78972928).cast());
+        sync_cores();
+        un_ln_32_640(act().at(78880768).cast(), w().at(44843008).cast(), w().at(44847104).cast(), act().at(80846848).cast());
+        sync_cores();
+        un_lr_32_640_768(act().at(80939008).cast(), w().at(44851200).cast(), act().at(82923520).cast());
+        sync_cores();
+        un_lr_32_640_768(act().at(80939008).cast(), w().at(45834240).cast(), act().at(85282816).cast());
+        sync_cores();
+        un_lr_32_640_768(act().at(80939008).cast(), w().at(46817280).cast(), act().at(87642112).cast());
+        sync_cores();
+        un_at_32_s(act().at(82812928).cast(), act().at(85172224).cast(), act().at(87531520).cast(), w().at(3870720).cast(), act().at(89890816).cast());
+        sync_cores();
+        un_c1_32_768_640_r(act().at(89890816).cast(), w().at(47800320).cast(), w().at(48783360).cast(), act().at(78880768).cast(), act().at(92250112).cast());
+        sync_cores();
+        // up2.attn1.cross
+        un_ln_32_640(act().at(92250112).cast(), w().at(48787456).cast(), w().at(48791552).cast(), act().at(94216192).cast());
+        sync_cores();
+        un_lr_32_640_768(act().at(94308352).cast(), w().at(48795648).cast(), act().at(96292864).cast());
+        sync_cores();
+        un_kv_768(in_x().at(10272768).cast(), w().at(49778688).cast(), act().at(98541568).cast());
+        sync_cores();
+        un_kv_768(in_x().at(10272768).cast(), w().at(50958336).cast(), act().at(98738176).cast());
+        sync_cores();
+        un_at_32_x(act().at(96182272).cast(), act().at(98541568).cast(), act().at(98738176).cast(), w().at(8212480).cast(), act().at(98934784).cast());
+        sync_cores();
+        un_c1_32_768_640_r(act().at(98934784).cast(), w().at(52137984).cast(), w().at(53121024).cast(), act().at(92250112).cast(), act().at(101294080).cast());
+        sync_cores();
+        // up2.attn1.ff
+        un_ln_32_640(act().at(101294080).cast(), w().at(53125120).cast(), w().at(53129216).cast(), act().at(103260160).cast());
+        sync_cores();
+        un_lr_32_640_2560_b(act().at(103352320).cast(), w().at(53133312).cast(), w().at(56410112).cast(), act().at(105594880).cast());
+        sync_cores();
+        un_lr_32_640_2560_b(act().at(103352320).cast(), w().at(56422400).cast(), w().at(59699200).cast(), act().at(113459200).cast());
+        sync_cores();
+        un_gg_32(act().at(105226240).cast(), act().at(113090560).cast(), act().at(120954880).cast());
+        sync_cores();
+        un_lr_32_2560_640_b(act().at(121323520).cast(), w().at(59711488).cast(), w().at(62988288).cast(), act().at(128911360).cast());
+        sync_cores();
+        un_ra_32_640_640_640_768(act().at(128819200).cast(), act().at(101294080).cast(), act().at(130785280).cast());
+        sync_cores();
+        un_c1_32_768_640_r(act().at(130785280).cast(), w().at(62992384).cast(), w().at(63975424).cast(), act().at(74948608).cast(), act().at(133144576).cast());
+        sync_cores();
+        // up2.res2
+        un_cp_32_640_960(act().at(133144576).cast(), act().at(135110656).cast());
+        sync_cores();
+        un_cp_32_320_960(in_x().at(12435456).cast(), act().at(135111936).cast());
+        sync_cores();
+        un_gs_32_960(act().at(135110656).cast(), act().at(0).cast());
+        sync_cores();
+        un_ga_32_960_silu(act().at(135110656).cast(), act().at(0).cast(), w().at(63979520).cast(), w().at(63983616).cast(), w().at(63987712).cast(), act().at(138059776).cast());
+        sync_cores();
+        un_c3_32_960_640(act().at(138059776).cast(), w().at(64110592).cast(), in_x().at(74240).cast(), act().at(141008896).cast());
+        sync_cores();
+        un_gs_32_640(act().at(141008896).cast(), act().at(0).cast());
+        sync_cores();
+        un_ga_32_640_silu(act().at(141008896).cast(), act().at(0).cast(), w().at(75169792).cast(), w().at(75173888).cast(), w().at(8192).cast(), act().at(142974976).cast());
+        sync_cores();
+        un_c1_32_960_640(act().at(135110656).cast(), w().at(75177984).cast(), w().at(76406784).cast(), act().at(144941056).cast());
+        sync_cores();
+        un_c3_32_640_640_r(act().at(142974976).cast(), w().at(76410880).cast(), w().at(83783680).cast(), act().at(144941056).cast(), act().at(146907136).cast());
+        sync_cores();
+        // up2.attn2
+        un_gs_32_640(act().at(146907136).cast(), act().at(0).cast());
+        sync_cores();
+        un_ga_32_640_none(act().at(146907136).cast(), act().at(0).cast(), w().at(83787776).cast(), w().at(83791872).cast(), w().at(8192).cast(), act().at(148873216).cast());
+        sync_cores();
+        un_lr_32_640_640_b(act().at(148965376).cast(), w().at(83795968).cast(), w().at(84615168).cast(), act().at(150931456).cast());
+        sync_cores();
+        un_ln_32_640(act().at(150839296).cast(), w().at(84619264).cast(), w().at(84623360).cast(), act().at(152805376).cast());
+        sync_cores();
+        un_lr_32_640_768(act().at(152897536).cast(), w().at(84627456).cast(), act().at(154882048).cast());
+        sync_cores();
+        un_lr_32_640_768(act().at(152897536).cast(), w().at(85610496).cast(), act().at(157241344).cast());
+        sync_cores();
+        un_lr_32_640_768(act().at(152897536).cast(), w().at(86593536).cast(), act().at(159600640).cast());
+        sync_cores();
+        un_at_32_s(act().at(154771456).cast(), act().at(157130752).cast(), act().at(159490048).cast(), w().at(3870720).cast(), act().at(161849344).cast());
+        sync_cores();
+        un_c1_32_768_640_r(act().at(161849344).cast(), w().at(87576576).cast(), w().at(88559616).cast(), act().at(150839296).cast(), act().at(164208640).cast());
+        sync_cores();
+        // up2.attn2.cross
+        un_ln_32_640(act().at(164208640).cast(), w().at(88563712).cast(), w().at(88567808).cast(), act().at(166174720).cast());
+        sync_cores();
+        un_lr_32_640_768(act().at(166266880).cast(), w().at(88571904).cast(), act().at(168251392).cast());
+        sync_cores();
+        un_kv_768(in_x().at(10272768).cast(), w().at(89554944).cast(), act().at(170500096).cast());
+        sync_cores();
+        un_kv_768(in_x().at(10272768).cast(), w().at(90734592).cast(), act().at(170696704).cast());
+        sync_cores();
+        un_at_32_x(act().at(168140800).cast(), act().at(170500096).cast(), act().at(170696704).cast(), w().at(8212480).cast(), act().at(170893312).cast());
+        sync_cores();
+        un_c1_32_768_640_r(act().at(170893312).cast(), w().at(91914240).cast(), w().at(92897280).cast(), act().at(164208640).cast(), act().at(173252608).cast());
+        sync_cores();
+        // up2.attn2.ff
+        un_ln_32_640(act().at(173252608).cast(), w().at(92901376).cast(), w().at(92905472).cast(), act().at(175218688).cast());
+        sync_cores();
+        un_lr_32_640_2560_b(act().at(175310848).cast(), w().at(92909568).cast(), w().at(96186368).cast(), act().at(177553408).cast());
+        sync_cores();
+        un_lr_32_640_2560_b(act().at(175310848).cast(), w().at(96198656).cast(), w().at(99475456).cast(), act().at(185417728).cast());
+        sync_cores();
+        un_gg_32(act().at(177184768).cast(), act().at(185049088).cast(), act().at(192913408).cast());
+        sync_cores();
+        un_lr_32_2560_640_b(act().at(193282048).cast(), w().at(99487744).cast(), w().at(102764544).cast(), act().at(200869888).cast());
+        sync_cores();
+        un_ra_32_640_640_640_768(act().at(200777728).cast(), act().at(173252608).cast(), act().at(202743808).cast());
+        sync_cores();
+        un_c1_32_768_640_r(act().at(202743808).cast(), w().at(102768640).cast(), w().at(103751680).cast(), act().at(146907136).cast(), act().at(205103104).cast());
+        sync_cores();
+        // up2.up
+        un_up_32_640_256(act().at(205103104).cast(), act().at(207069184).cast());
+        sync_cores();
+        un_up_32_640_256(act().at(205103616).cast(), act().at(207069696).cast());
+        sync_cores();
+        un_up_32_640_128(act().at(205104128).cast(), act().at(207070208).cast());
+        sync_cores();
+        un_c3_64_640_640(act().at(207069184).cast(), w().at(103755776).cast(), w().at(111128576).cast(), act().at(213295104).cast());
+        sync_cores();
+        // up3.res0
+        un_cp_64_640_960(act().at(213295104).cast(), act().at(219521024).cast());
+        sync_cores();
+        un_cp_64_320_960(in_x().at(13418496).cast(), act().at(219522304).cast());
+        sync_cores();
+        un_gs_64_960(act().at(219521024).cast(), act().at(0).cast());
+        sync_cores();
+        un_ga_64_960_silu(act().at(219521024).cast(), act().at(0).cast(), w().at(111132672).cast(), w().at(111136768).cast(), w().at(63987712).cast(), act().at(228859904).cast());
+        sync_cores();
+        un_c3_64_960_320(act().at(228859904).cast(), w().at(111140864).cast(), in_x().at(76800).cast(), act().at(238198784).cast());
+        sync_cores();
+        un_gs_64_320(act().at(238198784).cast(), act().at(0).cast());
+        sync_cores();
+        un_ga_64_320_silu(act().at(238198784).cast(), act().at(0).cast(), w().at(116670464).cast(), w().at(116674560).cast(), w().at(116678656).cast(), act().at(241311744).cast());
+        sync_cores();
+        un_c1_64_960_320(act().at(219521024).cast(), w().at(116719616).cast(), w().at(117334016).cast(), act().at(244424704).cast());
+        sync_cores();
+        un_c3_64_320_320_r(act().at(241311744).cast(), w().at(117338112).cast(), w().at(119181312).cast(), act().at(244424704).cast(), out_y().at(3112960).cast());
         sync_cores();
     }
 }
 
-/// s16：up3.attn1、up3.attn1.cross、up3.attn1.ff
-#[cfg(feature = "s16")]
-mod s16 {
+/// s7：up3.attn0、up3.attn0.cross、up3.attn0.ff
+#[cfg(feature = "s7")]
+mod s7 {
     use super::*;
     npu::decls! {
         in_x: input, bytes = 6619136;
         out_y: output, bytes = 6225920;
-        w: weights, bytes = 6537216;
-        act: workspace, bytes = 92454912;
+        w: weights, bytes = 6701056;
+        act: workspace, bytes = 96190464;
     }
     #[npu::program(chiplets = 1, cores = 2)]
     pub fn step() {
         // 入口第一步：@act 与 out_y 整块清零（两核各清一半）：边框、token 的补齐行、余量都靠它是 0
         if core_rank() == 0 {
-            un_zero(act().cast(), 2821);
+            un_zero(act().cast(), 2935);
             un_zero(out_y().cast(), 190);
         } else {
-            un_zero(act().at(46219264).cast(), 2822);
+            un_zero(act().at(48087040).cast(), 2936);
             un_zero(out_y().at(3112960).cast(), 190);
         }
         sync_cores();
         // ── 第 0 路（有提示词）──
-        // up3.attn1
+        // up3.attn0
         un_gs_64_320(in_x().at(0).cast(), act().at(0).cast());
         sync_cores();
         un_ga_64_320_none(in_x().at(0).cast(), act().at(0).cast(), w().at(0).cast(), w().at(4096).cast(), w().at(8192).cast(), act().at(40960).cast());
@@ -2499,7 +3173,7 @@ mod s16 {
         sync_cores();
         un_c1_64_512_320_r(act().at(24322048).cast(), w().at(1265664).cast(), w().at(1593344).cast(), act().at(3153920).cast(), act().at(29302784).cast());
         sync_cores();
-        // up3.attn1.cross
+        // up3.attn0.cross
         un_ln_64_320(act().at(29302784).cast(), w().at(1597440).cast(), w().at(1601536).cast(), act().at(32415744).cast());
         sync_cores();
         un_c1_64_320_512(act().at(32415744).cast(), w().at(1605632).cast(), w().at(593920).cast(), act().at(35528704).cast());
@@ -2512,7 +3186,7 @@ mod s16 {
         sync_cores();
         un_c1_64_512_320_r(act().at(40771584).cast(), w().at(3510272).cast(), w().at(3837952).cast(), act().at(29302784).cast(), act().at(45752320).cast());
         sync_cores();
-        // up3.attn1.ff
+        // up3.attn0.ff
         un_ln_64_320(act().at(45752320).cast(), w().at(3842048).cast(), w().at(3846144).cast(), act().at(48865280).cast());
         sync_cores();
         un_c1_64_320_1280(act().at(48865280).cast(), w().at(3850240).cast(), w().at(4669440).cast(), act().at(51978240).cast());
@@ -2521,12 +3195,14 @@ mod s16 {
         sync_cores();
         un_gg_64(act().at(51978240).cast(), act().at(64430080).cast(), act().at(76881920).cast());
         sync_cores();
-        un_c1_64_1280_320_r(act().at(76881920).cast(), w().at(5505024).cast(), w().at(6324224).cast(), act().at(45752320).cast(), act().at(89333760).cast());
+        un_lr_64_1280_384_b(act().at(77230080).cast(), w().at(5505024).cast(), w().at(6488064).cast(), act().at(89438208).cast());
         sync_cores();
-        un_c1_64_320_320_r(act().at(89333760).cast(), w().at(6328320).cast(), w().at(6533120).cast(), in_x().at(0).cast(), out_y().at(0).cast());
+        un_ra_64_320_384_320_320(act().at(89333760).cast(), act().at(45752320).cast(), act().at(93069312).cast());
+        sync_cores();
+        un_c1_64_320_320_r(act().at(93069312).cast(), w().at(6492160).cast(), w().at(6696960).cast(), in_x().at(0).cast(), out_y().at(0).cast());
         sync_cores();
         // ── 第 1 路（空提示词）──
-        // up3.attn1
+        // up3.attn0
         un_gs_64_320(in_x().at(3309568).cast(), act().at(0).cast());
         sync_cores();
         un_ga_64_320_none(in_x().at(3309568).cast(), act().at(0).cast(), w().at(0).cast(), w().at(4096).cast(), w().at(8192).cast(), act().at(40960).cast());
@@ -2545,7 +3221,7 @@ mod s16 {
         sync_cores();
         un_c1_64_512_320_r(act().at(24322048).cast(), w().at(1265664).cast(), w().at(1593344).cast(), act().at(3153920).cast(), act().at(29302784).cast());
         sync_cores();
-        // up3.attn1.cross
+        // up3.attn0.cross
         un_ln_64_320(act().at(29302784).cast(), w().at(1597440).cast(), w().at(1601536).cast(), act().at(32415744).cast());
         sync_cores();
         un_c1_64_320_512(act().at(32415744).cast(), w().at(1605632).cast(), w().at(593920).cast(), act().at(35528704).cast());
@@ -2558,7 +3234,7 @@ mod s16 {
         sync_cores();
         un_c1_64_512_320_r(act().at(40771584).cast(), w().at(3510272).cast(), w().at(3837952).cast(), act().at(29302784).cast(), act().at(45752320).cast());
         sync_cores();
-        // up3.attn1.ff
+        // up3.attn0.ff
         un_ln_64_320(act().at(45752320).cast(), w().at(3842048).cast(), w().at(3846144).cast(), act().at(48865280).cast());
         sync_cores();
         un_c1_64_320_1280(act().at(48865280).cast(), w().at(3850240).cast(), w().at(4669440).cast(), act().at(51978240).cast());
@@ -2567,16 +3243,18 @@ mod s16 {
         sync_cores();
         un_gg_64(act().at(51978240).cast(), act().at(64430080).cast(), act().at(76881920).cast());
         sync_cores();
-        un_c1_64_1280_320_r(act().at(76881920).cast(), w().at(5505024).cast(), w().at(6324224).cast(), act().at(45752320).cast(), act().at(89333760).cast());
+        un_lr_64_1280_384_b(act().at(77230080).cast(), w().at(5505024).cast(), w().at(6488064).cast(), act().at(89438208).cast());
         sync_cores();
-        un_c1_64_320_320_r(act().at(89333760).cast(), w().at(6328320).cast(), w().at(6533120).cast(), in_x().at(3309568).cast(), out_y().at(3112960).cast());
+        un_ra_64_320_384_320_320(act().at(89333760).cast(), act().at(45752320).cast(), act().at(93069312).cast());
+        sync_cores();
+        un_c1_64_320_320_r(act().at(93069312).cast(), w().at(6492160).cast(), w().at(6696960).cast(), in_x().at(3309568).cast(), out_y().at(3112960).cast());
         sync_cores();
     }
 }
 
-/// s17：up3.res2、up3.attn2、up3.attn2.cross
-#[cfg(feature = "s17")]
-mod s17 {
+/// s8：up3.res1、up3.attn1、up3.attn1.cross
+#[cfg(feature = "s8")]
+mod s8 {
     use super::*;
     npu::decls! {
         in_x: input, bytes = 12926976;
@@ -2596,7 +3274,7 @@ mod s17 {
         }
         sync_cores();
         // ── 第 0 路（有提示词）──
-        // up3.res2
+        // up3.res1
         un_cp_64_320_640(in_x().at(81920).cast(), act().at(0).cast());
         sync_cores();
         un_cp_64_320_640(in_x().at(3194880).cast(), act().at(640).cast());
@@ -2605,7 +3283,7 @@ mod s17 {
         sync_cores();
         un_ga_64_640_silu(act().at(0).cast(), act().at(6225920).cast(), w().at(0).cast(), w().at(4096).cast(), w().at(8192).cast(), act().at(6266880).cast());
         sync_cores();
-        un_c3_64_640_320(act().at(6266880).cast(), w().at(90112).cast(), in_x().at(79360).cast(), act().at(12492800).cast());
+        un_c3_64_640_320(act().at(6266880).cast(), w().at(90112).cast(), in_x().at(78080).cast(), act().at(12492800).cast());
         sync_cores();
         un_gs_64_320(act().at(12492800).cast(), act().at(6225920).cast());
         sync_cores();
@@ -2615,7 +3293,7 @@ mod s17 {
         sync_cores();
         un_c3_64_320_320_r(act().at(15605760).cast(), w().at(4239360).cast(), w().at(6082560).cast(), act().at(18718720).cast(), out_y().at(0).cast());
         sync_cores();
-        // up3.attn2
+        // up3.attn1
         un_gs_64_320(out_y().at(0).cast(), act().at(6225920).cast());
         sync_cores();
         un_ga_64_320_none(out_y().at(0).cast(), act().at(6225920).cast(), w().at(6086656).cast(), w().at(6090752).cast(), w().at(3784704).cast(), act().at(21831680).cast());
@@ -2634,7 +3312,7 @@ mod s17 {
         sync_cores();
         un_c1_64_512_320_r(act().at(46112768).cast(), w().at(7311360).cast(), w().at(7639040).cast(), act().at(24944640).cast(), act().at(51093504).cast());
         sync_cores();
-        // up3.attn2.cross
+        // up3.attn1.cross
         un_ln_64_320(act().at(51093504).cast(), w().at(7643136).cast(), w().at(7647232).cast(), act().at(54206464).cast());
         sync_cores();
         un_c1_64_320_512(act().at(54206464).cast(), w().at(7651328).cast(), w().at(6639616).cast(), act().at(57319424).cast());
@@ -2648,7 +3326,7 @@ mod s17 {
         un_c1_64_512_320_r(act().at(62562304).cast(), w().at(9555968).cast(), w().at(9883648).cast(), act().at(51093504).cast(), out_y().at(3112960).cast());
         sync_cores();
         // ── 第 1 路（空提示词）──
-        // up3.res2
+        // up3.res1
         un_cp_64_320_640(in_x().at(6504448).cast(), act().at(0).cast());
         sync_cores();
         un_cp_64_320_640(in_x().at(9617408).cast(), act().at(640).cast());
@@ -2657,7 +3335,7 @@ mod s17 {
         sync_cores();
         un_ga_64_640_silu(act().at(0).cast(), act().at(6225920).cast(), w().at(0).cast(), w().at(4096).cast(), w().at(8192).cast(), act().at(6266880).cast());
         sync_cores();
-        un_c3_64_640_320(act().at(6266880).cast(), w().at(90112).cast(), in_x().at(79360).cast(), act().at(12492800).cast());
+        un_c3_64_640_320(act().at(6266880).cast(), w().at(90112).cast(), in_x().at(78080).cast(), act().at(12492800).cast());
         sync_cores();
         un_gs_64_320(act().at(12492800).cast(), act().at(6225920).cast());
         sync_cores();
@@ -2667,7 +3345,7 @@ mod s17 {
         sync_cores();
         un_c3_64_320_320_r(act().at(15605760).cast(), w().at(4239360).cast(), w().at(6082560).cast(), act().at(18718720).cast(), out_y().at(6225920).cast());
         sync_cores();
-        // up3.attn2
+        // up3.attn1
         un_gs_64_320(out_y().at(6225920).cast(), act().at(6225920).cast());
         sync_cores();
         un_ga_64_320_none(out_y().at(6225920).cast(), act().at(6225920).cast(), w().at(6086656).cast(), w().at(6090752).cast(), w().at(3784704).cast(), act().at(21831680).cast());
@@ -2686,7 +3364,7 @@ mod s17 {
         sync_cores();
         un_c1_64_512_320_r(act().at(46112768).cast(), w().at(7311360).cast(), w().at(7639040).cast(), act().at(24944640).cast(), act().at(51093504).cast());
         sync_cores();
-        // up3.attn2.cross
+        // up3.attn1.cross
         un_ln_64_320(act().at(51093504).cast(), w().at(7643136).cast(), w().at(7647232).cast(), act().at(54206464).cast());
         sync_cores();
         un_c1_64_320_512(act().at(54206464).cast(), w().at(7651328).cast(), w().at(6639616).cast(), act().at(57319424).cast());
@@ -2702,68 +3380,230 @@ mod s17 {
     }
 }
 
-/// s18：up3.attn2.ff、out
-#[cfg(feature = "s18")]
-mod s18 {
+/// s9：up3.attn1.ff、up3.res2
+#[cfg(feature = "s9")]
+mod s9 {
     use super::*;
     npu::decls! {
-        in_x: input, bytes = 12451840;
-        out_y: output, bytes = 622592;
-        w: weights, bytes = 2932736;
-        act: workspace, bytes = 49856512;
+        in_x: input, bytes = 18759680;
+        out_y: output, bytes = 6225920;
+        w: weights, bytes = 8945664;
+        act: workspace, bytes = 72269824;
     }
     #[npu::program(chiplets = 1, cores = 2)]
     pub fn step() {
         // 入口第一步：@act 与 out_y 整块清零（两核各清一半）：边框、token 的补齐行、余量都靠它是 0
         if core_rank() == 0 {
-            un_zero(act().cast(), 1521);
+            un_zero(act().cast(), 2205);
+            un_zero(out_y().cast(), 190);
+        } else {
+            un_zero(act().at(36126720).cast(), 2206);
+            un_zero(out_y().at(3112960).cast(), 190);
+        }
+        sync_cores();
+        // ── 第 0 路（有提示词）──
+        // up3.attn1.ff
+        un_ln_64_320(in_x().at(81920).cast(), w().at(0).cast(), w().at(4096).cast(), act().at(0).cast());
+        sync_cores();
+        un_c1_64_320_1280(act().at(0).cast(), w().at(8192).cast(), w().at(827392).cast(), act().at(3112960).cast());
+        sync_cores();
+        un_c1_64_320_1280(act().at(0).cast(), w().at(835584).cast(), w().at(1654784).cast(), act().at(15564800).cast());
+        sync_cores();
+        un_gg_64(act().at(3112960).cast(), act().at(15564800).cast(), act().at(28016640).cast());
+        sync_cores();
+        un_lr_64_1280_384_b(act().at(28364800).cast(), w().at(1662976).cast(), w().at(2646016).cast(), act().at(40572928).cast());
+        sync_cores();
+        un_ra_64_320_384_320_320(act().at(40468480).cast(), in_x().at(81920).cast(), act().at(44204032).cast());
+        sync_cores();
+        un_c1_64_320_320_r(act().at(44204032).cast(), w().at(2650112).cast(), w().at(2854912).cast(), in_x().at(3194880).cast(), act().at(47316992).cast());
+        sync_cores();
+        // up3.res2
+        un_cp_64_320_640(act().at(47316992).cast(), act().at(50429952).cast());
+        sync_cores();
+        un_cp_64_320_640(in_x().at(6307840).cast(), act().at(50430592).cast());
+        sync_cores();
+        un_gs_64_640(act().at(50429952).cast(), act().at(56655872).cast());
+        sync_cores();
+        un_ga_64_640_silu(act().at(50429952).cast(), act().at(56655872).cast(), w().at(2859008).cast(), w().at(2863104).cast(), w().at(2867200).cast(), act().at(56696832).cast());
+        sync_cores();
+        un_c3_64_640_320(act().at(56696832).cast(), w().at(2949120).cast(), in_x().at(79360).cast(), act().at(62922752).cast());
+        sync_cores();
+        un_gs_64_320(act().at(62922752).cast(), act().at(56655872).cast());
+        sync_cores();
+        un_ga_64_320_silu(act().at(62922752).cast(), act().at(56655872).cast(), w().at(6635520).cast(), w().at(6639616).cast(), w().at(6643712).cast(), act().at(66035712).cast());
+        sync_cores();
+        un_c1_64_640_320(act().at(50429952).cast(), w().at(6684672).cast(), w().at(7094272).cast(), act().at(69148672).cast());
+        sync_cores();
+        un_c3_64_320_320_r(act().at(66035712).cast(), w().at(7098368).cast(), w().at(8941568).cast(), act().at(69148672).cast(), out_y().at(0).cast());
+        sync_cores();
+        // ── 第 1 路（空提示词）──
+        // up3.attn1.ff
+        un_ln_64_320(in_x().at(9420800).cast(), w().at(0).cast(), w().at(4096).cast(), act().at(0).cast());
+        sync_cores();
+        un_c1_64_320_1280(act().at(0).cast(), w().at(8192).cast(), w().at(827392).cast(), act().at(3112960).cast());
+        sync_cores();
+        un_c1_64_320_1280(act().at(0).cast(), w().at(835584).cast(), w().at(1654784).cast(), act().at(15564800).cast());
+        sync_cores();
+        un_gg_64(act().at(3112960).cast(), act().at(15564800).cast(), act().at(28016640).cast());
+        sync_cores();
+        un_lr_64_1280_384_b(act().at(28364800).cast(), w().at(1662976).cast(), w().at(2646016).cast(), act().at(40572928).cast());
+        sync_cores();
+        un_ra_64_320_384_320_320(act().at(40468480).cast(), in_x().at(9420800).cast(), act().at(44204032).cast());
+        sync_cores();
+        un_c1_64_320_320_r(act().at(44204032).cast(), w().at(2650112).cast(), w().at(2854912).cast(), in_x().at(12533760).cast(), act().at(47316992).cast());
+        sync_cores();
+        // up3.res2
+        un_cp_64_320_640(act().at(47316992).cast(), act().at(50429952).cast());
+        sync_cores();
+        un_cp_64_320_640(in_x().at(15646720).cast(), act().at(50430592).cast());
+        sync_cores();
+        un_gs_64_640(act().at(50429952).cast(), act().at(56655872).cast());
+        sync_cores();
+        un_ga_64_640_silu(act().at(50429952).cast(), act().at(56655872).cast(), w().at(2859008).cast(), w().at(2863104).cast(), w().at(2867200).cast(), act().at(56696832).cast());
+        sync_cores();
+        un_c3_64_640_320(act().at(56696832).cast(), w().at(2949120).cast(), in_x().at(79360).cast(), act().at(62922752).cast());
+        sync_cores();
+        un_gs_64_320(act().at(62922752).cast(), act().at(56655872).cast());
+        sync_cores();
+        un_ga_64_320_silu(act().at(62922752).cast(), act().at(56655872).cast(), w().at(6635520).cast(), w().at(6639616).cast(), w().at(6643712).cast(), act().at(66035712).cast());
+        sync_cores();
+        un_c1_64_640_320(act().at(50429952).cast(), w().at(6684672).cast(), w().at(7094272).cast(), act().at(69148672).cast());
+        sync_cores();
+        un_c3_64_320_320_r(act().at(66035712).cast(), w().at(7098368).cast(), w().at(8941568).cast(), act().at(69148672).cast(), out_y().at(3112960).cast());
+        sync_cores();
+    }
+}
+
+/// s10：up3.attn2、up3.attn2.cross、up3.attn2.ff、out
+#[cfg(feature = "s10")]
+mod s10 {
+    use super::*;
+    npu::decls! {
+        in_x: input, bytes = 6619136;
+        out_y: output, bytes = 622592;
+        w: weights, bytes = 6897664;
+        act: workspace, bytes = 102416384;
+    }
+    #[npu::program(chiplets = 1, cores = 2)]
+    pub fn step() {
+        // 入口第一步：@act 与 out_y 整块清零（两核各清一半）：边框、token 的补齐行、余量都靠它是 0
+        if core_rank() == 0 {
+            un_zero(act().cast(), 3125);
             un_zero(out_y().cast(), 19);
         } else {
-            un_zero(act().at(24920064).cast(), 1522);
+            un_zero(act().at(51200000).cast(), 3126);
             un_zero(out_y().at(311296).cast(), 19);
         }
         sync_cores();
         // ── 第 0 路（有提示词）──
+        // up3.attn2
+        un_gs_64_320(in_x().at(0).cast(), act().at(0).cast());
+        sync_cores();
+        un_ga_64_320_none(in_x().at(0).cast(), act().at(0).cast(), w().at(0).cast(), w().at(4096).cast(), w().at(8192).cast(), act().at(40960).cast());
+        sync_cores();
+        un_c1_64_320_320(act().at(40960).cast(), w().at(49152).cast(), w().at(253952).cast(), act().at(3153920).cast());
+        sync_cores();
+        un_ln_64_320(act().at(3153920).cast(), w().at(258048).cast(), w().at(262144).cast(), act().at(6266880).cast());
+        sync_cores();
+        un_c1_64_320_512(act().at(6266880).cast(), w().at(266240).cast(), w().at(593920).cast(), act().at(9379840).cast());
+        sync_cores();
+        un_c1_64_320_512(act().at(6266880).cast(), w().at(598016).cast(), w().at(593920).cast(), act().at(14360576).cast());
+        sync_cores();
+        un_c1_64_320_512(act().at(6266880).cast(), w().at(925696).cast(), w().at(593920).cast(), act().at(19341312).cast());
+        sync_cores();
+        un_at_64_s(act().at(9379840).cast(), act().at(14360576).cast(), act().at(19341312).cast(), w().at(1253376).cast(), act().at(24322048).cast());
+        sync_cores();
+        un_c1_64_512_320_r(act().at(24322048).cast(), w().at(1265664).cast(), w().at(1593344).cast(), act().at(3153920).cast(), act().at(29302784).cast());
+        sync_cores();
+        // up3.attn2.cross
+        un_ln_64_320(act().at(29302784).cast(), w().at(1597440).cast(), w().at(1601536).cast(), act().at(32415744).cast());
+        sync_cores();
+        un_c1_64_320_512(act().at(32415744).cast(), w().at(1605632).cast(), w().at(593920).cast(), act().at(35528704).cast());
+        sync_cores();
+        un_kv_512(in_x().at(3112960).cast(), w().at(1933312).cast(), act().at(40509440).cast());
+        sync_cores();
+        un_kv_512(in_x().at(3112960).cast(), w().at(2719744).cast(), act().at(40640512).cast());
+        sync_cores();
+        un_at_64_x(act().at(35528704).cast(), act().at(40509440).cast(), act().at(40640512).cast(), w().at(3506176).cast(), act().at(40771584).cast());
+        sync_cores();
+        un_c1_64_512_320_r(act().at(40771584).cast(), w().at(3510272).cast(), w().at(3837952).cast(), act().at(29302784).cast(), act().at(45752320).cast());
+        sync_cores();
         // up3.attn2.ff
-        un_ln_64_320(in_x().at(0).cast(), w().at(0).cast(), w().at(4096).cast(), act().at(0).cast());
+        un_ln_64_320(act().at(45752320).cast(), w().at(3842048).cast(), w().at(3846144).cast(), act().at(48865280).cast());
         sync_cores();
-        un_c1_64_320_1280(act().at(0).cast(), w().at(8192).cast(), w().at(827392).cast(), act().at(3112960).cast());
+        un_c1_64_320_1280(act().at(48865280).cast(), w().at(3850240).cast(), w().at(4669440).cast(), act().at(51978240).cast());
         sync_cores();
-        un_c1_64_320_1280(act().at(0).cast(), w().at(835584).cast(), w().at(1654784).cast(), act().at(15564800).cast());
+        un_c1_64_320_1280(act().at(48865280).cast(), w().at(4677632).cast(), w().at(5496832).cast(), act().at(64430080).cast());
         sync_cores();
-        un_gg_64(act().at(3112960).cast(), act().at(15564800).cast(), act().at(28016640).cast());
+        un_gg_64(act().at(51978240).cast(), act().at(64430080).cast(), act().at(76881920).cast());
         sync_cores();
-        un_c1_64_1280_320_r(act().at(28016640).cast(), w().at(1662976).cast(), w().at(2482176).cast(), in_x().at(0).cast(), act().at(40468480).cast());
+        un_lr_64_1280_384_b(act().at(77230080).cast(), w().at(5505024).cast(), w().at(6488064).cast(), act().at(89438208).cast());
         sync_cores();
-        un_c1_64_320_320_r(act().at(40468480).cast(), w().at(2486272).cast(), w().at(2691072).cast(), in_x().at(3112960).cast(), act().at(43581440).cast());
+        un_ra_64_320_384_320_320(act().at(89333760).cast(), act().at(45752320).cast(), act().at(93069312).cast());
+        sync_cores();
+        un_c1_64_320_320_r(act().at(93069312).cast(), w().at(6492160).cast(), w().at(6696960).cast(), in_x().at(0).cast(), act().at(96182272).cast());
         sync_cores();
         // out
-        un_gs_64_320(act().at(43581440).cast(), act().at(46694400).cast());
+        un_gs_64_320(act().at(96182272).cast(), act().at(0).cast());
         sync_cores();
-        un_ga_64_320_silu(act().at(43581440).cast(), act().at(46694400).cast(), w().at(2695168).cast(), w().at(2699264).cast(), w().at(2703360).cast(), act().at(46735360).cast());
+        un_ga_64_320_silu(act().at(96182272).cast(), act().at(0).cast(), w().at(6701056).cast(), w().at(6705152).cast(), w().at(8192).cast(), act().at(99295232).cast());
         sync_cores();
-        un_c3_64_320_32(act().at(46735360).cast(), w().at(2744320).cast(), w().at(2928640).cast(), out_y().at(0).cast());
+        un_c3_64_320_32(act().at(99295232).cast(), w().at(6709248).cast(), w().at(6893568).cast(), out_y().at(0).cast());
         sync_cores();
         // ── 第 1 路（空提示词）──
+        // up3.attn2
+        un_gs_64_320(in_x().at(3309568).cast(), act().at(0).cast());
+        sync_cores();
+        un_ga_64_320_none(in_x().at(3309568).cast(), act().at(0).cast(), w().at(0).cast(), w().at(4096).cast(), w().at(8192).cast(), act().at(40960).cast());
+        sync_cores();
+        un_c1_64_320_320(act().at(40960).cast(), w().at(49152).cast(), w().at(253952).cast(), act().at(3153920).cast());
+        sync_cores();
+        un_ln_64_320(act().at(3153920).cast(), w().at(258048).cast(), w().at(262144).cast(), act().at(6266880).cast());
+        sync_cores();
+        un_c1_64_320_512(act().at(6266880).cast(), w().at(266240).cast(), w().at(593920).cast(), act().at(9379840).cast());
+        sync_cores();
+        un_c1_64_320_512(act().at(6266880).cast(), w().at(598016).cast(), w().at(593920).cast(), act().at(14360576).cast());
+        sync_cores();
+        un_c1_64_320_512(act().at(6266880).cast(), w().at(925696).cast(), w().at(593920).cast(), act().at(19341312).cast());
+        sync_cores();
+        un_at_64_s(act().at(9379840).cast(), act().at(14360576).cast(), act().at(19341312).cast(), w().at(1253376).cast(), act().at(24322048).cast());
+        sync_cores();
+        un_c1_64_512_320_r(act().at(24322048).cast(), w().at(1265664).cast(), w().at(1593344).cast(), act().at(3153920).cast(), act().at(29302784).cast());
+        sync_cores();
+        // up3.attn2.cross
+        un_ln_64_320(act().at(29302784).cast(), w().at(1597440).cast(), w().at(1601536).cast(), act().at(32415744).cast());
+        sync_cores();
+        un_c1_64_320_512(act().at(32415744).cast(), w().at(1605632).cast(), w().at(593920).cast(), act().at(35528704).cast());
+        sync_cores();
+        un_kv_512(in_x().at(6422528).cast(), w().at(1933312).cast(), act().at(40509440).cast());
+        sync_cores();
+        un_kv_512(in_x().at(6422528).cast(), w().at(2719744).cast(), act().at(40640512).cast());
+        sync_cores();
+        un_at_64_x(act().at(35528704).cast(), act().at(40509440).cast(), act().at(40640512).cast(), w().at(3506176).cast(), act().at(40771584).cast());
+        sync_cores();
+        un_c1_64_512_320_r(act().at(40771584).cast(), w().at(3510272).cast(), w().at(3837952).cast(), act().at(29302784).cast(), act().at(45752320).cast());
+        sync_cores();
         // up3.attn2.ff
-        un_ln_64_320(in_x().at(6225920).cast(), w().at(0).cast(), w().at(4096).cast(), act().at(0).cast());
+        un_ln_64_320(act().at(45752320).cast(), w().at(3842048).cast(), w().at(3846144).cast(), act().at(48865280).cast());
         sync_cores();
-        un_c1_64_320_1280(act().at(0).cast(), w().at(8192).cast(), w().at(827392).cast(), act().at(3112960).cast());
+        un_c1_64_320_1280(act().at(48865280).cast(), w().at(3850240).cast(), w().at(4669440).cast(), act().at(51978240).cast());
         sync_cores();
-        un_c1_64_320_1280(act().at(0).cast(), w().at(835584).cast(), w().at(1654784).cast(), act().at(15564800).cast());
+        un_c1_64_320_1280(act().at(48865280).cast(), w().at(4677632).cast(), w().at(5496832).cast(), act().at(64430080).cast());
         sync_cores();
-        un_gg_64(act().at(3112960).cast(), act().at(15564800).cast(), act().at(28016640).cast());
+        un_gg_64(act().at(51978240).cast(), act().at(64430080).cast(), act().at(76881920).cast());
         sync_cores();
-        un_c1_64_1280_320_r(act().at(28016640).cast(), w().at(1662976).cast(), w().at(2482176).cast(), in_x().at(6225920).cast(), act().at(40468480).cast());
+        un_lr_64_1280_384_b(act().at(77230080).cast(), w().at(5505024).cast(), w().at(6488064).cast(), act().at(89438208).cast());
         sync_cores();
-        un_c1_64_320_320_r(act().at(40468480).cast(), w().at(2486272).cast(), w().at(2691072).cast(), in_x().at(9338880).cast(), act().at(43581440).cast());
+        un_ra_64_320_384_320_320(act().at(89333760).cast(), act().at(45752320).cast(), act().at(93069312).cast());
+        sync_cores();
+        un_c1_64_320_320_r(act().at(93069312).cast(), w().at(6492160).cast(), w().at(6696960).cast(), in_x().at(3309568).cast(), act().at(96182272).cast());
         sync_cores();
         // out
-        un_gs_64_320(act().at(43581440).cast(), act().at(46694400).cast());
+        un_gs_64_320(act().at(96182272).cast(), act().at(0).cast());
         sync_cores();
-        un_ga_64_320_silu(act().at(43581440).cast(), act().at(46694400).cast(), w().at(2695168).cast(), w().at(2699264).cast(), w().at(2703360).cast(), act().at(46735360).cast());
+        un_ga_64_320_silu(act().at(96182272).cast(), act().at(0).cast(), w().at(6701056).cast(), w().at(6705152).cast(), w().at(8192).cast(), act().at(99295232).cast());
         sync_cores();
-        un_c3_64_320_32(act().at(46735360).cast(), w().at(2744320).cast(), w().at(2928640).cast(), out_y().at(311296).cast());
+        un_c3_64_320_32(act().at(99295232).cast(), w().at(6709248).cast(), w().at(6893568).cast(), out_y().at(311296).cast());
         sync_cores();
     }
 }
