@@ -34,6 +34,8 @@ bash test/run_example.sh
 
 ## 真机实测结果（2026-11-14，npu3，`/dev/calculet0`，PCI 0000:07:00.0）
 
+性能单独整理在 [`PERF.md`](PERF.md)：TAESD 整次中位数 0.113 s（15 遍、0.111–0.115 s），比同机 CPU fp32 快约 1.6 倍；ComfyUI 整条约 50 s，其中 NPU 只有 0.12 s。
+
 环境：Linux x86_64；calculet 工具链 rustc 1.98.1、docc 0.4.1、dort 0.4.1；板上是 DRT rt 3.1 / ABI 1.1，2 个芯粒，
 `dort device` 的原样输出见 `results/npu3-20261114/dort_device.txt`。
 命令是 `board_check.py --comfy`，6 步全过、退出 0，用时约 1.5 分钟（`results/npu3-20261114/board_summary.json`）。
@@ -99,10 +101,12 @@ TAESD 本身是有损的：同一张图编码再解码，fp32 也只有 27.3 dB�
 test/
 ├── README.md                 本文
 ├── run_example.sh            简单示例（上面那条命令）
+├── PERF.md                   真卡性能（口径、全表、CPU 对照）
 └── results/npu3-20261114/    真卡那一次的原始结果（真机实测）
     ├── board_summary.json    board_check.py 每一步的结果与用时
     ├── dort_device.txt       只读查卡时 dort device 的原样输出
     ├── kernels.json          7 个单 kernel、20 个用例的比对结果
+    ├── perf.json             性能的原始记录（PERF.md 的数都从这里来）
     ├── taesd_image/          TAESD 解码：metrics.json、dort.log、board.png（真卡出的图）、source.png、ref_fp32.png
     ├── taesd_latents/        另外三组 latent（randn-0、zeros、big）：各自的 metrics.json、board.png；run.log
     └── comfyui/              ComfyUI 工作流：run.json、node_log.txt、taesd_npu.png（真卡）、vae_cpu_ref.png（CPU 对照）

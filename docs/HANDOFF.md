@@ -37,7 +37,7 @@ TAESD 3 遍逐字节一致、对 bf16 参照约 60 dB、对 fp32 约 56 dB；7 �
   - TAESD 整个解码器：3 遍逐字节一致，对 bf16 参照 60.3 dB、对 fp32 55.9 dB，只部署 0.003 s、推理约 0.11 s；
     另外三组 latent（randn:0、zeros、big）也在真卡上过了，最差的 randn:0 也有 52.7 dB；
   - ComfyUI 原生工作流：解码走 npu，没有落回 CPU。
-  - 结果与图在 `test/results/npu3-20261114/`。
+  - 结果与图在 `test/results/npu3-20261114/`；性能全表在 `test/PERF.md`（TAESD 整次中位数 0.113 s，比同机 CPU fp32 快约 1.6 倍）。
 - 编译链：赛方工具链装在隔离目录，经赛方 cargo 源依赖 calblas；整步程序 ⇒ CalVX ⇒ docc 出 calbin，doctor 拒收 0 条。
 - B1 的 TAESD 解码器：整步程序在 `crates/taesd`，有带真权重的 calbin。numpy 模拟器照编出来的 `.cvx` 重放，查接线；对两份独立参照是 60.6 / 55.9 dB。
 - ComfyUI v0.45.3 + 自定义节点 `SD15 NPU · TAESD Decode`，三个后端：`npu`（真卡）/ `npu-sim` / `cpu`。
