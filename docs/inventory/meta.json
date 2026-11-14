@@ -1,0 +1,16 @@
+{
+ "torch": "2.15.0+cpu",
+ "model_dir": "/home/liyingxuan/other/models/stable-diffusion-v1-5",
+ "dtype": "float32",
+ "latent": [
+  1,
+  4,
+  64,
+  64
+ ],
+ "image": [
+  512,
+  512
+ ],
+ "taesd_dir": "/home/liyingxuan/other/models/taesd"
+}

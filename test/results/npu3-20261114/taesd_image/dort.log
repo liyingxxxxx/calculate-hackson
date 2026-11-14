@@ -1,0 +1,64 @@
+$ dort -i 0 -j calbin run -f /home/sweet/hachson/sd15-npu/out/taesd-real/cal -m taesd --deploy-only --board-lock /opt/data/locks/board-0000:07:00.0.lock
+# 退出 0，墙钟 0.003 s
+calbin /home/sweet/hachson/sd15-npu/out/taesd-real/cal
+  configure 完成（这一次覆盖 calbin 里的全部模型）
+只部署，未推理
+
+07:40:56.925 INFO    [RT] device.rs:250 启动流带：开（板键 0000:07:00.0）
+07:40:56.925 INFO    [RT] device.rs:251 成对写 CSR：开（相邻两条两核写并成一条命令 21）
+07:40:56.925 INFO    [RT] device.rs:252 精简 CSR：开（链里第 1 节起不重写不变的 icsr；成对写时落单的那条自配成一条命令 21）
+07:40:56.925 INFO    [RT] deployment.rs:344 [host runtime] --> deploying model [taesd]
+07:40:56.926 INFO    [RT] rodata.rs:116 [host runtime] 参数块 1 个切片 2 MiB 用时 1 ms（串行）
+07:40:56.926 INFO    [RT] deployment.rs:350 [host runtime] --> taesd deploy completed
+
+$ dort -i 0 -j calbin run -f /home/sweet/hachson/sd15-npu/out/taesd-real/cal -m taesd --raw-in /tmp/sd15npu-t0gtc8wa/in.bin --raw-out /tmp/sd15npu-t0gtc8wa/out.bin --in-tensor in_x --out-tensor out_y --board-lock /opt/data/locks/board-0000:07:00.0.lock
+# 退出 0，墙钟 0.111 s
+calbin /home/sweet/hachson/sd15-npu/out/taesd-real/cal
+  configure 完成（这一次覆盖 calbin 里的全部模型）
+  写入 295936 字节 -> 张量 `in_x`
+  已提交，等完成…
+  完成
+  读出 17040384 字节 -> /tmp/sd15npu-t0gtc8wa/out.bin
+  前 8 个 bf16: 1.4141 -0.0378 0.1152 -0.2188 0.9609 0.8750 0.3066 -0.4824
+
+07:40:56.928 INFO    [RT] device.rs:250 启动流带：开（板键 0000:07:00.0）
+07:40:56.928 INFO    [RT] device.rs:251 成对写 CSR：开（相邻两条两核写并成一条命令 21）
+07:40:56.928 INFO    [RT] device.rs:252 精简 CSR：开（链里第 1 节起不重写不变的 icsr；成对写时落单的那条自配成一条命令 21）
+07:40:56.928 INFO    [RT] deployment.rs:344 [host runtime] --> deploying model [taesd]
+07:40:56.929 INFO    [RT] rodata.rs:116 [host runtime] 参数块 1 个切片 2 MiB 用时 1 ms（串行）
+07:40:56.930 INFO    [RT] deployment.rs:350 [host runtime] --> taesd deploy completed
+
+$ dort -i 0 -j calbin run -f /home/sweet/hachson/sd15-npu/out/taesd-real/cal -m taesd --raw-in /tmp/sd15npu-jezd4289/in.bin --raw-out /tmp/sd15npu-jezd4289/out.bin --in-tensor in_x --out-tensor out_y --board-lock /opt/data/locks/board-0000:07:00.0.lock
+# 退出 0，墙钟 0.112 s
+calbin /home/sweet/hachson/sd15-npu/out/taesd-real/cal
+  configure 完成（这一次覆盖 calbin 里的全部模型）
+  写入 295936 字节 -> 张量 `in_x`
+  已提交，等完成…
+  完成
+  读出 17040384 字节 -> /tmp/sd15npu-jezd4289/out.bin
+  前 8 个 bf16: 1.4141 -0.0378 0.1152 -0.2188 0.9609 0.8750 0.3066 -0.4824
+
+07:40:57.043 INFO    [RT] device.rs:250 启动流带：开（板键 0000:07:00.0）
+07:40:57.043 INFO    [RT] device.rs:251 成对写 CSR：开（相邻两条两核写并成一条命令 21）
+07:40:57.043 INFO    [RT] device.rs:252 精简 CSR：开（链里第 1 节起不重写不变的 icsr；成对写时落单的那条自配成一条命令 21）
+07:40:57.043 INFO    [RT] deployment.rs:344 [host runtime] --> deploying model [taesd]
+07:40:57.044 INFO    [RT] rodata.rs:116 [host runtime] 参数块 1 个切片 2 MiB 用时 1 ms（串行）
+07:40:57.044 INFO    [RT] deployment.rs:350 [host runtime] --> taesd deploy completed
+
+$ dort -i 0 -j calbin run -f /home/sweet/hachson/sd15-npu/out/taesd-real/cal -m taesd --raw-in /tmp/sd15npu-i916s0dj/in.bin --raw-out /tmp/sd15npu-i916s0dj/out.bin --in-tensor in_x --out-tensor out_y --board-lock /opt/data/locks/board-0000:07:00.0.lock
+# 退出 0，墙钟 0.112 s
+calbin /home/sweet/hachson/sd15-npu/out/taesd-real/cal
+  configure 完成（这一次覆盖 calbin 里的全部模型）
+  写入 295936 字节 -> 张量 `in_x`
+  已提交，等完成…
+  完成
+  读出 17040384 字节 -> /tmp/sd15npu-i916s0dj/out.bin
+  前 8 个 bf16: 1.4141 -0.0378 0.1152 -0.2188 0.9609 0.8750 0.3066 -0.4824
+
+07:40:57.158 INFO    [RT] device.rs:250 启动流带：开（板键 0000:07:00.0）
+07:40:57.158 INFO    [RT] device.rs:251 成对写 CSR：开（相邻两条两核写并成一条命令 21）
+07:40:57.158 INFO    [RT] device.rs:252 精简 CSR：开（链里第 1 节起不重写不变的 icsr；成对写时落单的那条自配成一条命令 21）
+07:40:57.158 INFO    [RT] deployment.rs:344 [host runtime] --> deploying model [taesd]
+07:40:57.158 INFO    [RT] rodata.rs:116 [host runtime] 参数块 1 个切片 2 MiB 用时 0 ms（串行）
+07:40:57.159 INFO    [RT] deployment.rs:350 [host runtime] --> taesd deploy completed
+

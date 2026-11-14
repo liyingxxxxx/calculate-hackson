@@ -1,0 +1,1787 @@
+[
+ {
+  "op": "div",
+  "in_shapes": [
+   [
+    1,
+    4,
+    64,
+    64
+   ]
+  ],
+  "out_shapes": [
+   [
+    1,
+    4,
+    64,
+    64
+   ]
+  ],
+  "key": {},
+  "count": 1,
+  "flops_each": 0,
+  "in_elems_each": 16384,
+  "out_elems_each": 16384,
+  "where": [
+   "(top)"
+  ],
+  "status": "不搬",
+  "note": "diffusers 残差块的 output_scale_factor（SD1.5 里 = 1）：除以 1 直接去掉；别的除数并进相邻 kernel 的系数"
+ },
+ {
+  "op": "conv2d",
+  "in_shapes": [
+   [
+    1,
+    4,
+    64,
+    64
+   ],
+   [
+    4,
+    4,
+    1,
+    1
+   ],
+   [
+    4
+   ]
+  ],
+  "out_shapes": [
+   [
+    1,
+    4,
+    64,
+    64
+   ]
+  ],
+  "key": {
+   "k": [
+    1,
+    1
+   ],
+   "stride": [
+    1,
+    1
+   ],
+   "pad": [
+    0,
+    0
+   ],
+   "groups": 1,
+   "bias": true
+  },
+  "count": 1,
+  "flops_each": 131072,
+  "in_elems_each": 16404,
+  "out_elems_each": 16384,
+  "where": [
+   "post_quant_conv"
+  ],
+  "status": "改参数",
+  "note": "conv2d!（NHWC 带边框）；Cin 4 补到 32 的倍数；Cout 4 补齐"
+ },
+ {
+  "op": "conv2d",
+  "in_shapes": [
+   [
+    1,
+    4,
+    64,
+    64
+   ],
+   [
+    512,
+    4,
+    3,
+    3
+   ],
+   [
+    512
+   ]
+  ],
+  "out_shapes": [
+   [
+    1,
+    512,
+    64,
+    64
+   ]
+  ],
+  "key": {
+   "k": [
+    3,
+    3
+   ],
+   "stride": [
+    1,
+    1
+   ],
+   "pad": [
+    1,
+    1
+   ],
+   "groups": 1,
+   "bias": true
+  },
+  "count": 1,
+  "flops_each": 150994944,
+  "in_elems_each": 35328,
+  "out_elems_each": 2097152,
+  "where": [
+   "decoder.conv_in"
+  ],
+  "status": "改参数",
+  "note": "conv2d!（NHWC 带边框）；Cin 4 补到 32 的倍数"
+ },
+ {
+  "op": "group_norm",
+  "in_shapes": [
+   [
+    1,
+    512,
+    64,
+    64
+   ],
+   [
+    512
+   ],
+   [
+    512
+   ]
+  ],
+  "out_shapes": [
+   [
+    1,
+    512,
+    64,
+    64
+   ]
+  ],
+  "key": {
+   "groups": 32,
+   "eps": 1e-06
+  },
+  "count": 10,
+  "flops_each": 0,
+  "in_elems_each": 2098176,
+  "out_elems_each": 2097152,
+  "where": [
+   "decoder.mid_block.resnets.0.norm1",
+   "decoder.mid_block.resnets.0.norm2",
+   "decoder.mid_block.resnets.1.norm1"
+  ],
+  "status": "现成",
+  "note": "group_norm!（NCHW 连续段；和 NHWC 的卷积之间要转排布 ⇒ NHWC 原生版是 A1 候选）；后面紧跟的 SiLU 可并进 act"
+ },
+ {
+  "op": "silu",
+  "in_shapes": [
+   [
+    1,
+    512,
+    64,
+    64
+   ]
+  ],
+  "out_shapes": [
+   [
+    1,
+    512,
+    64,
+    64
+   ]
+  ],
+  "key": {},
+  "count": 10,
+  "flops_each": 0,
+  "in_elems_each": 2097152,
+  "out_elems_each": 2097152,
+  "where": [
+   "decoder.mid_block.resnets.0.nonlinearity",
+   "decoder.mid_block.resnets.1.nonlinearity",
+   "decoder.up_blocks.0.resnets.0.nonlinearity"
+  ],
+  "status": "现成",
+  "note": "并进 group_norm! 的 act，或 unary!(silu)"
+ },
+ {
+  "op": "conv2d",
+  "in_shapes": [
+   [
+    1,
+    512,
+    64,
+    64
+   ],
+   [
+    512,
+    512,
+    3,
+    3
+   ],
+   [
+    512
+   ]
+  ],
+  "out_shapes": [
+   [
+    1,
+    512,
+    64,
+    64
+   ]
+  ],
+  "key": {
+   "k": [
+    3,
+    3
+   ],
+   "stride": [
+    1,
+    1
+   ],
+   "pad": [
+    1,
+    1
+   ],
+   "groups": 1,
+   "bias": true
+  },
+  "count": 10,
+  "flops_each": 19327352832,
+  "in_elems_each": 4456960,
+  "out_elems_each": 2097152,
+  "where": [
+   "decoder.mid_block.resnets.0.conv1",
+   "decoder.mid_block.resnets.0.conv2",
+   "decoder.mid_block.resnets.1.conv1"
+  ],
+  "status": "现成",
+  "note": "conv2d!（NHWC 带边框）"
+ },
+ {
+  "op": "dropout",
+  "in_shapes": [
+   [
+    1,
+    512,
+    64,
+    64
+   ]
+  ],
+  "out_shapes": [
+   [
+    1,
+    512,
+    64,
+    64
+   ]
+  ],
+  "key": {},
+  "count": 5,
+  "flops_each": 0,
+  "in_elems_each": 2097152,
+  "out_elems_each": 2097152,
+  "where": [
+   "decoder.mid_block.resnets.0.dropout",
+   "decoder.mid_block.resnets.1.dropout",
+   "decoder.up_blocks.0.resnets.0.dropout"
+  ],
+  "status": "不搬",
+  "note": "推理时恒等（eval 模式下 dropout 不改数），整步程序里直接去掉"
+ },
+ {
+  "op": "add",
+  "in_shapes": [
+   [
+    1,
+    512,
+    64,
+    64
+   ],
+   [
+    1,
+    512,
+    64,
+    64
+   ]
+  ],
+  "out_shapes": [
+   [
+    1,
+    512,
+    64,
+    64
+   ]
+  ],
+  "key": {},
+  "count": 6,
+  "flops_each": 0,
+  "in_elems_each": 4194304,
+  "out_elems_each": 2097152,
+  "where": [
+   "decoder.mid_block.resnets.0",
+   "decoder.mid_block.attentions.0",
+   "decoder.mid_block.resnets.1"
+  ],
+  "status": "现成",
+  "note": "binary!（或并进卷积的残差 / bias）"
+ },
+ {
+  "op": "div",
+  "in_shapes": [
+   [
+    1,
+    512,
+    64,
+    64
+   ]
+  ],
+  "out_shapes": [
+   [
+    1,
+    512,
+    64,
+    64
+   ]
+  ],
+  "key": {},
+  "count": 6,
+  "flops_each": 0,
+  "in_elems_each": 2097152,
+  "out_elems_each": 2097152,
+  "where": [
+   "decoder.mid_block.resnets.0",
+   "decoder.mid_block.attentions.0",
+   "decoder.mid_block.resnets.1"
+  ],
+  "status": "不搬",
+  "note": "diffusers 残差块的 output_scale_factor（SD1.5 里 = 1）：除以 1 直接去掉；别的除数并进相邻 kernel 的系数"
+ },
+ {
+  "op": "group_norm",
+  "in_shapes": [
+   [
+    1,
+    512,
+    4096
+   ],
+   [
+    512
+   ],
+   [
+    512
+   ]
+  ],
+  "out_shapes": [
+   [
+    1,
+    512,
+    4096
+   ]
+  ],
+  "key": {
+   "groups": 32,
+   "eps": 1e-06
+  },
+  "count": 1,
+  "flops_each": 0,
+  "in_elems_each": 2098176,
+  "out_elems_each": 2097152,
+  "where": [
+   "decoder.mid_block.attentions.0.group_norm"
+  ],
+  "status": "现成",
+  "note": "group_norm!（NCHW 连续段；和 NHWC 的卷积之间要转排布 ⇒ NHWC 原生版是 A1 候选）；后面紧跟的 SiLU 可并进 act"
+ },
+ {
+  "op": "linear",
+  "in_shapes": [
+   [
+    1,
+    4096,
+    512
+   ],
+   [
+    512,
+    512
+   ],
+   [
+    512
+   ]
+  ],
+  "out_shapes": [
+   [
+    1,
+    4096,
+    512
+   ]
+  ],
+  "key": {
+   "bias": true
+  },
+  "count": 4,
+  "flops_each": 2147483648,
+  "in_elems_each": 2359808,
+  "out_elems_each": 2097152,
+  "where": [
+   "decoder.mid_block.attentions.0.to_q",
+   "decoder.mid_block.attentions.0.to_k",
+   "decoder.mid_block.attentions.0.to_v"
+  ],
+  "status": "现成",
+  "note": "linear!(rows = T, w = hf, bias…)"
+ },
+ {
+  "op": "scaled_dot_product_attention",
+  "in_shapes": [
+   [
+    1,
+    1,
+    4096,
+    512
+   ],
+   [
+    1,
+    1,
+    4096,
+    512
+   ],
+   [
+    1,
+    1,
+    4096,
+    512
+   ]
+  ],
+  "out_shapes": [
+   [
+    1,
+    1,
+    4096,
+    512
+   ]
+  ],
+  "key": {
+   "mask": false,
+   "causal": false,
+   "kind": "self"
+  },
+  "count": 1,
+  "flops_each": 34359738368,
+  "in_elems_each": 6291456,
+  "out_elems_each": 2097152,
+  "where": [
+   "decoder.mid_block.attentions.0"
+  ],
+  "status": "现成",
+  "note": "spatial_attn! 或 attention!(mask = keys)"
+ },
+ {
+  "op": "dropout",
+  "in_shapes": [
+   [
+    1,
+    4096,
+    512
+   ]
+  ],
+  "out_shapes": [
+   [
+    1,
+    4096,
+    512
+   ]
+  ],
+  "key": {},
+  "count": 1,
+  "flops_each": 0,
+  "in_elems_each": 2097152,
+  "out_elems_each": 2097152,
+  "where": [
+   "decoder.mid_block.attentions.0.to_out.1"
+  ],
+  "status": "不搬",
+  "note": "推理时恒等（eval 模式下 dropout 不改数），整步程序里直接去掉"
+ },
+ {
+  "op": "interpolate",
+  "in_shapes": [
+   [
+    1,
+    512,
+    64,
+    64
+   ]
+  ],
+  "out_shapes": [
+   [
+    1,
+    512,
+    128,
+    128
+   ]
+  ],
+  "key": {
+   "scale_factor": 2.0,
+   "mode": "nearest",
+   "size": null
+  },
+  "count": 1,
+  "flops_each": 0,
+  "in_elems_each": 2097152,
+  "out_elems_each": 8388608,
+  "where": [
+   "decoder.up_blocks.0.upsamplers.0"
+  ],
+  "status": "现成",
+  "note": "upsample2!（一次 ≤ 256 通道，多的分几次调）"
+ },
+ {
+  "op": "conv2d",
+  "in_shapes": [
+   [
+    1,
+    512,
+    128,
+    128
+   ],
+   [
+    512,
+    512,
+    3,
+    3
+   ],
+   [
+    512
+   ]
+  ],
+  "out_shapes": [
+   [
+    1,
+    512,
+    128,
+    128
+   ]
+  ],
+  "key": {
+   "k": [
+    3,
+    3
+   ],
+   "stride": [
+    1,
+    1
+   ],
+   "pad": [
+    1,
+    1
+   ],
+   "groups": 1,
+   "bias": true
+  },
+  "count": 7,
+  "flops_each": 77309411328,
+  "in_elems_each": 10748416,
+  "out_elems_each": 8388608,
+  "where": [
+   "decoder.up_blocks.0.upsamplers.0.conv",
+   "decoder.up_blocks.1.resnets.0.conv1",
+   "decoder.up_blocks.1.resnets.0.conv2"
+  ],
+  "status": "现成",
+  "note": "conv2d!（NHWC 带边框）"
+ },
+ {
+  "op": "group_norm",
+  "in_shapes": [
+   [
+    1,
+    512,
+    128,
+    128
+   ],
+   [
+    512
+   ],
+   [
+    512
+   ]
+  ],
+  "out_shapes": [
+   [
+    1,
+    512,
+    128,
+    128
+   ]
+  ],
+  "key": {
+   "groups": 32,
+   "eps": 1e-06
+  },
+  "count": 6,
+  "flops_each": 0,
+  "in_elems_each": 8389632,
+  "out_elems_each": 8388608,
+  "where": [
+   "decoder.up_blocks.1.resnets.0.norm1",
+   "decoder.up_blocks.1.resnets.0.norm2",
+   "decoder.up_blocks.1.resnets.1.norm1"
+  ],
+  "status": "现成",
+  "note": "group_norm!（NCHW 连续段；和 NHWC 的卷积之间要转排布 ⇒ NHWC 原生版是 A1 候选）；后面紧跟的 SiLU 可并进 act"
+ },
+ {
+  "op": "silu",
+  "in_shapes": [
+   [
+    1,
+    512,
+    128,
+    128
+   ]
+  ],
+  "out_shapes": [
+   [
+    1,
+    512,
+    128,
+    128
+   ]
+  ],
+  "key": {},
+  "count": 6,
+  "flops_each": 0,
+  "in_elems_each": 8388608,
+  "out_elems_each": 8388608,
+  "where": [
+   "decoder.up_blocks.1.resnets.0.nonlinearity",
+   "decoder.up_blocks.1.resnets.1.nonlinearity",
+   "decoder.up_blocks.1.resnets.2.nonlinearity"
+  ],
+  "status": "现成",
+  "note": "并进 group_norm! 的 act，或 unary!(silu)"
+ },
+ {
+  "op": "dropout",
+  "in_shapes": [
+   [
+    1,
+    512,
+    128,
+    128
+   ]
+  ],
+  "out_shapes": [
+   [
+    1,
+    512,
+    128,
+    128
+   ]
+  ],
+  "key": {},
+  "count": 3,
+  "flops_each": 0,
+  "in_elems_each": 8388608,
+  "out_elems_each": 8388608,
+  "where": [
+   "decoder.up_blocks.1.resnets.0.dropout",
+   "decoder.up_blocks.1.resnets.1.dropout",
+   "decoder.up_blocks.1.resnets.2.dropout"
+  ],
+  "status": "不搬",
+  "note": "推理时恒等（eval 模式下 dropout 不改数），整步程序里直接去掉"
+ },
+ {
+  "op": "add",
+  "in_shapes": [
+   [
+    1,
+    512,
+    128,
+    128
+   ],
+   [
+    1,
+    512,
+    128,
+    128
+   ]
+  ],
+  "out_shapes": [
+   [
+    1,
+    512,
+    128,
+    128
+   ]
+  ],
+  "key": {},
+  "count": 3,
+  "flops_each": 0,
+  "in_elems_each": 16777216,
+  "out_elems_each": 8388608,
+  "where": [
+   "decoder.up_blocks.1.resnets.0",
+   "decoder.up_blocks.1.resnets.1",
+   "decoder.up_blocks.1.resnets.2"
+  ],
+  "status": "现成",
+  "note": "binary!（或并进卷积的残差 / bias）"
+ },
+ {
+  "op": "div",
+  "in_shapes": [
+   [
+    1,
+    512,
+    128,
+    128
+   ]
+  ],
+  "out_shapes": [
+   [
+    1,
+    512,
+    128,
+    128
+   ]
+  ],
+  "key": {},
+  "count": 3,
+  "flops_each": 0,
+  "in_elems_each": 8388608,
+  "out_elems_each": 8388608,
+  "where": [
+   "decoder.up_blocks.1.resnets.0",
+   "decoder.up_blocks.1.resnets.1",
+   "decoder.up_blocks.1.resnets.2"
+  ],
+  "status": "不搬",
+  "note": "diffusers 残差块的 output_scale_factor（SD1.5 里 = 1）：除以 1 直接去掉；别的除数并进相邻 kernel 的系数"
+ },
+ {
+  "op": "interpolate",
+  "in_shapes": [
+   [
+    1,
+    512,
+    128,
+    128
+   ]
+  ],
+  "out_shapes": [
+   [
+    1,
+    512,
+    256,
+    256
+   ]
+  ],
+  "key": {
+   "scale_factor": 2.0,
+   "mode": "nearest",
+   "size": null
+  },
+  "count": 1,
+  "flops_each": 0,
+  "in_elems_each": 8388608,
+  "out_elems_each": 33554432,
+  "where": [
+   "decoder.up_blocks.1.upsamplers.0"
+  ],
+  "status": "现成",
+  "note": "upsample2!（一次 ≤ 256 通道，多的分几次调）"
+ },
+ {
+  "op": "conv2d",
+  "in_shapes": [
+   [
+    1,
+    512,
+    256,
+    256
+   ],
+   [
+    512,
+    512,
+    3,
+    3
+   ],
+   [
+    512
+   ]
+  ],
+  "out_shapes": [
+   [
+    1,
+    512,
+    256,
+    256
+   ]
+  ],
+  "key": {
+   "k": [
+    3,
+    3
+   ],
+   "stride": [
+    1,
+    1
+   ],
+   "pad": [
+    1,
+    1
+   ],
+   "groups": 1,
+   "bias": true
+  },
+  "count": 1,
+  "flops_each": 309237645312,
+  "in_elems_each": 35914240,
+  "out_elems_each": 33554432,
+  "where": [
+   "decoder.up_blocks.1.upsamplers.0.conv"
+  ],
+  "status": "现成",
+  "note": "conv2d!（NHWC 带边框）"
+ },
+ {
+  "op": "group_norm",
+  "in_shapes": [
+   [
+    1,
+    512,
+    256,
+    256
+   ],
+   [
+    512
+   ],
+   [
+    512
+   ]
+  ],
+  "out_shapes": [
+   [
+    1,
+    512,
+    256,
+    256
+   ]
+  ],
+  "key": {
+   "groups": 32,
+   "eps": 1e-06
+  },
+  "count": 1,
+  "flops_each": 0,
+  "in_elems_each": 33555456,
+  "out_elems_each": 33554432,
+  "where": [
+   "decoder.up_blocks.2.resnets.0.norm1"
+  ],
+  "status": "现成",
+  "note": "group_norm!（NCHW 连续段；和 NHWC 的卷积之间要转排布 ⇒ NHWC 原生版是 A1 候选）；后面紧跟的 SiLU 可并进 act"
+ },
+ {
+  "op": "silu",
+  "in_shapes": [
+   [
+    1,
+    512,
+    256,
+    256
+   ]
+  ],
+  "out_shapes": [
+   [
+    1,
+    512,
+    256,
+    256
+   ]
+  ],
+  "key": {},
+  "count": 1,
+  "flops_each": 0,
+  "in_elems_each": 33554432,
+  "out_elems_each": 33554432,
+  "where": [
+   "decoder.up_blocks.2.resnets.0.nonlinearity"
+  ],
+  "status": "现成",
+  "note": "并进 group_norm! 的 act，或 unary!(silu)"
+ },
+ {
+  "op": "conv2d",
+  "in_shapes": [
+   [
+    1,
+    512,
+    256,
+    256
+   ],
+   [
+    256,
+    512,
+    3,
+    3
+   ],
+   [
+    256
+   ]
+  ],
+  "out_shapes": [
+   [
+    1,
+    256,
+    256,
+    256
+   ]
+  ],
+  "key": {
+   "k": [
+    3,
+    3
+   ],
+   "stride": [
+    1,
+    1
+   ],
+   "pad": [
+    1,
+    1
+   ],
+   "groups": 1,
+   "bias": true
+  },
+  "count": 1,
+  "flops_each": 154618822656,
+  "in_elems_each": 34734336,
+  "out_elems_each": 16777216,
+  "where": [
+   "decoder.up_blocks.2.resnets.0.conv1"
+  ],
+  "status": "现成",
+  "note": "conv2d!（NHWC 带边框）"
+ },
+ {
+  "op": "group_norm",
+  "in_shapes": [
+   [
+    1,
+    256,
+    256,
+    256
+   ],
+   [
+    256
+   ],
+   [
+    256
+   ]
+  ],
+  "out_shapes": [
+   [
+    1,
+    256,
+    256,
+    256
+   ]
+  ],
+  "key": {
+   "groups": 32,
+   "eps": 1e-06
+  },
+  "count": 5,
+  "flops_each": 0,
+  "in_elems_each": 16777728,
+  "out_elems_each": 16777216,
+  "where": [
+   "decoder.up_blocks.2.resnets.0.norm2",
+   "decoder.up_blocks.2.resnets.1.norm1",
+   "decoder.up_blocks.2.resnets.1.norm2"
+  ],
+  "status": "现成",
+  "note": "group_norm!（NCHW 连续段；和 NHWC 的卷积之间要转排布 ⇒ NHWC 原生版是 A1 候选）；后面紧跟的 SiLU 可并进 act"
+ },
+ {
+  "op": "silu",
+  "in_shapes": [
+   [
+    1,
+    256,
+    256,
+    256
+   ]
+  ],
+  "out_shapes": [
+   [
+    1,
+    256,
+    256,
+    256
+   ]
+  ],
+  "key": {},
+  "count": 5,
+  "flops_each": 0,
+  "in_elems_each": 16777216,
+  "out_elems_each": 16777216,
+  "where": [
+   "decoder.up_blocks.2.resnets.0.nonlinearity",
+   "decoder.up_blocks.2.resnets.1.nonlinearity",
+   "decoder.up_blocks.2.resnets.2.nonlinearity"
+  ],
+  "status": "现成",
+  "note": "并进 group_norm! 的 act，或 unary!(silu)"
+ },
+ {
+  "op": "dropout",
+  "in_shapes": [
+   [
+    1,
+    256,
+    256,
+    256
+   ]
+  ],
+  "out_shapes": [
+   [
+    1,
+    256,
+    256,
+    256
+   ]
+  ],
+  "key": {},
+  "count": 3,
+  "flops_each": 0,
+  "in_elems_each": 16777216,
+  "out_elems_each": 16777216,
+  "where": [
+   "decoder.up_blocks.2.resnets.0.dropout",
+   "decoder.up_blocks.2.resnets.1.dropout",
+   "decoder.up_blocks.2.resnets.2.dropout"
+  ],
+  "status": "不搬",
+  "note": "推理时恒等（eval 模式下 dropout 不改数），整步程序里直接去掉"
+ },
+ {
+  "op": "conv2d",
+  "in_shapes": [
+   [
+    1,
+    256,
+    256,
+    256
+   ],
+   [
+    256,
+    256,
+    3,
+    3
+   ],
+   [
+    256
+   ]
+  ],
+  "out_shapes": [
+   [
+    1,
+    256,
+    256,
+    256
+   ]
+  ],
+  "key": {
+   "k": [
+    3,
+    3
+   ],
+   "stride": [
+    1,
+    1
+   ],
+   "pad": [
+    1,
+    1
+   ],
+   "groups": 1,
+   "bias": true
+  },
+  "count": 5,
+  "flops_each": 77309411328,
+  "in_elems_each": 17367296,
+  "out_elems_each": 16777216,
+  "where": [
+   "decoder.up_blocks.2.resnets.0.conv2",
+   "decoder.up_blocks.2.resnets.1.conv1",
+   "decoder.up_blocks.2.resnets.1.conv2"
+  ],
+  "status": "现成",
+  "note": "conv2d!（NHWC 带边框）"
+ },
+ {
+  "op": "conv2d",
+  "in_shapes": [
+   [
+    1,
+    512,
+    256,
+    256
+   ],
+   [
+    256,
+    512,
+    1,
+    1
+   ],
+   [
+    256
+   ]
+  ],
+  "out_shapes": [
+   [
+    1,
+    256,
+    256,
+    256
+   ]
+  ],
+  "key": {
+   "k": [
+    1,
+    1
+   ],
+   "stride": [
+    1,
+    1
+   ],
+   "pad": [
+    0,
+    0
+   ],
+   "groups": 1,
+   "bias": true
+  },
+  "count": 1,
+  "flops_each": 17179869184,
+  "in_elems_each": 33685760,
+  "out_elems_each": 16777216,
+  "where": [
+   "decoder.up_blocks.2.resnets.0.conv_shortcut"
+  ],
+  "status": "现成",
+  "note": "conv2d!（NHWC 带边框）"
+ },
+ {
+  "op": "add",
+  "in_shapes": [
+   [
+    1,
+    256,
+    256,
+    256
+   ],
+   [
+    1,
+    256,
+    256,
+    256
+   ]
+  ],
+  "out_shapes": [
+   [
+    1,
+    256,
+    256,
+    256
+   ]
+  ],
+  "key": {},
+  "count": 3,
+  "flops_each": 0,
+  "in_elems_each": 33554432,
+  "out_elems_each": 16777216,
+  "where": [
+   "decoder.up_blocks.2.resnets.0",
+   "decoder.up_blocks.2.resnets.1",
+   "decoder.up_blocks.2.resnets.2"
+  ],
+  "status": "现成",
+  "note": "binary!（或并进卷积的残差 / bias）"
+ },
+ {
+  "op": "div",
+  "in_shapes": [
+   [
+    1,
+    256,
+    256,
+    256
+   ]
+  ],
+  "out_shapes": [
+   [
+    1,
+    256,
+    256,
+    256
+   ]
+  ],
+  "key": {},
+  "count": 3,
+  "flops_each": 0,
+  "in_elems_each": 16777216,
+  "out_elems_each": 16777216,
+  "where": [
+   "decoder.up_blocks.2.resnets.0",
+   "decoder.up_blocks.2.resnets.1",
+   "decoder.up_blocks.2.resnets.2"
+  ],
+  "status": "不搬",
+  "note": "diffusers 残差块的 output_scale_factor（SD1.5 里 = 1）：除以 1 直接去掉；别的除数并进相邻 kernel 的系数"
+ },
+ {
+  "op": "interpolate",
+  "in_shapes": [
+   [
+    1,
+    256,
+    256,
+    256
+   ]
+  ],
+  "out_shapes": [
+   [
+    1,
+    256,
+    512,
+    512
+   ]
+  ],
+  "key": {
+   "scale_factor": 2.0,
+   "mode": "nearest",
+   "size": null
+  },
+  "count": 1,
+  "flops_each": 0,
+  "in_elems_each": 16777216,
+  "out_elems_each": 67108864,
+  "where": [
+   "decoder.up_blocks.2.upsamplers.0"
+  ],
+  "status": "现成",
+  "note": "upsample2!（一次 ≤ 256 通道，多的分几次调）"
+ },
+ {
+  "op": "conv2d",
+  "in_shapes": [
+   [
+    1,
+    256,
+    512,
+    512
+   ],
+   [
+    256,
+    256,
+    3,
+    3
+   ],
+   [
+    256
+   ]
+  ],
+  "out_shapes": [
+   [
+    1,
+    256,
+    512,
+    512
+   ]
+  ],
+  "key": {
+   "k": [
+    3,
+    3
+   ],
+   "stride": [
+    1,
+    1
+   ],
+   "pad": [
+    1,
+    1
+   ],
+   "groups": 1,
+   "bias": true
+  },
+  "count": 1,
+  "flops_each": 309237645312,
+  "in_elems_each": 67698944,
+  "out_elems_each": 67108864,
+  "where": [
+   "decoder.up_blocks.2.upsamplers.0.conv"
+  ],
+  "status": "现成",
+  "note": "conv2d!（NHWC 带边框）"
+ },
+ {
+  "op": "group_norm",
+  "in_shapes": [
+   [
+    1,
+    256,
+    512,
+    512
+   ],
+   [
+    256
+   ],
+   [
+    256
+   ]
+  ],
+  "out_shapes": [
+   [
+    1,
+    256,
+    512,
+    512
+   ]
+  ],
+  "key": {
+   "groups": 32,
+   "eps": 1e-06
+  },
+  "count": 1,
+  "flops_each": 0,
+  "in_elems_each": 67109376,
+  "out_elems_each": 67108864,
+  "where": [
+   "decoder.up_blocks.3.resnets.0.norm1"
+  ],
+  "status": "现成",
+  "note": "group_norm!（NCHW 连续段；和 NHWC 的卷积之间要转排布 ⇒ NHWC 原生版是 A1 候选）；后面紧跟的 SiLU 可并进 act"
+ },
+ {
+  "op": "silu",
+  "in_shapes": [
+   [
+    1,
+    256,
+    512,
+    512
+   ]
+  ],
+  "out_shapes": [
+   [
+    1,
+    256,
+    512,
+    512
+   ]
+  ],
+  "key": {},
+  "count": 1,
+  "flops_each": 0,
+  "in_elems_each": 67108864,
+  "out_elems_each": 67108864,
+  "where": [
+   "decoder.up_blocks.3.resnets.0.nonlinearity"
+  ],
+  "status": "现成",
+  "note": "并进 group_norm! 的 act，或 unary!(silu)"
+ },
+ {
+  "op": "conv2d",
+  "in_shapes": [
+   [
+    1,
+    256,
+    512,
+    512
+   ],
+   [
+    128,
+    256,
+    3,
+    3
+   ],
+   [
+    128
+   ]
+  ],
+  "out_shapes": [
+   [
+    1,
+    128,
+    512,
+    512
+   ]
+  ],
+  "key": {
+   "k": [
+    3,
+    3
+   ],
+   "stride": [
+    1,
+    1
+   ],
+   "pad": [
+    1,
+    1
+   ],
+   "groups": 1,
+   "bias": true
+  },
+  "count": 1,
+  "flops_each": 154618822656,
+  "in_elems_each": 67403904,
+  "out_elems_each": 33554432,
+  "where": [
+   "decoder.up_blocks.3.resnets.0.conv1"
+  ],
+  "status": "现成",
+  "note": "conv2d!（NHWC 带边框）"
+ },
+ {
+  "op": "group_norm",
+  "in_shapes": [
+   [
+    1,
+    128,
+    512,
+    512
+   ],
+   [
+    128
+   ],
+   [
+    128
+   ]
+  ],
+  "out_shapes": [
+   [
+    1,
+    128,
+    512,
+    512
+   ]
+  ],
+  "key": {
+   "groups": 32,
+   "eps": 1e-06
+  },
+  "count": 6,
+  "flops_each": 0,
+  "in_elems_each": 33554688,
+  "out_elems_each": 33554432,
+  "where": [
+   "decoder.up_blocks.3.resnets.0.norm2",
+   "decoder.up_blocks.3.resnets.1.norm1",
+   "decoder.up_blocks.3.resnets.1.norm2"
+  ],
+  "status": "现成",
+  "note": "group_norm!（NCHW 连续段；和 NHWC 的卷积之间要转排布 ⇒ NHWC 原生版是 A1 候选）；后面紧跟的 SiLU 可并进 act"
+ },
+ {
+  "op": "silu",
+  "in_shapes": [
+   [
+    1,
+    128,
+    512,
+    512
+   ]
+  ],
+  "out_shapes": [
+   [
+    1,
+    128,
+    512,
+    512
+   ]
+  ],
+  "key": {},
+  "count": 6,
+  "flops_each": 0,
+  "in_elems_each": 33554432,
+  "out_elems_each": 33554432,
+  "where": [
+   "decoder.up_blocks.3.resnets.0.nonlinearity",
+   "decoder.up_blocks.3.resnets.1.nonlinearity",
+   "decoder.up_blocks.3.resnets.2.nonlinearity"
+  ],
+  "status": "现成",
+  "note": "并进 group_norm! 的 act，或 unary!(silu)"
+ },
+ {
+  "op": "dropout",
+  "in_shapes": [
+   [
+    1,
+    128,
+    512,
+    512
+   ]
+  ],
+  "out_shapes": [
+   [
+    1,
+    128,
+    512,
+    512
+   ]
+  ],
+  "key": {},
+  "count": 3,
+  "flops_each": 0,
+  "in_elems_each": 33554432,
+  "out_elems_each": 33554432,
+  "where": [
+   "decoder.up_blocks.3.resnets.0.dropout",
+   "decoder.up_blocks.3.resnets.1.dropout",
+   "decoder.up_blocks.3.resnets.2.dropout"
+  ],
+  "status": "不搬",
+  "note": "推理时恒等（eval 模式下 dropout 不改数），整步程序里直接去掉"
+ },
+ {
+  "op": "conv2d",
+  "in_shapes": [
+   [
+    1,
+    128,
+    512,
+    512
+   ],
+   [
+    128,
+    128,
+    3,
+    3
+   ],
+   [
+    128
+   ]
+  ],
+  "out_shapes": [
+   [
+    1,
+    128,
+    512,
+    512
+   ]
+  ],
+  "key": {
+   "k": [
+    3,
+    3
+   ],
+   "stride": [
+    1,
+    1
+   ],
+   "pad": [
+    1,
+    1
+   ],
+   "groups": 1,
+   "bias": true
+  },
+  "count": 5,
+  "flops_each": 77309411328,
+  "in_elems_each": 33702016,
+  "out_elems_each": 33554432,
+  "where": [
+   "decoder.up_blocks.3.resnets.0.conv2",
+   "decoder.up_blocks.3.resnets.1.conv1",
+   "decoder.up_blocks.3.resnets.1.conv2"
+  ],
+  "status": "现成",
+  "note": "conv2d!（NHWC 带边框）"
+ },
+ {
+  "op": "conv2d",
+  "in_shapes": [
+   [
+    1,
+    256,
+    512,
+    512
+   ],
+   [
+    128,
+    256,
+    1,
+    1
+   ],
+   [
+    128
+   ]
+  ],
+  "out_shapes": [
+   [
+    1,
+    128,
+    512,
+    512
+   ]
+  ],
+  "key": {
+   "k": [
+    1,
+    1
+   ],
+   "stride": [
+    1,
+    1
+   ],
+   "pad": [
+    0,
+    0
+   ],
+   "groups": 1,
+   "bias": true
+  },
+  "count": 1,
+  "flops_each": 17179869184,
+  "in_elems_each": 67141760,
+  "out_elems_each": 33554432,
+  "where": [
+   "decoder.up_blocks.3.resnets.0.conv_shortcut"
+  ],
+  "status": "现成",
+  "note": "conv2d!（NHWC 带边框）"
+ },
+ {
+  "op": "add",
+  "in_shapes": [
+   [
+    1,
+    128,
+    512,
+    512
+   ],
+   [
+    1,
+    128,
+    512,
+    512
+   ]
+  ],
+  "out_shapes": [
+   [
+    1,
+    128,
+    512,
+    512
+   ]
+  ],
+  "key": {},
+  "count": 3,
+  "flops_each": 0,
+  "in_elems_each": 67108864,
+  "out_elems_each": 33554432,
+  "where": [
+   "decoder.up_blocks.3.resnets.0",
+   "decoder.up_blocks.3.resnets.1",
+   "decoder.up_blocks.3.resnets.2"
+  ],
+  "status": "现成",
+  "note": "binary!（或并进卷积的残差 / bias）"
+ },
+ {
+  "op": "div",
+  "in_shapes": [
+   [
+    1,
+    128,
+    512,
+    512
+   ]
+  ],
+  "out_shapes": [
+   [
+    1,
+    128,
+    512,
+    512
+   ]
+  ],
+  "key": {},
+  "count": 3,
+  "flops_each": 0,
+  "in_elems_each": 33554432,
+  "out_elems_each": 33554432,
+  "where": [
+   "decoder.up_blocks.3.resnets.0",
+   "decoder.up_blocks.3.resnets.1",
+   "decoder.up_blocks.3.resnets.2"
+  ],
+  "status": "不搬",
+  "note": "diffusers 残差块的 output_scale_factor（SD1.5 里 = 1）：除以 1 直接去掉；别的除数并进相邻 kernel 的系数"
+ },
+ {
+  "op": "conv2d",
+  "in_shapes": [
+   [
+    1,
+    128,
+    512,
+    512
+   ],
+   [
+    3,
+    128,
+    3,
+    3
+   ],
+   [
+    3
+   ]
+  ],
+  "out_shapes": [
+   [
+    1,
+    3,
+    512,
+    512
+   ]
+  ],
+  "key": {
+   "k": [
+    3,
+    3
+   ],
+   "stride": [
+    1,
+    1
+   ],
+   "pad": [
+    1,
+    1
+   ],
+   "groups": 1,
+   "bias": true
+  },
+  "count": 1,
+  "flops_each": 1811939328,
+  "in_elems_each": 33557891,
+  "out_elems_each": 786432,
+  "where": [
+   "decoder.conv_out"
+  ],
+  "status": "改参数",
+  "note": "conv2d!（NHWC 带边框）；Cout 3 补齐"
+ }
+]

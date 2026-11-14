@@ -1,0 +1,492 @@
+[
+ {
+  "op": "embedding",
+  "in_shapes": [
+   [
+    1,
+    77
+   ],
+   [
+    49408,
+    768
+   ]
+  ],
+  "out_shapes": [
+   [
+    1,
+    77,
+    768
+   ]
+  ],
+  "key": {},
+  "count": 1,
+  "flops_each": 0,
+  "in_elems_each": 37945421,
+  "out_elems_each": 59136,
+  "where": [
+   "embeddings.token_embedding"
+  ],
+  "status": "现成",
+  "note": "embedding!"
+ },
+ {
+  "op": "embedding",
+  "in_shapes": [
+   [
+    1,
+    77
+   ],
+   [
+    77,
+    768
+   ]
+  ],
+  "out_shapes": [
+   [
+    1,
+    77,
+    768
+   ]
+  ],
+  "key": {},
+  "count": 1,
+  "flops_each": 0,
+  "in_elems_each": 59213,
+  "out_elems_each": 59136,
+  "where": [
+   "embeddings.position_embedding"
+  ],
+  "status": "现成",
+  "note": "embedding!"
+ },
+ {
+  "op": "add",
+  "in_shapes": [
+   [
+    1,
+    77,
+    768
+   ],
+   [
+    1,
+    77,
+    768
+   ]
+  ],
+  "out_shapes": [
+   [
+    1,
+    77,
+    768
+   ]
+  ],
+  "key": {},
+  "count": 25,
+  "flops_each": 0,
+  "in_elems_each": 118272,
+  "out_elems_each": 59136,
+  "where": [
+   "embeddings",
+   "encoder.layers.0",
+   "encoder.layers.1"
+  ],
+  "status": "现成",
+  "note": "binary!（或并进卷积的残差 / bias）"
+ },
+ {
+  "op": "layer_norm",
+  "in_shapes": [
+   [
+    1,
+    77,
+    768
+   ],
+   [
+    768
+   ],
+   [
+    768
+   ]
+  ],
+  "out_shapes": [
+   [
+    1,
+    77,
+    768
+   ]
+  ],
+  "key": {
+   "normalized_shape": [
+    768
+   ],
+   "eps": 1e-05
+  },
+  "count": 25,
+  "flops_each": 0,
+  "in_elems_each": 60672,
+  "out_elems_each": 59136,
+  "where": [
+   "encoder.layers.0.layer_norm1",
+   "encoder.layers.0.layer_norm2",
+   "encoder.layers.1.layer_norm1"
+  ],
+  "status": "现成",
+  "note": "layer_norm!（每 token 一行）"
+ },
+ {
+  "op": "linear",
+  "in_shapes": [
+   [
+    1,
+    77,
+    768
+   ],
+   [
+    768,
+    768
+   ],
+   [
+    768
+   ]
+  ],
+  "out_shapes": [
+   [
+    1,
+    77,
+    768
+   ]
+  ],
+  "key": {
+   "bias": true
+  },
+  "count": 48,
+  "flops_each": 90832896,
+  "in_elems_each": 649728,
+  "out_elems_each": 59136,
+  "where": [
+   "encoder.layers.0.self_attn.q_proj",
+   "encoder.layers.0.self_attn.k_proj",
+   "encoder.layers.0.self_attn.v_proj"
+  ],
+  "status": "现成",
+  "note": "linear!(rows = T, w = hf, bias…)"
+ },
+ {
+  "op": "scaled_dot_product_attention",
+  "in_shapes": [
+   [
+    1,
+    12,
+    77,
+    64
+   ],
+   [
+    1,
+    12,
+    77,
+    64
+   ],
+   [
+    1,
+    12,
+    77,
+    64
+   ]
+  ],
+  "out_shapes": [
+   [
+    1,
+    12,
+    77,
+    64
+   ]
+  ],
+  "key": {
+   "mask": false,
+   "causal": true,
+   "kind": "self"
+  },
+  "count": 12,
+  "flops_each": 18213888,
+  "in_elems_each": 177408,
+  "out_elems_each": 59136,
+  "where": [
+   "encoder.layers.0.self_attn",
+   "encoder.layers.1.self_attn",
+   "encoder.layers.2.self_attn"
+  ],
+  "status": "改参数",
+  "note": "attention!(mask = full)：因果 + pad 的掩码由主机给"
+ },
+ {
+  "op": "contiguous",
+  "in_shapes": [
+   [
+    1,
+    77,
+    12,
+    64
+   ]
+  ],
+  "out_shapes": [
+   [
+    1,
+    77,
+    12,
+    64
+   ]
+  ],
+  "key": {},
+  "count": 12,
+  "flops_each": 0,
+  "in_elems_each": 59136,
+  "out_elems_each": 59136,
+  "where": [
+   "encoder.layers.0.self_attn",
+   "encoder.layers.1.self_attn",
+   "encoder.layers.2.self_attn"
+  ],
+  "status": "不搬",
+  "note": "排布：整步程序里按目标排布直接写，不单独搬"
+ },
+ {
+  "op": "contiguous",
+  "in_shapes": [
+   [
+    1,
+    77,
+    768
+   ]
+  ],
+  "out_shapes": [
+   [
+    1,
+    77,
+    768
+   ]
+  ],
+  "key": {},
+  "count": 12,
+  "flops_each": 0,
+  "in_elems_each": 59136,
+  "out_elems_each": 59136,
+  "where": [
+   "encoder.layers.0.self_attn",
+   "encoder.layers.1.self_attn",
+   "encoder.layers.2.self_attn"
+  ],
+  "status": "不搬",
+  "note": "排布：整步程序里按目标排布直接写，不单独搬"
+ },
+ {
+  "op": "linear",
+  "in_shapes": [
+   [
+    1,
+    77,
+    768
+   ],
+   [
+    3072,
+    768
+   ],
+   [
+    3072
+   ]
+  ],
+  "out_shapes": [
+   [
+    1,
+    77,
+    3072
+   ]
+  ],
+  "key": {
+   "bias": true
+  },
+  "count": 12,
+  "flops_each": 363331584,
+  "in_elems_each": 2421504,
+  "out_elems_each": 236544,
+  "where": [
+   "encoder.layers.0.mlp.fc1",
+   "encoder.layers.1.mlp.fc1",
+   "encoder.layers.2.mlp.fc1"
+  ],
+  "status": "现成",
+  "note": "linear!(rows = T, w = hf, bias…)"
+ },
+ {
+  "op": "mul",
+  "in_shapes": [
+   [
+    1,
+    77,
+    3072
+   ]
+  ],
+  "out_shapes": [
+   [
+    1,
+    77,
+    3072
+   ]
+  ],
+  "key": {},
+  "count": 12,
+  "flops_each": 0,
+  "in_elems_each": 236544,
+  "out_elems_each": 236544,
+  "where": [
+   "encoder.layers.0.mlp.activation_fn",
+   "encoder.layers.1.mlp.activation_fn",
+   "encoder.layers.2.mlp.activation_fn"
+  ],
+  "status": "现成",
+  "note": "binary!（或并进卷积的残差 / bias）"
+ },
+ {
+  "op": "sigmoid",
+  "in_shapes": [
+   [
+    1,
+    77,
+    3072
+   ]
+  ],
+  "out_shapes": [
+   [
+    1,
+    77,
+    3072
+   ]
+  ],
+  "key": {},
+  "count": 12,
+  "flops_each": 0,
+  "in_elems_each": 236544,
+  "out_elems_each": 236544,
+  "where": [
+   "encoder.layers.0.mlp.activation_fn",
+   "encoder.layers.1.mlp.activation_fn",
+   "encoder.layers.2.mlp.activation_fn"
+  ],
+  "status": "改参数",
+  "note": "CLIP 的 quick_gelu = x · σ(1.702x)：新写一个 unary，或 binary!(mul_sigmoid) 前接一次缩放"
+ },
+ {
+  "op": "mul",
+  "in_shapes": [
+   [
+    1,
+    77,
+    3072
+   ],
+   [
+    1,
+    77,
+    3072
+   ]
+  ],
+  "out_shapes": [
+   [
+    1,
+    77,
+    3072
+   ]
+  ],
+  "key": {},
+  "count": 12,
+  "flops_each": 0,
+  "in_elems_each": 473088,
+  "out_elems_each": 236544,
+  "where": [
+   "encoder.layers.0.mlp.activation_fn",
+   "encoder.layers.1.mlp.activation_fn",
+   "encoder.layers.2.mlp.activation_fn"
+  ],
+  "status": "现成",
+  "note": "binary!（或并进卷积的残差 / bias）"
+ },
+ {
+  "op": "linear",
+  "in_shapes": [
+   [
+    1,
+    77,
+    3072
+   ],
+   [
+    768,
+    3072
+   ],
+   [
+    768
+   ]
+  ],
+  "out_shapes": [
+   [
+    1,
+    77,
+    768
+   ]
+  ],
+  "key": {
+   "bias": true
+  },
+  "count": 12,
+  "flops_each": 363331584,
+  "in_elems_each": 2596608,
+  "out_elems_each": 59136,
+  "where": [
+   "encoder.layers.0.mlp.fc2",
+   "encoder.layers.1.mlp.fc2",
+   "encoder.layers.2.mlp.fc2"
+  ],
+  "status": "现成",
+  "note": "linear!(rows = T, w = hf, bias…)"
+ },
+ {
+  "op": "arange",
+  "in_shapes": [],
+  "out_shapes": [
+   [
+    1
+   ]
+  ],
+  "key": {},
+  "count": 1,
+  "flops_each": 0,
+  "in_elems_each": 0,
+  "out_elems_each": 1,
+  "where": [
+   "(top)"
+  ],
+  "status": "不搬",
+  "note": "位置号 0..76 是常量：打包时写进参数块，embedding! 按它取行"
+ },
+ {
+  "op": "argmax",
+  "in_shapes": [
+   [
+    1,
+    77
+   ]
+  ],
+  "out_shapes": [
+   [
+    1
+   ]
+  ],
+  "key": {},
+  "count": 1,
+  "flops_each": 0,
+  "in_elems_each": 77,
+  "out_elems_each": 1,
+  "where": [
+   "(top)"
+  ],
+  "status": "不搬",
+  "note": "CLIP 池化输出取 EOS 位置用的；SD1.5 只用 last_hidden_state，整步程序里不算"
+ }
+]

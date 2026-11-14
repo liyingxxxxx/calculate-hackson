@@ -1,0 +1,5 @@
+# 赛方 cargo 源（Gitea 包仓库，匿名可读；config.json 里 auth-required = false）。
+# 本工程只在隔离的 CARGO_HOME 下构建（source $CALCULET_HOME/env.sh）：平时的 ~/.cargo 里若配着别的同名源或凭据，不会进作用域；
+# tools/check_env.sh 守着这一条，并核 Cargo.lock 里只有赛方源与 crates.io。
+[registries.calculet]
+index = "sparse+http://115.159.82.89/git/api/packages/calculet/cargo/"

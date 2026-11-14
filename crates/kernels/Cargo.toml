@@ -1,0 +1,12 @@
+[package]
+name = "sd-kernels"
+version = "0.1.0"
+edition = "2024"
+publish = false
+description = "本仓的 kernel 模板：calblas 没有的（带 ReLU 的卷积、tanh 软夹……），宏的写法同 calblas，特化放在各整步程序 crate 里"
+
+[lib]
+crate-type = ["rlib"]
+
+[dependencies]
+calblas.workspace = true

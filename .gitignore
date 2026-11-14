@@ -1,0 +1,7 @@
+/target/
+# 打包出来的参数块、calbin、板上读回的输出：都是构建产物，按 README 的命令重出
+*.bin
+/out/
+# CPU 参照环境与下载的权重放仓外（$CALCULET_HOME/venv、$CALCULET_HOME/../models）
+/.venv/
+__pycache__/

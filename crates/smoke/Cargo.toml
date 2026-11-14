@@ -1,0 +1,13 @@
+[package]
+name = "smoke"
+version = "0.1.0"
+edition = "2024"
+publish = false
+description = "冒烟：经赛方 cargo 源依赖 calblas，编出一个整步程序、交 docc 出 calbin（不上板）"
+
+[lib]
+crate-type = ["rlib"]
+
+[dependencies]
+npu.workspace = true
+calblas.workspace = true

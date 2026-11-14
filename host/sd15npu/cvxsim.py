@@ -1,0 +1,391 @@
+"""整步程序的 numpy 模拟：读设备遍编出来的 `.cvx`，照入口函数（`@step`）的调用序列，逐个 kernel 在 numpy 里重放。
+
+为什么读 `.cvx` 而不是另写一张作业表：要查的正是 Rust 入口里的接线（偏移、屏障、哪颗核调），作业表另写一份就查不到它了。
+这里拿到的是编译器真正传给每个 kernel 的地址。
+
+它查什么（任何一条不过就抛 `SimError`，不打个警告就算）：
+- 指针参数 64 B 对齐（docc 的规矩）；读写不越出声明；
+- `cores = 2` 的 kernel 两核都调；按 `num_cores()` 分行的单核 kernel 也要两核都调（只让一颗核调时可能只算一半的行，见 step.rs 的文档）；
+- 不原地：一个作业的输出区不和它的输入区重叠；
+- 屏障：一个作业读（或写）了前一个作业写的区，中间要有 `barrier.core.sync`（除非两个作业都只在同一颗核上）；
+- 读没写过的内存：workspace / output 开头填 bf16 的 NaN（0xFFC1），漏清零的边框会把 NaN 带进结果。
+
+它不查什么：kernel 自己内部算得对不对（kernel 的语义照模板的文档写在下面，算在 f32、每个 kernel 出口舍 bf16）；
+exp / rsqrt / tanh 在板上是近似指令，这里用精确值 ⇒ 不是板子的逐位参照（calBLAS AGENTS.md：模拟器不是金标准）。
+
+kernel 的语义按「模板 + 宏参数」认：从程序 crate 的 `kernels.rs` 里用正则读 `模板!(pub 名字: 键 = 值, …)`，
+值里的常量（LAT、C……）取自 layout-dump 的 `consts`。认得的模板：conv2d、upsample2、tanh_scale、timestep_embed、fill16k。
+"""
+from __future__ import annotations
+
+import re
+import time
+from dataclasses import dataclass, field
+from pathlib import Path
+
+import numpy as np
+
+from . import bf16
+
+B = 2  # 边框宽，同 calblas kernels::BORDER
+POISON = 0xFFC1  # bf16 的一个 NaN：没写过的内存
+
+
+class SimError(Exception):
+    pass
+
+
+# ───────────────────────── 解析 .cvx ─────────────────────────
+
+
+@dataclass
+class Func:
+    name: str
+    params: list  # [(寄存器, 类型)]
+    kernel: bool = False
+    cores: int = 1
+    reads_num_cores: bool = False
+    body: list = field(default_factory=list)
+
+
+@dataclass
+class Program:
+    decls: dict  # 名字 ⇒ (类别, 字节)
+    funcs: dict  # 名字 ⇒ Func
+    entry: str
+    chiplets: int
+    cores: int
+
+
+def parse_cvx(text: str) -> Program:
+    decls, funcs = {}, {}
+    entry = re.search(r"entry = @(\w+)", text).group(1)
+    chiplets = int(re.search(r"chiplets = (\d+)", text).group(1))
+    cores = int(re.search(r"invocation\{[^}]*cores = (\d+)", text).group(1))
+    cur = None
+    for line in text.splitlines():
+        s = line.strip()
+        if m := re.match(r"mem\.decl\s+(\w+), (\w+), (\d+)", s):
+            decls[m.group(1)] = (m.group(2), int(m.group(3)))
+        elif m := re.match(r"\.func (\w+)\((.*)\)$", s):
+            params = [tuple(p.split(": ", 1)) for p in m.group(2).split(", ")] if m.group(2) else []
+            cur = funcs[m.group(1)] = Func(m.group(1), params)
+        elif cur is None:
+            continue
+        elif s == ".endfunc":
+            cur = None
+        elif s == ".attr npu.kernel = unit":
+            cur.kernel = True
+        elif m := re.match(r"\.attr npu\.cores = (\d+)", s):
+            cur.cores = int(m.group(1))
+        elif s.startswith(".reg") or s.startswith(".attr"):
+            continue
+        else:
+            if re.search(r"sys\.query\s+\w+ = num_cores", s):
+                cur.reads_num_cores = True
+            cur.body.append(s)
+    return Program(decls, funcs, entry, chiplets, cores)
+
+
+def _tree(lines: list, i: int = 0):
+    """入口函数体 ⇒ 语句树：`if rX` 后跟 then 区（到 `.end`）与 else 区（到下一个 `.end`）。"""
+    out = []
+    while i < len(lines):
+        s = lines[i]
+        if s == ".end":
+            return out, i + 1
+        if m := re.match(r"if\s+(\w+)$", s):
+            then, i = _tree(lines, i + 1)
+            other, i = _tree(lines, i)
+            out.append(("if", m.group(1), then, other))
+            continue
+        if re.match(r"if\s+\w+ = ", s) or s.startswith("for "):
+            raise SimError(f"入口里有带结果的 if 或循环（模拟器只认直线代码 + core_rank 分支）：{s}")
+        out.append(("op", s))
+        i += 1
+    return out, i
+
+
+# ───────────────────────── kernel 的宏参数 ─────────────────────────
+
+
+def parse_specs(kernels_rs: str, consts: dict) -> dict:
+    """`模板!(pub 名字: 键 = 值, …);` ⇒ {名字: (模板, {键: 值})}。值按 Python 表达式算（常量取 consts，`/` 当整除，去掉 f32 后缀）。"""
+    specs = {}
+    ns = dict(consts)
+    for m in re.finditer(r"(?:\w+::)?(\w+)!\(\s*pub (\w+): (.*?)\);", kernels_rs, re.S):
+        kind, name, body = m.groups()
+        kv = {}
+        for k, v in re.findall(r"(\w+) = (\([^)]*\)|[^,]+)", body):
+            v = v.strip()
+            if k in ("act", "weights"):
+                kv[k] = v
+                continue
+            v = re.sub(r"(\d)f32\b", r"\1", v).replace(" / ", " // ")
+            kv[k] = eval(v, {"__builtins__": {}}, ns)  # noqa: S307（本仓自己的源码，不是外部输入）
+        specs[name] = (kind, kv)
+    return specs
+
+
+# ───────────────────────── 模拟 ─────────────────────────
+
+
+@dataclass
+class Ptr:
+    decl: str
+    off: int
+
+    def __add__(self, n: int):
+        return Ptr(self.decl, self.off + n)
+
+
+class _Core:
+    """`sys.query core_rank` 的值：各核不同，只拿来和常数比。"""
+
+
+@dataclass
+class _Pred:
+    k: int
+    eq: bool
+
+
+@dataclass
+class Job:
+    idx: int
+    kernel: str
+    kind: str
+    cores: frozenset
+    reads: list  # [(decl, 起, 止)]
+    writes: list
+    seconds: float = 0.0
+
+
+class Sim:
+    def __init__(self, cvx_text: str, kernels_rs: str, consts: dict, inputs: dict, verbose: bool = False):
+        self.prog = parse_cvx(cvx_text)
+        if self.prog.chiplets != 1:
+            raise SimError(f"模拟器只认单芯粒程序（这份是 {self.prog.chiplets} 芯粒）")
+        self.specs = parse_specs(kernels_rs, consts)
+        self.verbose = verbose
+        self.mem = {}
+        for name, (kind, n) in self.prog.decls.items():
+            if kind in ("input", "weights"):
+                data = inputs.get(name)
+                if data is None:
+                    raise SimError(f"没给 {kind} 声明 @{name} 的内容")
+                if len(data) != n:
+                    raise SimError(f"@{name} 是 {n} 字节，给的是 {len(data)} 字节")
+                self.mem[name] = np.frombuffer(bytes(data), np.uint8).copy()
+            else:  # workspace / output：填 NaN，读了没写过的地方就看得出来
+                self.mem[name] = np.frombuffer(np.full(n // 2, POISON, "<u2").tobytes() + b"\xff" * (n % 2), np.uint8).copy()
+        self.jobs: list[Job] = []
+        self.pending: list[tuple] = []  # 上一条屏障之后写过的区：(decl, 起, 止, 作业)
+        self.barriers = 0
+
+    # ── 地址与区间 ──
+    def _check(self, kernel: str, what: str, p: Ptr, n: int):
+        size = self.prog.decls[p.decl][1]
+        if p.off % 64:
+            raise SimError(f"{kernel}：{what} 的指针 @{p.decl}+{p.off} 不在 64 B 上")
+        if p.off < 0 or p.off + n > size:
+            raise SimError(f"{kernel}：{what} [{p.off}, {p.off + n}) 越出 @{p.decl}（{size} 字节）")
+        return (p.decl, p.off, p.off + n)
+
+    def _u16(self, p: Ptr, n_elems: int):
+        return self.mem[p.decl][p.off:p.off + 2 * n_elems].view("<u2")
+
+    def _f32(self, p: Ptr, n: int):
+        return self.mem[p.decl][p.off:p.off + 4 * n].view("<f4")
+
+    def _img(self, p: Ptr, h: int, w: int, ch: int):
+        """[h + 4][w + 4][ch] 的 bf16 图（uint16 视图，读写都走它）。"""
+        return self._u16(p, (h + 2 * B) * (w + 2 * B) * ch).reshape(h + 2 * B, w + 2 * B, ch)
+
+    # ── 执行 ──
+    def run(self):
+        f = self.prog.funcs[self.prog.entry]
+        tree, _ = _tree(f.body)
+        regs: dict = {}
+        self._exec(tree, regs, frozenset(range(self.prog.cores)))
+        return self
+
+    def _exec(self, tree, regs, active):
+        for node in tree:
+            if node[0] == "if":
+                cond = regs[node[1]]
+                if isinstance(cond, _Pred):
+                    hit = frozenset(c for c in active if (c == cond.k) == cond.eq)
+                    if hit:
+                        self._exec(node[2], dict(regs), hit)
+                    if active - hit:
+                        self._exec(node[3], dict(regs), active - hit)
+                elif isinstance(cond, bool):
+                    self._exec(node[2] if cond else node[3], dict(regs), active)
+                else:
+                    raise SimError(f"if 的条件不是 core_rank 的比较：{node[1]} = {cond!r}")
+                continue
+            self._op(node[1], regs, active)
+
+    def _op(self, s, regs, active):
+        if m := re.match(r"mem\.addr\s+(\w+) = @(\w+)$", s):
+            regs[m.group(1)] = Ptr(m.group(2), 0)
+        elif m := re.match(r"s\.constant\s+(\w+) = (-?[\d.]+)(?::(\w+))?$", s):
+            v = m.group(2)
+            regs[m.group(1)] = float(v) if "." in v else int(v)
+        elif m := re.match(r"s\.ptradd\s+(\w+) = (\w+), (\w+)$", s):
+            regs[m.group(1)] = regs[m.group(2)] + regs[m.group(3)]
+        elif m := re.match(r"sys\.query\s+(\w+) = (\w+)$", s):
+            regs[m.group(1)] = _Core() if m.group(2) == "core_rank" else self.prog.cores if m.group(2) == "num_cores" else None
+        elif m := re.match(r"s\.cmp\s+(\w+) = (\w+), (\w+), (eq|ne)$", s):
+            a, b = regs[m.group(2)], regs[m.group(3)]
+            if isinstance(a, _Core) and isinstance(b, int):
+                regs[m.group(1)] = _Pred(b, m.group(4) == "eq")
+            elif isinstance(a, int) and isinstance(b, int):
+                regs[m.group(1)] = (a == b) == (m.group(4) == "eq")
+            else:
+                raise SimError(f"认不得的比较：{s}")
+        elif m := re.match(r"s\.(add|sub|mul|div)\s+(\w+) = (\w+), (\w+)$", s):
+            a, b = regs[m.group(3)], regs[m.group(4)]
+            if not (isinstance(a, int) and isinstance(b, int)):
+                raise SimError(f"入口里的标量运算碰到了非常量：{s}")
+            regs[m.group(2)] = {"add": a + b, "sub": a - b, "mul": a * b, "div": a // b if b else 0}[m.group(1)]
+        elif m := re.match(r"call\s+(.*), @(\w+)$", s):
+            self._call(m.group(2), [regs[r.strip()] for r in m.group(1).split(",")], active)
+        elif s == "barrier.core.sync":
+            if active != frozenset(range(self.prog.cores)):
+                raise SimError(f"barrier.core.sync 只在核 {sorted(active)} 上执行：另一颗核不到场就挂死")
+            self.pending.clear()
+            self.barriers += 1
+        elif s in ("yield", "return"):
+            pass
+        else:
+            raise SimError(f"入口里有模拟器不认的指令：{s}")
+
+    def _call(self, name, args, active):
+        f = self.prog.funcs.get(name)
+        if f is None or not f.kernel:
+            raise SimError(f"调了不是 kernel 的 @{name}")
+        if name not in self.specs:
+            raise SimError(f"kernel @{name} 在 kernels.rs 里找不到宏参数（模拟器认不出它算什么）")
+        kind, c = self.specs[name]
+        all_cores = frozenset(range(self.prog.cores))
+        if f.cores > 1 and active != all_cores:
+            raise SimError(f"@{name} 是 cores = {f.cores} 的 kernel，只在核 {sorted(active)} 上调了")
+        if f.cores == 1 and f.reads_num_cores and active != all_cores:
+            raise SimError(f"@{name} 按 num_cores() 分行，却只在核 {sorted(active)} 上调：num_cores() 是 2 时只算了一半的行（两核都调才稳）")
+        job = Job(len(self.jobs), name, kind, active, [], [])
+        t = time.time()
+        getattr(self, f"_k_{kind}")(job, c, args)
+        job.seconds = time.time() - t
+        # 原地
+        for d, a0, a1 in job.writes:
+            for e, b0, b1 in job.reads:
+                if d == e and a0 < b1 and b0 < a1:
+                    raise SimError(f"作业 {job.idx} @{name}：输出 @{d}[{a0}, {a1}) 和输入 [{b0}, {b1}) 重叠（不能原地）")
+        # 屏障：上一条屏障之后别的作业写过的区，这里再读 / 写
+        for d, a0, a1, prev in self.pending:
+            same_core = len(prev.cores) == 1 and prev.cores == active
+            if same_core:
+                continue
+            for e, b0, b1 in job.reads + job.writes:
+                if d == e and a0 < b1 and b0 < a1:
+                    raise SimError(f"作业 {job.idx} @{name} 碰了作业 {prev.idx} @{prev.kernel} 刚写的 @{d}[{max(a0, b0)}, {min(a1, b1)})，中间少一条 sync_cores()")
+        self.pending += [(d, a0, a1, job) for d, a0, a1 in job.writes]
+        self.jobs.append(job)
+        if self.verbose:
+            print(f"  [{job.idx:3d}] {name:<16} 核{sorted(active)} {job.seconds:6.2f} s")
+
+    # ── kernel 的语义（照模板文档：f32 里算、出口舍 bf16）──
+    def _k_conv2d(self, job, c, args):
+        h, w, ci, co, k, s = c["h"], c["w"], c["cin"], c["cout"], c["k"], c["s"]
+        (pi, xo), (po, yo) = c["pin"], c["pout"]
+        act = c["act"]
+        res = c.get("res")
+        if c.get("weights"):
+            raise SimError("模拟器没写 weights = ci_major")
+        x, wp, bp = args[0], args[1], args[2]
+        y = args[-1]
+        hi, wi = h * s, w * s
+        job.reads.append(self._check(job.kernel, "x", x, (hi + 2 * B) * (wi + 2 * B) * pi * 2))
+        job.reads.append(self._check(job.kernel, "w", wp, k * k * ci * co * 2))
+        job.reads.append(self._check(job.kernel, "b", bp, co * 4))
+        wo = w + 2 * B
+        y0 = ((B * wo + B) * po + yo) * 2
+        y1 = (((B + h - 1) * wo + B + w - 1) * po + yo + co) * 2
+        yr = self._check(job.kernel, "y", y, (h + 2 * B) * wo * po * 2)
+        job.writes.append((yr[0], yr[1] + y0, yr[1] + y1))
+        xin = bf16.from_bits(self._img(x, hi, wi, pi)[:, :, xo:xo + ci])
+        wt = bf16.from_bits(self._u16(wp, k * k * ci * co)).reshape(k, k, ci, co)
+        bias = self._f32(bp, co).copy()
+        acc = np.zeros((h, w, co), np.float32)
+        off = B - k // 2
+        for ky in range(k):
+            for kx in range(k):
+                patch = np.ascontiguousarray(xin[off + ky:off + ky + hi:s, off + kx:off + kx + wi:s])
+                acc += (patch.reshape(-1, ci) @ wt[ky, kx]).reshape(h, w, co)
+        out = bf16.rnd(acc + bias)
+        if act == "silu":
+            out = bf16.rnd(out / (1 + np.exp(-out)))
+        elif act == "relu":
+            out = np.maximum(out, 0)
+        elif act not in ("none", "res_relu"):
+            raise SimError(f"conv2d：认不得 act = {act}")
+        if res is not None:
+            pr, ro = res
+            rp = args[3]
+            job.reads.append(self._check(job.kernel, "r", rp, (h + 2 * B) * wo * pr * 2))
+            out = bf16.rnd(out + bf16.from_bits(self._img(rp, h, w, pr)[B:B + h, B:B + w, ro:ro + co]))
+        if act == "res_relu":
+            out = np.maximum(out, 0)
+        self._img(y, h, w, po)[B:B + h, B:B + w, yo:yo + co] = bf16.bits(out)
+
+    def _k_upsample2(self, job, c, args):
+        h, w, ch, pi, po = c["h"], c["w"], c["c"], c["pin"], c["pout"]
+        x, y = args
+        job.reads.append(self._check(job.kernel, "x", x, (h + 2 * B) * (w + 2 * B) * pi * 2))
+        wo = 2 * w + 2 * B
+        yr = self._check(job.kernel, "y", y, (2 * h + 2 * B) * wo * po * 2)
+        job.writes.append((yr[0], yr[1] + (B * wo + B) * po * 2, yr[1] + (((B + 2 * h - 1) * wo + B + 2 * w - 1) * po + ch) * 2))
+        v = self._img(x, h, w, pi)[B:B + h, B:B + w, :ch]
+        self._img(y, 2 * h, 2 * w, po)[B:B + 2 * h, B:B + 2 * w, :ch] = v.repeat(2, 0).repeat(2, 1)
+
+    def _k_tanh_scale(self, job, c, args):
+        n, sc = c["n"], np.float32(c["scale"])
+        x, y = args
+        job.reads.append(self._check(job.kernel, "x", x, n * 2))
+        job.writes.append(self._check(job.kernel, "y", y, n * 2))
+        f = bf16.from_bits(self._u16(x, n))
+        out = np.tanh(f * (np.float32(1) / sc)) * sc
+        self._u16(y, n)[:] = bf16.bits(out.astype(np.float32))
+
+    def _k_timestep_embed(self, job, c, args):
+        half = c["half"]
+        n = -(-2 * half // 128) * 128
+        t, fp, y = args
+        job.reads.append(self._check(job.kernel, "t", t, 32))
+        job.reads.append(self._check(job.kernel, "fp", fp, 2 * n * 4))
+        job.writes.append(self._check(job.kernel, "y", y, n * 2))
+        tv = np.float32(self._f32(t, 8).max())  # 行内取最大（8 份同一个 t）
+        F, P = self._f32(fp, n), self._f32(fp + n * 4, n)
+        a = (tv * F).astype(np.float32) + P  # f32 乘、加（同 kernel）；规约与 cos 用精确值（板上是近似指令）
+        self._u16(y, n)[:] = bf16.bits(np.cos(a.astype(np.float64)).astype(np.float32))
+
+    def _k_fill16k(self, job, c, args):
+        p, n = args
+        if not isinstance(n, int):
+            raise SimError(f"{job.kernel}：块数不是常量")
+        job.writes.append(self._check(job.kernel, "p", p, n * 16384))
+        self._u16(p, n * 8192)[:] = bf16.bits(np.float32(c["value"]))
+
+    def report(self) -> str:
+        by = {}
+        for j in self.jobs:
+            a = by.setdefault(j.kind, [0, 0.0])
+            a[0] += 1
+            a[1] += j.seconds
+        parts = "、".join(f"{k} {n} 次" for k, (n, _) in by.items())
+        return f"{len(self.jobs)} 个作业（{parts}），{self.barriers} 条屏障；接线检查全过；numpy 用时 {sum(j.seconds for j in self.jobs):.1f} s"
+
+
+def simulate(cvx: Path, kernels_rs: Path, consts: dict, inputs: dict, verbose: bool = False) -> Sim:
+    return Sim(Path(cvx).read_text(), Path(kernels_rs).read_text(), consts, inputs, verbose).run()

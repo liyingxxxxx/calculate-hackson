@@ -1,0 +1,10 @@
+[package]
+name = "layout-dump"
+version = "0.1.0"
+edition = "2024"
+publish = false
+description = "主机程序：把各整步程序的 layout.rs（偏移表）打成 JSON，给 Python 的打包、模拟、比对用（偏移表只有 Rust 这一份）"
+
+[[bin]]
+name = "layout-dump"
+path = "src/main.rs"

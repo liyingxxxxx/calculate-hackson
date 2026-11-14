@@ -1,0 +1,34 @@
+{
+ "latent": "image",
+ "measured": "真机实测",
+ "runs": 3,
+ "deploy_only_wall_s": 0.003,
+ "run_wall_s": [
+  0.111,
+  0.112,
+  0.112
+ ],
+ "inference_est_s": 0.108,
+ "inference_note": "整次（部署 + 推理 + 读回）的中位数减「只部署」，是估算",
+ "deterministic": true,
+ "board_vs_ref_bf16": {
+  "max_abs": 0.015625,
+  "rms": 0.0010429440351066718,
+  "cos": 0.9999986501455,
+  "psnr_db": 60.26693796334811,
+  "finite": true
+ },
+ "board_vs_ref_fp32": {
+  "max_abs": 0.03908008337020874,
+  "rms": 0.001688168574833724,
+  "cos": 0.9999967090033504,
+  "psnr_db": 55.944891520546804,
+  "finite": true
+ },
+ "tolerance": {
+  "cos_bf16": 0.9999,
+  "psnr_bf16_db": 40.0,
+  "psnr_fp32_db": 35.0
+ },
+ "ok": true
+}

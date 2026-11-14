@@ -1,0 +1,3 @@
+# 赛方的 calculet 工具链：rustc 1.98.1 + 设备 target dopamine-unknown-none-elf / -cvx（装法见 README「环境」）
+[toolchain]
+channel = "calculet"

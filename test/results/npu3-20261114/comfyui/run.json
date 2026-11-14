@@ -1,0 +1,37 @@
+{
+ "workflow": "/home/sweet/hachson/sd15-npu/comfy/workflows/sd15_taesd_npu.api.json",
+ "steps": 20,
+ "backend": "npu",
+ "server_start_s": 4.0,
+ "run_s": 50.1,
+ "status": "success",
+ "completed": true,
+ "messages": [
+  [
+   "execution_start",
+   {
+    "prompt_id": "9d4dd63e-31b1-4294-9312-64c5f53d6917",
+    "timestamp": 1794642062308
+   }
+  ],
+  [
+   "execution_cached",
+   {
+    "nodes": [],
+    "prompt_id": "9d4dd63e-31b1-4294-9312-64c5f53d6917",
+    "timestamp": 1794642062310
+   }
+  ],
+  [
+   "execution_success",
+   {
+    "prompt_id": "9d4dd63e-31b1-4294-9312-64c5f53d6917",
+    "timestamp": 1794642111627
+   }
+  ]
+ ],
+ "images": [
+  "/home/sweet/hachson/ComfyUI/output/sd15npu_vae_ref_00002_.png",
+  "/home/sweet/hachson/ComfyUI/output/sd15npu_taesd_00002_.png"
+ ]
+}

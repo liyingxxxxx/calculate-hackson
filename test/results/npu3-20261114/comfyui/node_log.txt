@@ -1,0 +1,2 @@
+[INFO] [sd15-npu] TAESD 解码 第 1/1 张：backend=npu，0.12 s，dort 墙钟 0.113 s
+[INFO] Prompt executed in 49.32 seconds

@@ -1,0 +1,14 @@
+[package]
+name = "taesd"
+version = "0.1.0"
+edition = "2024"
+publish = false
+description = "TAESD 解码器（512²）的整步程序：latent ⇒ 图，一次 dort 调用（B1：先用 TAESD 打通「NPU 解码 ⇒ ComfyUI 出图」）"
+
+[lib]
+crate-type = ["rlib"]
+
+[dependencies]
+npu.workspace = true
+calblas.workspace = true
+sd-kernels = { path = "../kernels" }

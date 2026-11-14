@@ -1,0 +1,9 @@
+[workspace]
+resolver = "3"
+members = ["crates/*"]
+
+# 三个基础库一律经赛方 cargo 源依赖（不放源码进本仓：SDK 能不能进公开仓库要等赛方说法）。
+[workspace.dependencies]
+npu = { version = "0.1.0", registry = "calculet" }
+caldnn = { version = "0.1.0", registry = "calculet" }
+calblas = { version = "0.1.0", registry = "calculet" }

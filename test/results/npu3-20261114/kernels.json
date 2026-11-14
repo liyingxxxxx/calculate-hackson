@@ -1,0 +1,301 @@
+{
+ "conv_in/big": {
+  "measured": "真机实测",
+  "ok": true,
+  "blocking": true,
+  "bit_exact_pct": 99.99351501464844,
+  "max_abs_in_top_ulp": 0.0625,
+  "ulp_max": 1,
+  "cos": 0.999999999978862,
+  "max_abs": 0.0625,
+  "dort_wall_s": 0.0022470951080322266,
+  "tolerance": {
+   "cos": 0.9999,
+   "top_ulp": 8.0
+  }
+ },
+ "conv_in/neg": {
+  "measured": "真机实测",
+  "ok": true,
+  "blocking": true,
+  "bit_exact_pct": 100.0,
+  "max_abs_in_top_ulp": 0.0,
+  "ulp_max": 0,
+  "cos": 1.0,
+  "max_abs": 0.0,
+  "dort_wall_s": 0.0023500919342041016,
+  "tolerance": {
+   "cos": 0.9999,
+   "top_ulp": 8.0
+  }
+ },
+ "conv_in/random": {
+  "measured": "真机实测",
+  "ok": true,
+  "blocking": true,
+  "bit_exact_pct": 99.993896484375,
+  "max_abs_in_top_ulp": 0.015625,
+  "ulp_max": 1,
+  "cos": 0.9999999999984759,
+  "max_abs": 0.00048828125,
+  "dort_wall_s": 0.0024611949920654297,
+  "tolerance": {
+   "cos": 0.9999,
+   "top_ulp": 8.0
+  }
+ },
+ "conv_in/zeros": {
+  "measured": "真机实测",
+  "ok": true,
+  "blocking": true,
+  "bit_exact_pct": 100.0,
+  "max_abs_in_top_ulp": 0.0,
+  "ulp_max": 0,
+  "cos": 0.9999999999999999,
+  "max_abs": 0.0,
+  "dort_wall_s": 0.0022029876708984375,
+  "tolerance": {
+   "cos": 0.9999,
+   "top_ulp": 8.0
+  }
+ },
+ "conv_out/random": {
+  "measured": "真机实测",
+  "ok": true,
+  "blocking": true,
+  "bit_exact_pct": 99.98761415481567,
+  "max_abs_in_top_ulp": 0.5,
+  "ulp_max": 12960,
+  "cos": 0.9999999997500503,
+  "max_abs": 0.015625,
+  "dort_wall_s": 0.03543400764465332,
+  "tolerance": {
+   "cos": 0.9999,
+   "top_ulp": 8.0
+  }
+ },
+ "convr_512/random": {
+  "measured": "真机实测",
+  "ok": true,
+  "blocking": true,
+  "bit_exact_pct": 99.99906420707703,
+  "max_abs_in_top_ulp": 1.0,
+  "ulp_max": 64,
+  "cos": 0.9999999998041402,
+  "max_abs": 0.03125,
+  "dort_wall_s": 0.0699458122253418,
+  "tolerance": {
+   "cos": 0.9999,
+   "top_ulp": 8.0
+  }
+ },
+ "convr_64/big": {
+  "measured": "真机实测",
+  "ok": true,
+  "blocking": true,
+  "bit_exact_pct": 99.99923706054688,
+  "max_abs_in_top_ulp": 0.03125,
+  "ulp_max": 4,
+  "cos": 0.9999999999973872,
+  "max_abs": 0.03125,
+  "dort_wall_s": 0.003093242645263672,
+  "tolerance": {
+   "cos": 0.9999,
+   "top_ulp": 8.0
+  }
+ },
+ "convr_64/neg": {
+  "measured": "真机实测",
+  "ok": true,
+  "blocking": true,
+  "bit_exact_pct": 100.0,
+  "max_abs_in_top_ulp": 0.0,
+  "ulp_max": 0,
+  "cos": 1.0,
+  "max_abs": 0.0,
+  "dort_wall_s": 0.0031976699829101562,
+  "tolerance": {
+   "cos": 0.9999,
+   "top_ulp": 8.0
+  }
+ },
+ "convr_64/random": {
+  "measured": "真机实测",
+  "ok": true,
+  "blocking": true,
+  "bit_exact_pct": 99.99885559082031,
+  "max_abs_in_top_ulp": 0.5,
+  "ulp_max": 2,
+  "cos": 0.9999999994633827,
+  "max_abs": 0.015625,
+  "dort_wall_s": 0.002904653549194336,
+  "tolerance": {
+   "cos": 0.9999,
+   "top_ulp": 8.0
+  }
+ },
+ "convr_64/zeros": {
+  "measured": "真机实测",
+  "ok": true,
+  "blocking": true,
+  "bit_exact_pct": 100.0,
+  "max_abs_in_top_ulp": 0.0,
+  "ulp_max": 0,
+  "cos": 0.9999999999999998,
+  "max_abs": 0.0,
+  "dort_wall_s": 0.0027713775634765625,
+  "tolerance": {
+   "cos": 0.9999,
+   "top_ulp": 8.0
+  }
+ },
+ "tanh/big": {
+  "measured": "真机实测",
+  "ok": true,
+  "blocking": true,
+  "bit_exact_pct": 100.0,
+  "max_abs_in_top_ulp": 0.0,
+  "ulp_max": 0,
+  "cos": 1.0,
+  "max_abs": 0.0,
+  "dort_wall_s": 0.001844167709350586,
+  "tolerance": {
+   "cos": 0.999,
+   "top_ulp": 4.0
+  }
+ },
+ "tanh/random": {
+  "measured": "真机实测",
+  "ok": true,
+  "blocking": true,
+  "bit_exact_pct": 99.99864835640139,
+  "max_abs_in_top_ulp": 1.52587890625e-05,
+  "ulp_max": 2,
+  "cos": 0.9999999999999998,
+  "max_abs": 2.384185791015625e-07,
+  "dort_wall_s": 0.002062082290649414,
+  "tolerance": {
+   "cos": 0.999,
+   "top_ulp": 4.0
+  }
+ },
+ "tanh/tiny": {
+  "measured": "真机实测",
+  "ok": false,
+  "blocking": false,
+  "bit_exact_pct": 0.0,
+  "max_abs_in_top_ulp": 185.0,
+  "ulp_max": 36537,
+  "cos": 0.0,
+  "max_abs": 4.5606021083089745e-30,
+  "dort_wall_s": 0.002069234848022461,
+  "tolerance": {
+   "cos": 0.999,
+   "top_ulp": 4.0
+  }
+ },
+ "tanh/zeros": {
+  "measured": "真机实测",
+  "ok": true,
+  "blocking": true,
+  "bit_exact_pct": 100.0,
+  "max_abs_in_top_ulp": 0.0,
+  "ulp_max": 0,
+  "cos": 1.0,
+  "max_abs": 0.0,
+  "dort_wall_s": 0.0018477439880371094,
+  "tolerance": {
+   "cos": 0.999,
+   "top_ulp": 4.0
+  }
+ },
+ "temb/frac": {
+  "measured": "真机实测",
+  "ok": true,
+  "blocking": true,
+  "bit_exact_pct": 18.75,
+  "max_abs_in_top_ulp": 2.375,
+  "ulp_max": 48142,
+  "cos": 0.9999599032107614,
+  "max_abs": 0.0185546875,
+  "dort_wall_s": 0.0013854503631591797,
+  "tolerance": {
+   "cos": 0.999,
+   "top_ulp": 4.0
+  }
+ },
+ "temb/small": {
+  "measured": "真机实测",
+  "ok": true,
+  "blocking": true,
+  "bit_exact_pct": 36.25,
+  "max_abs_in_top_ulp": 2.125,
+  "ulp_max": 15426,
+  "cos": 0.9999819509427926,
+  "max_abs": 0.0166015625,
+  "dort_wall_s": 0.0013992786407470703,
+  "tolerance": {
+   "cos": 0.999,
+   "top_ulp": 4.0
+  }
+ },
+ "temb/t0": {
+  "measured": "真机实测",
+  "ok": true,
+  "blocking": true,
+  "bit_exact_pct": 100.0,
+  "max_abs_in_top_ulp": 0.0,
+  "ulp_max": 0,
+  "cos": 0.9999999999999998,
+  "max_abs": 0.0,
+  "dort_wall_s": 0.001348733901977539,
+  "tolerance": {
+   "cos": 0.999,
+   "top_ulp": 4.0
+  }
+ },
+ "temb/t1": {
+  "measured": "真机实测",
+  "ok": true,
+  "blocking": true,
+  "bit_exact_pct": 31.874999999999996,
+  "max_abs_in_top_ulp": 2.25,
+  "ulp_max": 15427,
+  "cos": 0.9999752936015102,
+  "max_abs": 0.017578125,
+  "dort_wall_s": 0.0014507770538330078,
+  "tolerance": {
+   "cos": 0.999,
+   "top_ulp": 4.0
+  }
+ },
+ "temb/t999": {
+  "measured": "真机实测",
+  "ok": true,
+  "blocking": true,
+  "bit_exact_pct": 18.75,
+  "max_abs_in_top_ulp": 2.5,
+  "ulp_max": 48081,
+  "cos": 0.9999585287838563,
+  "max_abs": 0.01953125,
+  "dort_wall_s": 0.001413106918334961,
+  "tolerance": {
+   "cos": 0.999,
+   "top_ulp": 4.0
+  }
+ },
+ "up_256/random": {
+  "measured": "真机实测",
+  "ok": true,
+  "blocking": true,
+  "bit_exact_pct": 100.0,
+  "max_abs_in_top_ulp": 0.0,
+  "ulp_max": 0,
+  "cos": 1.0,
+  "max_abs": 0.0,
+  "dort_wall_s": 0.026702404022216797,
+  "tolerance": {
+   "bit_exact": 100.0
+  }
+ }
+}

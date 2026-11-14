@@ -1,0 +1,24 @@
+[package]
+name = "ktest"
+version = "0.1.0"
+edition = "2024"
+publish = false
+description = "单 kernel 测试台：每个 feature 一个只调一个 kernel 的整步程序（输入、权重、输出各一个声明），上板逐个 kernel 验数（ref/ktest.py 出输入与期望）"
+
+[lib]
+crate-type = ["rlib"]
+
+# 一次只开一个（lib.rs 里有 compile_error! 守着）
+[features]
+conv_in = []
+convr_64 = []
+conv_out = []
+convr_512 = []
+tanh = []
+up_256 = []
+temb = []
+
+[dependencies]
+npu.workspace = true
+calblas.workspace = true
+sd-kernels = { path = "../kernels" }
