@@ -7,6 +7,7 @@ AGENTS.md 硬规矩 7：从别处复制的代码逐条记在这里。赛方说 c
 | --- | --- | --- | --- | --- |
 | `crates/kernels/src/conv.rs` 的 `conv2d!` | calblas 0.1.0（赛方 cargo 源）`src/kernels/vision.rs` 第 93–283 行；同 calBLAS 仓库 32d2bb8 | 文件 sha256 `218ca5a4295340451815e821ce737ca31fc6f328b4b28ddd3e7955ce41d41754` | 未声明（赛方允许复用模板） | ① `$crate::kernels::BORDER` / `Cols`、`$crate::halves!` / `rd!` / `logistic!` 改成经 `$crate::calblas::…`（宏搬到别的 crate 里要这么指回去）；② 尾处理的激活拆成 `@pre`（残差之前）/ `@post`（残差之后）两段，加 `act = relu`（bias 后 max(y, 0)）与 `act = res_relu`（残差之后 max(y, 0)）；silu / none 的行为不变。其余逐字不动 |
 
+| `crates/kernels/src/attn.rs` 的 `attn_wide!` | calblas 0.1.0 `src/kernels/attention.rs` 的 `attention!`（第 492–712 行：q / o 的 `[T·H, 16, D]` 视图、kᵀ 的列主序读、两核分作业、分数 / p / 行和 / 收尾的数值口径）；`src/kernels/vision.rs` 的 `spatial_attn!`（第 664–741 行：整行分数存在 VB 里、`rows()` 上的拷贝与 `load_v`）；同 calBLAS 仓库 32d2bb8 | attention.rs sha256 `85154942f94ae2d948dc8cf0de26554d3cc98b96f13477a0a015b3ebaece60f2`、vision.rs 同上 | 未声明（赛方允许复用模板） | 新组合的一个宏，不是逐字搬：① 头维按 128 一段切（q·kᵀ 在 TU 里沿段累加、p·v 按段各算一遍），为了 D = 512 时 rhs 放得进 GIB1（DESIGN F21 / D14）；② 只留自注意力、不带掩码、k 不转置这一条路；③ 分数只算一遍、整行存在 VB（attention! 是两遍各算一次） |
 
 只是**调用**、没有复制的（经 cargo 源依赖，不进本仓）：calblas 的 `upsample2!`、`fill16k!`、`halves!`、`rd!` / `wr!`、`Line` / `Rows`；npu 的原语。
 
@@ -18,4 +19,5 @@ AGENTS.md 硬规矩 7：从别处复制的代码逐条记在这里。赛方说 c
 | `crates/ktest` + `ref/ktest.py` | calBLAS `examples/yolo26/deploy/ktest.py` | 那份用脚本拼 MLIR 文本（calBLAS AGENTS.md 现在禁止）；本仓每个测试是一个 `npu::decls!` + `#[npu::program]` 的整步程序 |
 | `crates/layout-dump`（`#[path]` 引设备 crate 的 layout.rs） | calBLAS `examples/tiny/pack` | 同样的「设备与主机共用一份偏移表」做法 |
 | `ref/taesd_ref.py` 的模块结构 | diffusers 0.43.0 `DecoderTiny` / `AutoencoderTinyBlock`（Apache-2.0） | 只照它的结构逐层调 torch 的 `F.conv2d` 等，没有复制它的代码；fp32 那份直接调 diffusers 本身 |
+| `ref/vae_ref.py` 的模块结构 | diffusers 0.43.0 `AutoencoderKL` 的 `Decoder` / `ResnetBlock2D` / `Attention`（Apache-2.0） | 同上：照结构逐层调 torch 的 `F.conv2d`、`F.group_norm`、`F.linear`、`softmax`，没有复制它的代码；fp32 那份直接调 `vae.decode` |
 | `comfy/sd15_npu/nodes.py` 的缩放约定 | ComfyUI v0.45.3（GPL-3.0）`nodes.py` 的 `load_taesd`、`comfy/latent_formats.py` 的 `SD15` | 只核了常数 0.18215 与 [0, 1] 的口径，没有复制代码 |
