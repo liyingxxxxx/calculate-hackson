@@ -1,0 +1,460 @@
+<title>sd15-npu 阶段汇报</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;700&family=Space+Grotesk:wght@500;700&display=swap">
+<style>
+/* 版式：单栏技术报告（约 880px），结论在前；数据一律等宽数字；图按真实比例画。配色取芯片封装的冷灰与示波器青，CPU 对照用铜色。 */
+:root {
+  --bg: #f4f6f7;
+  --surface: #ffffff;
+  --ink: #15202b;
+  --muted: #586672;
+  --line: #d9e0e4;
+  --accent: #0d6c8c;
+  --accent-soft: #e2f0f4;
+  --cpu: #9a632a;
+  --good: #2d7a4c;
+  --warn: #a26a14;
+  --bad: #ad3e3a;
+  --s-attn: #0d6c8c;
+  --s-conv: #3b92b0;
+  --s-gemm: #7cb8cb;
+  --s-misc: #b9d7e0;
+  --s-deploy: #8e7c63;
+  --s-host: #cbc3b5;
+  --font-display: "Space Grotesk", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --font-body: "Inter", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --font-mono: "IBM Plex Mono", "Noto Sans SC", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --step--1: 0.8125rem;
+  --step-0: 0.9375rem;
+  --step-1: 1.125rem;
+  --step-2: 1.4rem;
+  --step-3: 2rem;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #0e151b;
+    --surface: #15202a;
+    --ink: #e2e9ee;
+    --muted: #92a0ab;
+    --line: #283642;
+    --accent: #52b4d3;
+    --accent-soft: #11303b;
+    --cpu: #d39b58;
+    --good: #5dbb86;
+    --warn: #d8a443;
+    --bad: #e2817a;
+    --s-attn: #52b4d3;
+    --s-conv: #2f8bad;
+    --s-gemm: #20698a;
+    --s-misc: #2d4a58;
+    --s-deploy: #9d8a6f;
+    --s-host: #5c554b;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0e151b;
+  --surface: #15202a;
+  --ink: #e2e9ee;
+  --muted: #92a0ab;
+  --line: #283642;
+  --accent: #52b4d3;
+  --accent-soft: #11303b;
+  --cpu: #d39b58;
+  --good: #5dbb86;
+  --warn: #d8a443;
+  --bad: #e2817a;
+  --s-attn: #52b4d3;
+  --s-conv: #2f8bad;
+  --s-gemm: #20698a;
+  --s-misc: #2d4a58;
+  --s-deploy: #9d8a6f;
+  --s-host: #5c554b;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: var(--step-0);
+  line-height: 1.7;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.page { max-width: 880px; margin: 0 auto; padding-block: 40px 64px; display: grid; gap: 44px; }
+h1, h2, h3 { font-family: var(--font-display); line-height: 1.3; text-wrap: balance; margin: 0; }
+h1 { font-size: var(--step-3); font-weight: 700; letter-spacing: -0.01em; }
+h2 { font-size: var(--step-2); font-weight: 700; }
+h3 { font-size: var(--step-1); font-weight: 700; }
+p { margin: 0; max-width: 68ch; }
+a { color: var(--accent); }
+a:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+code, .mono { font-family: var(--font-mono); font-size: 0.92em; }
+.num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.muted { color: var(--muted); }
+section { display: grid; gap: 16px; }
+.eyebrow { font-size: var(--step--1); letter-spacing: 0.08em; color: var(--muted); font-weight: 500; }
+
+/* 抬头 */
+header { display: grid; gap: 12px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
+.meta { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: var(--step--1); color: var(--muted); }
+.meta span { white-space: nowrap; }
+
+/* 结论 */
+.lead { font-size: var(--step-1); line-height: 1.75; max-width: 70ch; }
+.verdicts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.verdict { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 14px 16px; display: grid; gap: 6px; align-content: start; }
+.verdict .tag { display: inline-flex; align-items: center; gap: 6px; font-size: var(--step--1); font-weight: 600; }
+.verdict .tag::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+.verdict .big { font-family: var(--font-display); font-size: var(--step-2); font-weight: 700; font-variant-numeric: tabular-nums; }
+.verdict p { font-size: var(--step--1); color: var(--muted); line-height: 1.6; }
+.ok { color: var(--good); }
+.mid { color: var(--warn); }
+.no { color: var(--bad); }
+
+/* 表 */
+.table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); }
+table { width: 100%; border-collapse: collapse; font-size: var(--step--1); line-height: 1.55; }
+th, td { text-align: left; vertical-align: top; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+tr:last-child td { border-bottom: none; }
+th { font-weight: 600; color: var(--muted); background: var(--bg); white-space: nowrap; }
+td.num, th.num { text-align: right; white-space: nowrap; }
+tr.hl td { background: var(--accent-soft); }
+.pill { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 0.75rem; font-weight: 600; white-space: nowrap; border: 1px solid currentColor; }
+
+/* 图 */
+figure { margin: 0; display: grid; gap: 10px; }
+figcaption { font-size: var(--step--1); color: var(--muted); }
+.chart-wrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 14px 12px 8px; }
+.chart-wrap svg { display: block; min-width: 560px; width: 100%; height: auto; }
+svg text { font-family: var(--font-body); }
+.c-axis { stroke: var(--line); stroke-width: 1; }
+.c-tick { fill: var(--muted); font-size: 12px; font-family: var(--font-mono); }
+.c-label { fill: var(--ink); font-size: 13px; }
+.c-val { fill: var(--ink); font-size: 12.5px; font-family: var(--font-mono); font-weight: 500; }
+.c-npu { fill: var(--s-conv); }
+.c-npu-last { fill: var(--accent); }
+.c-cpu { fill: var(--cpu); }
+.c-cpuline { stroke: var(--cpu); stroke-width: 1.5; stroke-dasharray: 4 4; }
+.c-cpunote { fill: var(--cpu); font-size: 12px; }
+
+/* 一步的时间构成 */
+.stack { display: flex; height: 34px; border-radius: 4px; overflow: hidden; border: 1px solid var(--line); }
+.stack span { display: block; height: 100%; }
+.legend { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 8px 20px; font-size: var(--step--1); }
+.legend div { display: grid; grid-template-columns: 12px 1fr auto; gap: 8px; align-items: baseline; }
+.legend i { width: 12px; height: 12px; border-radius: 2px; display: inline-block; transform: translateY(1px); }
+.legend b { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-weight: 500; }
+
+/* 列表 */
+ul, ol { margin: 0; padding-left: 1.3em; display: grid; gap: 8px; max-width: 72ch; }
+li::marker { color: var(--muted); }
+.two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+.two > div { display: grid; gap: 10px; align-content: start; }
+.kv { display: grid; grid-template-columns: max-content 1fr; gap: 6px 14px; font-size: var(--step--1); }
+.kv dt { font-family: var(--font-mono); color: var(--accent); }
+.kv dd { margin: 0; color: var(--ink); }
+.note { font-size: var(--step--1); color: var(--muted); max-width: 72ch; }
+footer { border-top: 1px solid var(--line); padding-top: 20px; display: grid; gap: 10px; font-size: var(--step--1); color: var(--muted); }
+footer dl { display: grid; grid-template-columns: max-content 1fr; gap: 4px 14px; margin: 0; }
+footer dt { font-weight: 600; color: var(--ink); }
+footer dd { margin: 0; }
+
+@media (max-width: 720px) {
+  .verdicts, .two { grid-template-columns: 1fr; }
+  .page { gap: 36px; padding-block: 28px 48px; }
+  h1 { font-size: 1.65rem; }
+}
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto; } }
+</style>
+
+<div class="page">
+
+<header>
+  <div class="eyebrow">Calculet NPU CalVX 黑客松 · 路线 B · 赛方公开工具链</div>
+  <h1>sd15-npu 阶段汇报</h1>
+  <p class="muted">在 Calculet NPU 上运行 Stable Diffusion 1.5，由 ComfyUI 原生工作流发起。</p>
+  <div class="meta">
+    <span>2026-11-14</span>
+    <span>npu3 真卡（/dev/calculet0，PCI 0000:07:00.0）</span>
+    <span>仓库 github.com/liyingxxxxx/calculate-hackson · main <span class="mono">1ca5f4b</span></span>
+  </div>
+</header>
+
+<section aria-labelledby="s-sum">
+  <h2 id="s-sum">结论</h2>
+  <p class="lead">两个解码器（TAESD、正式 VAE）都已在真卡上跑通、比同机 CPU 快，并接进了 ComfyUI 原生工作流。UNet 的全部算子也已上 NPU，并且在真卡上算对；单步从第一版的 12.35 秒优化到 2.67 秒，但仍比同机 CPU（1.41 秒）慢约 1.9 倍，也还没接进 ComfyUI 的采样器。</p>
+  <div class="verdicts">
+    <div class="verdict">
+      <span class="tag ok">解码器 · 已完成</span>
+      <span class="big">0.98 s</span>
+      <p>正式 VAE 解码一张 512×512，比 CPU 快 1.75 倍；ComfyUI 节点出图与自带 VAEDecode 一致（55.6 dB）。</p>
+    </div>
+    <div class="verdict">
+      <span class="tag mid">UNet · 算对了，还慢</span>
+      <span class="big">2.67 s / 步</span>
+      <p>CFG 两路一次调用；对参照约 50 dB、两遍逐字节一致。同机 CPU 1.41 s / 步。</p>
+    </div>
+    <div class="verdict">
+      <span class="tag no">全流程 · 未完成</span>
+      <span class="big">CLIP + 采样</span>
+      <p>工作流里 CLIP 和 20 步采样还在 CPU 上；UNet 接 KSampler、CLIP 上 NPU 是下一步。</p>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="s-mod">
+  <h2 id="s-mod">各模块现状</h2>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>模块</th><th>在哪算</th><th>正确性（真卡）</th><th class="num">NPU（真机实测）</th><th class="num">同机 CPU（实测）</th><th>ComfyUI</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>TAESD 解码器<br><span class="muted">快速预览版 VAE</span></td>
+          <td>NPU，1 个程序</td>
+          <td>对 bf16 参照 52.7–65.8 dB（4 组 latent）</td>
+          <td class="num">0.113 s</td>
+          <td class="num">0.185 s</td>
+          <td><span class="pill ok">已接</span><br><span class="muted">节点 0.12 s</span></td>
+        </tr>
+        <tr>
+          <td>正式 VAE 解码器</td>
+          <td>NPU，3 段程序</td>
+          <td>58.3 dB；出图与 ComfyUI 自带 VAEDecode 比 55.6 dB，最大差 5/255</td>
+          <td class="num">0.98 s</td>
+          <td class="num">1.71 s</td>
+          <td><span class="pill ok">已接</span><br><span class="muted">节点 0.99 s</span></td>
+        </tr>
+        <tr class="hl">
+          <td>UNet 一步<br><span class="muted">有提示词 / 空提示词两路</span></td>
+          <td>NPU，6 段程序</td>
+          <td>对 bf16 参照 49.7 / 50.0 dB，对 diffusers fp32 48.9 / 47.7 dB；两遍逐字节一致</td>
+          <td class="num">2.67 s</td>
+          <td class="num">1.41 s</td>
+          <td><span class="pill no">未接</span></td>
+        </tr>
+        <tr>
+          <td>CLIP 文本编码</td>
+          <td>CPU</td>
+          <td class="muted">未开始</td>
+          <td class="num muted">—</td>
+          <td class="num muted">—</td>
+          <td><span class="pill mid">原生节点</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note">现在能演示的完整流程：ComfyUI 原生工作流，提示词到出图。CLIP 和 20 步 UNet 在 CPU 上（约 49 秒），VAE 解码在 NPU 上（0.99 秒）。</p>
+</section>
+
+<section aria-labelledby="s-unet">
+  <h2 id="s-unet">UNet：从 12.35 秒到 2.67 秒</h2>
+  <p>做法是先求算对，再在真卡上逐个算子计时，每轮只改当时最大的那一项。每一轮都在真卡上对过参照、两遍结果逐字节一致之后才提交。</p>
+  <figure>
+    <div class="chart-wrap">
+      <svg viewBox="0 0 720 286" role="img" aria-labelledby="chart-title">
+        <title id="chart-title">UNet 每步耗时：第一版 12.35 秒，优化一 8.19，优化二 5.16，优化三 4.18，优化四 3.12，优化五 2.67；同机 CPU 1.41 秒</title>
+        <!-- 刻度：x = 150 + 40 × 秒 -->
+        <g class="c-axis">
+          <line x1="150" y1="10" x2="150" y2="248"/>
+          <line x1="230" y1="10" x2="230" y2="248" opacity="0.5"/>
+          <line x1="310" y1="10" x2="310" y2="248" opacity="0.5"/>
+          <line x1="390" y1="10" x2="390" y2="248" opacity="0.5"/>
+          <line x1="470" y1="10" x2="470" y2="248" opacity="0.5"/>
+          <line x1="550" y1="10" x2="550" y2="248" opacity="0.5"/>
+          <line x1="630" y1="10" x2="630" y2="248" opacity="0.5"/>
+          <line x1="150" y1="248" x2="670" y2="248"/>
+        </g>
+        <g class="c-tick" text-anchor="middle">
+          <text x="150" y="266">0</text>
+          <text x="230" y="266">2</text>
+          <text x="310" y="266">4</text>
+          <text x="390" y="266">6</text>
+          <text x="470" y="266">8</text>
+          <text x="550" y="266">10</text>
+          <text x="630" y="266">12 s</text>
+        </g>
+        <g class="c-label" text-anchor="end">
+          <text x="140" y="31">第一版</text>
+          <text x="140" y="65">① 注意力</text>
+          <text x="140" y="99">② 宽通道卷积</text>
+          <text x="140" y="133">③ 稠密 token</text>
+          <text x="140" y="167">④ 128 行 q</text>
+          <text x="140" y="201">⑤ 矩阵乘</text>
+          <text x="140" y="235">同机 CPU</text>
+        </g>
+        <rect class="c-npu" x="150" y="17" width="494" height="20" rx="2"/>
+        <rect class="c-npu" x="150" y="51" width="327.6" height="20" rx="2"/>
+        <rect class="c-npu" x="150" y="85" width="206.4" height="20" rx="2"/>
+        <rect class="c-npu" x="150" y="119" width="167.2" height="20" rx="2"/>
+        <rect class="c-npu" x="150" y="153" width="124.8" height="20" rx="2"/>
+        <rect class="c-npu-last" x="150" y="187" width="106.8" height="20" rx="2"/>
+        <rect class="c-cpu" x="150" y="221" width="56.4" height="20" rx="2"/>
+        <line class="c-cpuline" x1="206.4" y1="10" x2="206.4" y2="248"/>
+        <g class="c-val">
+          <text x="650" y="31">12.35 s</text>
+          <text x="483.6" y="65">8.19 s</text>
+          <text x="362.4" y="99">5.16 s</text>
+          <text x="323.2" y="133">4.18 s</text>
+          <text x="280.8" y="167">3.12 s</text>
+          <text x="262.8" y="201">2.67 s</text>
+          <text x="212.4" y="235">1.41 s</text>
+        </g>
+      </svg>
+    </div>
+    <figcaption>每步 = 一次 UNet 前向、CFG 两路。NPU 是真卡上各段 dort 调用的整次墙钟之和（含每次部署权重）；CPU 是同机 diffusers fp32、两路一批、16 线程的实测中位数。虚线是 CPU 的水平。</figcaption>
+  </figure>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>版本</th><th>改了什么</th><th>为什么改它</th><th class="num">一步</th><th class="num">段数</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>第一版</td><td>生成器从 diffusers 的模块结构自动出全部算子特化和各段程序，按每核代码上限自动切段</td><td>先求算对</td><td class="num">12.35 s</td><td class="num">20</td></tr>
+        <tr><td>①</td><td>自写注意力 <code>flash_attn!</code>：一块 key / value 给 64 行 query 共用</td><td>calBLAS 原版注意力在 64² 一次 625 ms，占了一半时间</td><td class="num">8.19 s</td><td class="num">18</td></tr>
+        <tr><td>②</td><td>输入超过 1024 通道的卷积改成矩阵乘（3×3 拆成 9 个抽头接着累加）</td><td>这些卷积只能走慢路，0.1–0.2 TFLOPS，合计约 3.6 s</td><td class="num">5.16 s</td><td class="num">10</td></tr>
+        <tr><td>③</td><td>自注意力先去掉图的边框像素再算；缩放系数提前乘进 q 的权重</td><td>带边框时 64² 多算约 34% 的分数，还要掩码</td><td class="num">4.18 s</td><td class="num">10</td></tr>
+        <tr><td>④</td><td>自注意力一次处理 128 行 query</td><td>实测时间主要花在每块 key / value 的搬运上</td><td class="num">3.12 s</td><td class="num">5</td></tr>
+        <tr class="hl"><td>⑤</td><td>自写矩阵乘 <code>gemm_rows!</code>：一块权重读一次给 4 块数据用，数值与原版逐位相同</td><td>calBLAS 矩阵乘每 16 行重读一遍权重，1.0–1.5 TFLOPS；新版 2.4–4 TFLOPS</td><td class="num">2.67 s</td><td class="num">6</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note">每一版和参照比都在 49.6–50.1 dB 之间，优化没有损失精度。CPU 上的模拟（同一份设备程序在 numpy 里重放）对参照 52.8–53.7 dB。</p>
+</section>
+
+<section aria-labelledby="s-now">
+  <h2 id="s-now">现在一步 2.67 秒花在哪</h2>
+  <figure>
+    <div class="stack" role="img" aria-label="注意力 1.04 秒，卷积 0.50 秒，矩阵乘 0.30 秒，其他算子 0.28 秒，部署权重 0.50 秒，主机读写 0.05 秒">
+      <span style="width:39.0%;background:var(--s-attn)"></span>
+      <span style="width:18.5%;background:var(--s-conv)"></span>
+      <span style="width:11.3%;background:var(--s-gemm)"></span>
+      <span style="width:10.6%;background:var(--s-misc)"></span>
+      <span style="width:18.7%;background:var(--s-deploy)"></span>
+      <span style="width:1.9%;background:var(--s-host)"></span>
+    </div>
+    <div class="legend">
+      <div><i style="background:var(--s-attn)"></i><span>注意力（64² 自注意力占 0.84）</span><b>1.04 s</b></div>
+      <div><i style="background:var(--s-conv)"></i><span>卷积（64² / 32² 快路）</span><b>0.50 s</b></div>
+      <div><i style="background:var(--s-gemm)"></i><span>矩阵乘 <code>gemm_rows!</code></span><b>0.30 s</b></div>
+      <div><i style="background:var(--s-misc)"></i><span>GEGLU、LayerNorm、GroupNorm 等</span><b>0.28 s</b></div>
+      <div><i style="background:var(--s-deploy)"></i><span>每次调用重新部署 1.62 GB 权重</span><b>0.50 s</b></div>
+      <div><i style="background:var(--s-host)"></i><span>段间数据经主机转手</span><b>0.05 s</b></div>
+    </div>
+    <figcaption>算子部分来自真卡逐算子计时（每个算子单独一个程序在卡上连调 4 遍，扣掉固定开销），合计 2.12 s；部署来自 <code>dort --deploy-only</code> 实测。部署这 0.5 秒是 dort 0.4.1 没有常驻会话造成的，靠优化算子去不掉。</figcaption>
+  </figure>
+</section>
+
+<section aria-labelledby="s-dec">
+  <h2 id="s-dec">解码器</h2>
+  <div class="two">
+    <div>
+      <h3>TAESD</h3>
+      <p>整个解码器一个设备程序。整次墙钟中位数 0.113 秒（两次上卡共 15 遍），比同机 CPU 快约 1.6 倍。四组 latent 对 bf16 参照 52.7–65.8 dB。从 GitHub 重新克隆、从零重建后上卡，出图和第一次逐字节相同。</p>
+    </div>
+    <div>
+      <h3>正式 VAE</h3>
+      <p>第一版 6 段程序算对了但要 5.18 秒，比 CPU 慢。按真卡逐算子计时做了三件事：卷积加列块快路、GroupNorm 改成直接在 NHWC 上算（去掉排布转换）、并成 3 段。降到 0.98 秒，比 CPU 快约 1.75 倍，精度不变（58.3 dB）。ComfyUI 节点从 5.89 秒降到 0.99 秒。</p>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="s-tools">
+  <h2 id="s-tools">自己写的算子与工具</h2>
+  <div class="two">
+    <div>
+      <h3>NPU 算子</h3>
+      <dl class="kv">
+        <dt>flash_attn!</dt><dd>注意力，一块 K / V 给 64 或 128 行 q 共用</dd>
+        <dt>gemm_rows!</dt><dd>矩阵乘，一块权重给 4 块数据共用</dd>
+        <dt>gn_stats! / gn_apply!</dt><dd>NHWC 上直接算的 GroupNorm（+ SiLU）</dd>
+        <dt>ln_nhwc!</dt><dd>LayerNorm</dd>
+        <dt>geglu!</dt><dd>GEGLU 门控</dd>
+        <dt>timestep_embed!</dt><dd>时间步嵌入，支持小数时间步</dd>
+        <dt>bias_fold!</dt><dd>时间步投影折进 22 个 ResNet 的卷积 bias</dd>
+        <dt>res_add! / copy_win!</dt><dd>残差加、跳连拼接，只写图的内部</dd>
+        <dt>pack_int! / unpack_int!</dt><dd>带边框的图与稠密 token 互转</dd>
+        <dt>conv2d! 列块快路</dt><dd>大图卷积不再掉到慢路</dd>
+      </dl>
+      <p class="note">每个都有独立的 CPU 参照和模拟器检查；注意力单独上卡与 numpy 对过，其余由整条模型在真卡上对参照验证。</p>
+    </div>
+    <div>
+      <h3>工程工具</h3>
+      <dl class="kv">
+        <dt>unet_gen.py</dt><dd>从 diffusers 结构生成算子特化与算子序列，按实测代码量自动切段；偏移只算一份，设备与主机共用</dd>
+        <dt>prof.py</dt><dd>真卡上逐个算子计时，找瓶颈用</dd>
+        <dt>cvxsim.py</dt><dd>读编译产物在 numpy 里重放，查对齐、越界、屏障、漏清零</dd>
+        <dt>ref/</dt><dd>按 torch 语义另写的独立参照（bf16 口径与 diffusers fp32）</dd>
+        <dt>board_check.py</dt><dd>上板一条命令；缺省拒绝上板，卡不满足条件就停</dd>
+        <dt>verify_all.sh</dt><dd>不上板能做的 14 项自检，提交前必跑</dd>
+        <dt>sd15_npu 节点</dt><dd>ComfyUI 自定义节点：TAESD、正式 VAE 解码，后端可选 npu / npu-sim / cpu</dd>
+      </dl>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="s-tc">
+  <h2 id="s-tc">摸清的工具链限制</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>现象（docc / dort 0.4.1）</th><th>影响</th><th>怎么处理</th></tr></thead>
+      <tbody>
+        <tr><td>每颗核的代码不能超过约 1 MB（RISC-V 跳转范围）</td><td>大模型一个程序放不下</td><td>切成多段程序，生成器按实测代码量自动切（UNet 6 段、VAE 3 段）</td></tr>
+        <tr><td>从「每行一个数」的向量按行切一段再做广播运算：编译通过，真卡上算错</td><td>注意力第一版输出全错，模拟器查不出</td><td>用单算子上卡二分定位，改成整块运算；之后新算子都先单独上卡对 numpy</td></tr>
+        <tr><td>32² × 640 通道的 1×1 卷积，片上缓冲放不下</td><td>编不出来</td><td>改走矩阵乘</td></tr>
+        <tr><td>f32 的向量除法不收；运行时的条件分支里不能有矩阵累加</td><td>限制算子写法</td><td>除法放到 bf16 里做；循环保持展开</td></tr>
+        <tr><td>dort 没有常驻会话，每次调用都重新部署权重</td><td>UNet 每步多 0.5 秒</td><td>CFG 两路放在同一次调用里共用一次部署；待组委会确认有没有常驻的办法</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section aria-labelledby="s-eng">
+  <h2 id="s-eng">工程纪律与可复现</h2>
+  <ul>
+    <li>只用赛方公开工具链（rustc 1.98.1-calculet、docc 0.4.1、dort 0.4.1），由环境自检脚本守着；不用机器上另装的老版本，不引用未公开的资料。</li>
+    <li>每次改动的流程：CPU 模拟对独立参照，然后上真卡（结果须两遍逐字节一致），再跑 14 项自检，最后提交并推送。</li>
+    <li>真机实测、CPU 实测、模拟、估算分开标注；落回 CPU 的计算会计数并打日志，不静默。</li>
+    <li>每轮的原始结果（真卡指标、逐算子计时、每段耗时、CPU 对照）都存在仓库 <code>test/results/npu3-20261114/</code>，性能全表在 <code>test/PERF.md</code>，逐项进度在 <code>PROGRESS.md</code>，设计与关键事实在 <code>docs/DESIGN.md</code>，交接文档在 <code>docs/HANDOFF.md</code>。</li>
+    <li>UNet 各轮提交：<span class="mono">d45b90e</span> 第一版、<span class="mono">9260b1e</span> 注意力、<span class="mono">733ce4c</span> 宽通道卷积、<span class="mono">6f8517b</span> 稠密 token、<span class="mono">c92cfbc</span> 128 行 q、<span class="mono">1ca5f4b</span> 矩阵乘。</li>
+  </ul>
+</section>
+
+<section aria-labelledby="s-todo">
+  <h2 id="s-todo">还没做的</h2>
+  <ul>
+    <li>UNet 还没接进 ComfyUI 的采样器；工作流里 UNet 仍在 CPU 上。</li>
+    <li>NPU 的 UNet 现在比同机 CPU 慢约 1.9 倍（2.67 秒对 1.41 秒）。</li>
+    <li>CLIP 文本编码还在 CPU 上；去噪循环还没放进设备。</li>
+    <li>只有 512×512 一个尺寸。</li>
+    <li>UNet 只在一组输入（时间步 500）上对过参照；部分新算子还没有单独的测试项。</li>
+  </ul>
+</section>
+
+<section aria-labelledby="s-next">
+  <h2 id="s-next">下一步（按优先级）</h2>
+  <ol>
+    <li>把 NPU 的 UNet 接进 ComfyUI 的 KSampler，跑通 UNet 和 VAE 都在 NPU 上的完整出图。按现在的速度估算，20 步约 54 秒，CPU 约 49 秒（估算）。</li>
+    <li>继续提速，目标每步低于 CPU 的 1.41 秒：64² 自注意力（0.84 秒，0.41 TFLOPS）和 64² / 32² 的卷积（0.50 秒）。</li>
+    <li>向组委会确认 dort 有没有常驻会话或跳过部署的办法；有的话每步能省 0.5 秒。</li>
+    <li>CLIP 上 NPU；加更多分辨率档位。</li>
+  </ol>
+</section>
+
+<footer>
+  <span>数字的口径</span>
+  <dl>
+    <dt>真机实测</dt><dd>npu3 真卡上 <code>dort calbin run</code> 的整次墙钟，含部署、读写；正确性对独立参照（PSNR / 信噪比）</dd>
+    <dt>CPU 实测</dt><dd>同一台机器（AMD Ryzen 9 9955HX），diffusers fp32，torch 16 线程；不是 NPU 的数</dd>
+    <dt>模拟</dt><dd>同一份设备程序在 CPU 上用 numpy 重放，只查接线，不代表 NPU 的速度或贡献</dd>
+    <dt>估算</dt><dd>文中明确标注的推算值</dd>
+  </dl>
+</footer>
+
+</div>

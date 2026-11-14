@@ -103,7 +103,7 @@ $PY -I ref/test_board_kit.py             # 没卡时：拿 dort 的测试替身�
 | `ref/` | CPU 参照：环境脚本、算子清单、TAESD 独立参照、单 kernel 测试台、模拟器自测 |
 | `comfy/` | ComfyUI：钉版本安装、拉起脚本、自定义节点 `sd15_npu`、工作流 JSON、无界面跑工作流 |
 | `tools/` | `bootstrap.sh`（新机器从零）、`verify_all.sh`（全部自检）、`env.sh` / `check_env.sh`（隔离环境）、`calbin.sh`、`taesd.py` |
-| `docs/` | `DESIGN.md`（设计与关键事实）、`HANDOFF.md`（交接文档）、`赛题原文.md`、`inventory/`（SD1.5 算子清单，脚本生成） |
+| `docs/` | `DESIGN.md`（设计与关键事实）、`HANDOFF.md`（交接文档）、`赛题原文.md`、`inventory/`（SD1.5 算子清单，脚本生成）、`report/`（阶段汇报：PPT、网页版总结与生成 PPT 的脚本） |
 | `test/` | 简单示例 `run_example.sh`、真卡性能 `PERF.md`、真卡上跑出来的结果（`results/npu3-20261114/`：图、指标、dort 日志、perf.json） |
 
 ## NPU / CPU 分工
