@@ -91,6 +91,34 @@ docc 每核的代码放不下整个解码器，所以分段：每段一次 `dort
 注意力那一段 0.10 s（`attn_wide!` 67 ms，0.51 TFLOPS），其余是清零、上采样与读写。
 接下来能抠的：GroupNorm 统计那一遍（512² 只有约 3.5–6.5 GB/s）、`attn_wide!`、把注意力那一段也并进去。
 
+## 1c. SD1.5 UNet 一次前向（CFG 两路，20 段程序，第一版）
+
+2026-11-14 在同一块卡上跑（`tools/unet.py board --t 500 --runs 2`，结果在 `results/npu3-20261114/unet/`）。
+输入：latent 是标准正态（种子 0），t = 500；两路的上下文是本仓 SD1.5 的 CLIP 对「a photo of an astronaut riding a horse on mars」和空串编出来的。
+
+| 项 | 值 |
+| --- | --- |
+| 正确性 | 2 遍逐字节一致；对 bf16 口径的 torch 参照：有提示词 余弦 0.999995、49.8 dB，空提示词 50.1 dB；对 diffusers fp32 49.4 / 48.0 dB |
+| 一步（CFG 两路）整次墙钟 | **12.35 s**（20 段各自 `dort calbin run` 的墙钟之和，2 遍的中位） |
+| 只部署（20 段合计） | 0.56 s（参数块合计 1.62 GiB，约 3 GB/s） |
+| 推理（估算） | 约 11.8 s（整次 − 只部署） |
+| 对照：同机 CPU | diffusers fp32 一次前向约 1 s（`ref/unet_ref.py` 里量的，CPU 实测，不是 NPU 的数）⇒ CFG 两路约 2 s。**这一版 NPU 比 CPU 慢约 6 倍** |
+
+时间花在哪（逐 kernel 计时，真机实测：每个 kernel 单独一个程序在卡上连调 4 遍；各 kernel 一次的时间 × 一步里调的次数，合计 11.6 s，和整次对得上）：
+
+| kernel | 一步调几次 | 一次 | 一步合计 | 折合 |
+| --- | --- | --- | --- | --- |
+| 64² 自注意力（calblas `attention!`，4736 token、8 头 × 64 维） | 10 | 625 ms | **6.25 s** | 0.07 TFLOPS |
+| 32² 自注意力 | 10 | 58 ms | 0.58 s | 0.10 TFLOPS |
+| 16² 前馈 1×1 卷积 1280 → 5120 | 20 | 21 ms | 0.41 s | 0.16 TFLOPS |
+| 16² 3×3 卷积 1280 → 1280（带残差） | 10 | 37 ms | 0.37 s | 0.21 TFLOPS |
+| 其余（卷积为主） | | | 约 4 s | 输入 ≥ 1280 通道的卷积走原路，0.1–0.2 TFLOPS |
+| 按种类 | | | 注意力 7.19 s、卷积 4.03 s、linear 0.14 s、geglu 0.10 s、LayerNorm 0.06 s、GroupNorm 0.07 s | |
+
+注意力慢在读 K / V 的次数：kernel 每 16 行 q 把每块 128 个 key 的 K、V 各从 DDR 读一遍。先用 `transpose2d!` 把 K 转好再算（`k = transposed`）也是 627 ms
+（`prof_attention_k_transposed.json`），说明慢的不是读的方式。下一步换成「一块 K / V 给多块 q 用」的写法（PROGRESS U6）。
+每段的时间、部署与参数块大小在 `results/npu3-20261114/unet/breakdown.json`。
+
 ## 2. 单 kernel（7 个 kernel、20 个用例，各调一次 dort）
 
 每次调用都要建进程、configure、部署、读写，所以小 kernel 的墙钟基本就是一次调用的固定开销；大的卷积主要花在搬数据上。
@@ -134,5 +162,5 @@ UNet 20 步 × 2 路（CFG）× 803 GFLOPs ≈ 32 TFLOPs，全在 CPU 上，这�
 ## 还没量的
 
 - 卡上每个 kernel 的耗时：dort 0.4.1 的 `calbin run` 只给整次的结果，上面只有整次墙钟和据此的估算。
-- CLIP、UNet 的真卡性能：还没写成设备程序（B2、B3）。
+- CLIP 的真卡性能：还没写成设备程序（B2）。UNet 只测了一组输入（t = 500），还没接进 ComfyUI 的采样循环。
 - 正式 VAE 只测了一组 latent（image）。

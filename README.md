@@ -19,7 +19,8 @@ docc 出 calbin，dort 在真机上跑；ComfyUI 侧是自定义节点，不改 
 - **B1b：正式 VAE 解码器**（AutoencoderKL，2.5 TFLOPs / 张）切成几段设备程序（docc 每核的代码放不下整个解码器，DESIGN F22 / D15；优化后 3 段，D17）。
   **真机实测**（2026-11-14，npu3）：3 遍逐字节一致，对 bf16 参照 58.3 dB、对 fp32 56.9 dB；ComfyUI 节点 **SD15 NPU · VAE Decode** 出的图和 ComfyUI 自带的 VAEDecode 相比 55.6 dB。
   按真卡逐 kernel 计时优化之后 **0.98 s**（第一版 5.18 s），**比同机 CPU fp32（1.71 s）快约 1.75 倍**：卷积的列块快路、NHWC 原生 GroupNorm、并成 3 段（`test/PERF.md`）。
-- 没做的：CLIP、UNet 的设备程序（B2–B4）。逐项细账见 [PROGRESS.md](PROGRESS.md)。
+- **UNet 一次前向（CFG 两路）第一版也在真卡上跑通**（20 段程序，对 bf16 参照 49.8 / 50.1 dB，2 遍逐字节一致），但一步 12.35 s、比 CPU 慢，正在优化（大头是 64² 的自注意力，`test/PERF.md` 1c）；还没接进 ComfyUI 的采样循环。
+- 没做的：CLIP 的设备程序（B2）、UNet 接进 ComfyUI 与去噪循环（B3 U7、B4）。逐项细账见 [PROGRESS.md](PROGRESS.md)。
 
 关键事实：公开工具链的 dort 每次调用都重新部署权重、没有常驻会话，所以去噪循环要放进设备程序里（[docs/DESIGN.md](docs/DESIGN.md) 的 F1 / D2）。
 
@@ -93,7 +94,8 @@ $PY -I ref/test_board_kit.py             # 没卡时：拿 dort 的测试替身�
 | `crates/kernels` | 本仓的 kernel 模板：`conv2d!`（抄 calblas，加 relu / res_relu）、`tanh_scale!`、`timestep_embed!`（新写） |
 | `crates/taesd` | TAESD 解码器的整步程序：`layout.rs`（偏移表，设备与主机共用）、`kernels.rs`（18 个特化）、`step.rs`（入口） |
 | `crates/vae` | 正式 VAE 解码器的 3 段程序（feature `s1`…`s3`）：`layout.rs`（段表与偏移）、`kernels.rs`（特化）、`step.rs`（3 个入口） |
-| `crates/prof` | 真卡上逐个 kernel 计时的小程序（`tools/prof.py gen` 生成） |
+| `crates/unet` | SD1.5 UNet 的 20 段程序（feature `s1`…`s20`）：`kernels.rs`、`step.rs`、`plan.json` 都由 `tools/unet_gen.py` 生成（偏移只算一份），`kernel_sizes.json` 是各 kernel 的代码量 |
+| `crates/prof`、`crates/uprof` | 真卡上逐个 kernel 计时的小程序（`tools/prof.py [--model unet] gen` 生成） |
 | `crates/ktest` | 单 kernel 测试台：每个 feature 一个只调一个 kernel 的整步程序 |
 | `crates/layout-dump` | 主机程序：把 layout.rs 打成 JSON 给 Python 用（偏移只有 Rust 这一份） |
 | `crates/smoke` | 冒烟整步程序：验「经 cargo 源依赖 calblas ⇒ CalVX ⇒ calbin」这条路 |
@@ -113,7 +115,8 @@ TAESD 解码、正式 VAE 解码与 7 个单 kernel 有**真机实测**（2026-1
 | TAESD 解码：tanh 软夹、35 个 3×3 卷积（含 ReLU、残差）、3 次最近邻上采样、清零 | **NPU**（设备程序 `crates/taesd`） | 141 GFLOPs / 张（512²）；`npu` 后端真机实测过（ComfyUI 工作流里也是）。`npu-sim` 是在 CPU 上重放，不算 NPU 贡献 |
 | latent 打包（× 0.18215、转 bf16、NHWC 带边框）、输出解包（取 RGB、夹到 [0, 1]） | CPU | 输入输出的打包解包（DESIGN D6） |
 | 正式 VAE 解码：37 个卷积、30 个 GroupNorm + SiLU、注意力、3 次上采样 | **NPU**（设备程序 `crates/vae`，3 段） | 2514.5 GFLOPs / 张，真机 0.98 s；`npu` 后端真机实测过。段之间的特征图（4.5 MB）经主机转手（只搬，不在 CPU 上算） |
-| CLIP 文本编码、UNet 去噪（KSampler） | CPU（ComfyUI 原生节点） | B2–B4 要搬到 NPU；现在工作流里它们都在 CPU 上 |
+| UNet 一次前向（CFG 两路）：卷积、GroupNorm、LayerNorm、自 / 交叉注意力、GEGLU、时间步那一路、上下采样、跳连拼接 | **NPU**（设备程序 `crates/unet`，20 段） | `tools/unet.py board` 真机实测过（一步 12.35 s，还慢）；段间的张量经主机按偏移转手（只搬，不在 CPU 上算）；**还没接进 ComfyUI** |
+| CLIP 文本编码、ComfyUI 工作流里的 UNet 去噪（KSampler） | CPU（ComfyUI 原生节点） | B2、B3 U7、B4 要搬到 NPU；现在工作流里它们都在 CPU 上 |
 | `cpu` 后端的 TAESD / 正式 VAE 解码 | CPU（diffusers fp32） | 兜底；每用一次计数并打进日志，不静默 |
 
 ## 时间（分开记）

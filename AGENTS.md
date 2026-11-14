@@ -56,4 +56,5 @@ bash ref/setup_ref_env.sh                # CPU 参照环境与权重
 - `npu/SYNTAX.md`（kernel 语法）；calBLAS 的 `README.md`（覆盖表与「绕开 docc 现状的写法」）、`AGENTS.md`（整步程序、两核、数值的坑）；
   `src/kernels/vision.rs`（卷积、GroupNorm、上采样、空间注意力）；`examples/yolo26/deploy/DEPLOY.md`（卷积网络整套做法与 docc 的规矩）。
 - 两核：`cores = 2` 的 kernel 调完必须 `sync_cores()`；不能原地（同一块既输入又输出）；单核 kernel 看它分不分行（见上一节）。
-- 本仓的现成例子：`crates/taesd`（整步程序的写法）、`crates/vae`（大模型切段：段表、按段的偏移、一个 feature 一段）、`crates/kernels`（模板的写法）、`crates/ktest`（单 kernel 测试）。
+- 本仓的现成例子：`crates/taesd`（整步程序的写法）、`crates/vae`（大模型切段：段表、按段的偏移、一个 feature 一段）、`crates/unet`（**生成器出的**分段程序：`tools/unet_gen.py` 量 kernel 代码、自动切段、偏移只算一份写进 step.rs 与 plan.json，别手改）、`crates/kernels`（模板的写法）、`crates/ktest`（单 kernel 测试）。
+- 性能先量再改：`tools/prof.py [--model unet]` 在真卡上逐个 kernel 计时（每个 kernel 单独一个程序连调几遍），按「一次的时间 × 调的次数」找大头。

@@ -15,7 +15,8 @@ exp / rsqrt / tanh 在板上是近似指令，这里用精确值 ⇒ 不是板�
 
 kernel 的语义按「模板 + 宏参数」认：从程序 crate 的 `kernels.rs` 里用正则读 `模板!(pub 名字: 键 = 值, …)`，
 值里的常量（LAT、C……）取自 layout-dump 的 `consts`。认得的模板：conv2d、upsample2、tanh_scale、timestep_embed、fill16k；
-正式 VAE 用到的 group_norm、nhwc_to_nchw、nchw_to_nhwc、transpose2d、linear（多行、`w = hf`）、attn_wide、gn_stats、gn_apply。
+正式 VAE 用到的 group_norm、nhwc_to_nchw、nchw_to_nhwc、transpose2d、linear（多行、`w = hf`）、attn_wide、gn_stats、gn_apply；
+UNet 用到的 attention（calblas，`mask = keys`）、ln_nhwc、geglu、copy_win、unary（silu）、bias_fold。
 """
 from __future__ import annotations
 
@@ -64,8 +65,21 @@ def parse_cvx(text: str) -> Program:
     chiplets = int(re.search(r"chiplets = (\d+)", text).group(1))
     cores = int(re.search(r"invocation\{[^}]*cores = (\d+)", text).group(1))
     cur = None
+    # 参数多、行长的 `.func 名字(` 会被打印器折成多行（一行一个参数，最后一行是 `)`）：先拼回一行
+    lines, buf = [], None
     for line in text.splitlines():
         s = line.strip()
+        if buf is not None:
+            buf += (" " if not buf.endswith("(") else "") + s
+            if s.startswith(")"):
+                lines.append(buf.replace(" )", ")").replace(",)", ")"))
+                buf = None
+            continue
+        if re.match(r"\.func \w+\($", s):
+            buf = s
+            continue
+        lines.append(s)
+    for s in lines:
         if m := re.match(r"mem\.decl\s+(\w+), (\w+), (\d+)", s):
             decls[m.group(1)] = (m.group(2), int(m.group(3)))
         elif m := re.match(r"\.func (\w+)\((.*)\)$", s):
@@ -127,6 +141,8 @@ def parse_specs(kernels_rs: str, consts: dict) -> dict:
                 kv[k] = eval(v, {"__builtins__": {}}, ns)  # noqa: S307（本仓自己的源码，不是外部输入）
             except NameError:
                 kv[k] = v  # 标识符形式的选项（linear! 的 `w = hf`、`bias = f32`）：原样留字符串
+        if kind == "unary":  # 第一个位置参数是函数名（`unary!(pub 名字: silu, n = …)`）
+            kv["f"] = body.split(",")[0].strip()
         specs[name] = (kind, kv)
     return specs
 
@@ -511,6 +527,101 @@ class Sim:
             s_ = np.exp(s_ - s_.max(1, keepdims=True))
             out[:, h] = (s_ / s_.sum(1, keepdims=True)) @ vv[:, h]
         self._u16(o, t * hh * d)[:] = bf16.bits(out.ravel())
+
+    # ── UNet 用到的模板（calblas 的 attention / unary，本仓的 ln_nhwc / geglu / copy_win / bias_fold）──
+    def _k_attention(self, job, c, args):
+        """calblas attention!（`mask = keys`）：q / o [T, H·D]、k / v [TK, H·D]、mask bf16 [TK]（0 或 −MAX）；分数 · 1/√scale + 掩码 ⇒ softmax ⇒ · v。
+        板上分数与 p 舍 bf16、exp 是近似指令；这里在 f32 里算（模拟器不是金标准，见模块文档）。"""
+        if c.get("mask") != "keys" or "kv_heads" in c or c.get("k", "transposed") != "transposed":
+            raise SimError(f"{job.kernel}：模拟器只写了 attention! 的 mask = keys（不分组；K 可以是 `k = transposed`）")
+        t, hh, d = c["rows"], c["heads"], c["head"]
+        tk, sc = c.get("keys", t), c.get("scale", d)
+        q, k, v, mk, o = args
+        job.reads.append(self._check(job.kernel, "q", q, t * hh * d * 2))
+        job.reads.append(self._check(job.kernel, "k", k, tk * hh * d * 2))
+        job.reads.append(self._check(job.kernel, "v", v, tk * hh * d * 2))
+        job.reads.append(self._check(job.kernel, "mask", mk, tk * 2))
+        job.writes.append(self._check(job.kernel, "o", o, t * hh * d * 2))
+        qv = bf16.from_bits(self._u16(q, t * hh * d)).reshape(t, hh, d)
+        kv = bf16.from_bits(self._u16(k, tk * hh * d))
+        # `k = transposed`：K 是 [头, d, key]（transpose2d! 转好的）
+        kv = kv.reshape(hh, d, tk).transpose(2, 0, 1) if c.get("k") == "transposed" else kv.reshape(tk, hh, d)
+        vv = bf16.from_bits(self._u16(v, tk * hh * d)).reshape(tk, hh, d)
+        m = bf16.from_bits(self._u16(mk, tk)).astype(np.float32)
+        out = np.empty((t, hh, d), np.float32)
+        for h in range(hh):
+            s_ = (qv[:, h] @ kv[:, h].T) * np.float32(1 / np.sqrt(sc)) + m[None, :]
+            s_ = np.exp(s_ - s_.max(1, keepdims=True))
+            out[:, h] = (s_ / s_.sum(1, keepdims=True)) @ vv[:, h]
+        self._u16(o, t * hh * d)[:] = bf16.bits(out.ravel())
+
+    def _k_ln_nhwc(self, job, c, args):
+        """本仓 ln_nhwc!：每个内部像素沿前 C 个通道归一（两遍法）⇒ · w + b ⇒ 舍 bf16，只写内部。"""
+        h, w, ch, p, eps = c["h"], c["w"], c["c"], c["p"], np.float64(c["eps"])
+        x, wp, bp, y = args
+        job.reads.append(self._check(job.kernel, "x", x, (h + 2 * B) * (w + 2 * B) * p * 2))
+        job.reads.append(self._check(job.kernel, "w", wp, ch * 4))
+        job.reads.append(self._check(job.kernel, "b", bp, ch * 4))
+        wo = w + 2 * B
+        yr = self._check(job.kernel, "y", y, (h + 2 * B) * wo * p * 2)
+        job.writes.append((yr[0], yr[1] + (B * wo + B) * p * 2, yr[1] + (((B + h - 1) * wo + B + w - 1) * p + ch) * 2))
+        v = bf16.from_bits(self._img(x, h, w, p)[B:B + h, B:B + w, :ch]).astype(np.float64)
+        mean = v.mean(2, keepdims=True)
+        var = ((v - mean) ** 2).mean(2, keepdims=True)
+        f = ((v - mean) / np.sqrt(var + eps)).astype(np.float32)
+        self._img(y, h, w, p)[B:B + h, B:B + w, :ch] = bf16.bits(f * self._f32(wp, ch) + self._f32(bp, ch))
+
+    def _k_geglu(self, job, c, args):
+        """本仓 geglu!：y = 舍(h · gelu(g))，gelu 是精确版 x · Φ(x)（Φ 用 Abramowitz–Stegun 7.1.26，同 kernel）。"""
+        n = c["n"]
+        hp, gp, y = args
+        job.reads.append(self._check(job.kernel, "h", hp, n * 2))
+        job.reads.append(self._check(job.kernel, "g", gp, n * 2))
+        job.writes.append(self._check(job.kernel, "y", y, n * 2))
+        hv = bf16.from_bits(self._u16(hp, n)).astype(np.float64)
+        gv = bf16.from_bits(self._u16(gp, n)).astype(np.float64)
+        z = np.abs(gv) / np.sqrt(2)
+        t_ = 1 / (1 + 0.3275911 * z)
+        erf = 1 - (((((1.061405429 * t_ - 1.453152027) * t_) + 1.421413741) * t_ - 0.284496736) * t_ + 0.254829592) * t_ * np.exp(-z * z)
+        phi = 0.5 * (1 + np.sign(gv) * erf)
+        self._u16(y, n)[:] = bf16.bits((hv * gv * phi).astype(np.float32))
+
+    def _win(self, p: Ptr, h: int, w: int, ch: int, pp: int):
+        """指针 p 指到通道窗口首通道、行距 pp 的 [h + 4][w + 4][pp] 图：内部 [h][w][ch] 的视图（可写，写回内存）与它覆盖的字节数。"""
+        wo = w + 2 * B
+        n = ((B + h - 1) * wo + B + w - 1) * pp + ch
+        flat = self._u16(p, n)
+        return np.lib.stride_tricks.as_strided(flat[(B * wo + B) * pp:], (h, w, ch), (wo * pp * 2, pp * 2, 2)), n * 2
+
+    def _k_copy_win(self, job, c, args):
+        """本仓 copy_win!：x 的内部（窗口的 c 个通道）⇒ y 的通道窗口（指针已偏到窗口首通道），只写内部。"""
+        h, w, ch, pi, po = c["h"], c["w"], c["c"], c["pin"], c["pout"]
+        x, y = args
+        wo = w + 2 * B
+        src, nx = self._win(x, h, w, ch, pi)
+        dst, ny = self._win(y, h, w, ch, po)
+        job.reads.append(self._check(job.kernel, "x", x, nx))
+        yr = self._check(job.kernel, "y", y, ny)
+        job.writes.append((yr[0], yr[1] + (B * wo + B) * po * 2, yr[2]))
+        dst[:] = src
+
+    def _k_unary(self, job, c, args):
+        if c.get("f") != "silu":
+            raise SimError(f"{job.kernel}：模拟器只写了 unary! 的 silu")
+        n = c["n"]
+        x, y = args
+        job.reads.append(self._check(job.kernel, "x", x, n * 2))
+        job.writes.append(self._check(job.kernel, "y", y, n * 2))
+        v = bf16.from_bits(self._u16(x, n))
+        self._u16(y, n)[:] = bf16.bits((v / (1 + np.exp(-v))).astype(np.float32))
+
+    def _k_bias_fold(self, job, c, args):
+        n = c["n"]
+        a, bp, y = args
+        job.reads.append(self._check(job.kernel, "a", a, n * 4))
+        job.reads.append(self._check(job.kernel, "b", bp, n * 2))
+        job.writes.append(self._check(job.kernel, "y", y, n * 4))
+        self._f32(y, n)[:] = self._f32(a, n) + bf16.from_bits(self._u16(bp, n))
 
     def report(self) -> str:
         by = {}

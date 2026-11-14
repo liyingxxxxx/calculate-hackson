@@ -1,0 +1,37 @@
+[package]
+name = "unet"
+version = "0.1.0"
+edition = "2024"
+publish = false
+description = "SD1.5 UNet 的分段整步程序（B3）：一次去噪步的 UNet 前向、CFG 两路（tools/unet_gen.py 生成入口）"
+
+[lib]
+crate-type = ["rlib"]
+
+[dependencies]
+npu.workspace = true
+calblas.workspace = true
+sd-kernels = { path = "../kernels" }
+
+# s* 是各段程序，z* 是量代码大小的探针（tools/unet_gen.py probe）；一次只开一个
+[features]
+s1 = []
+s2 = []
+s3 = []
+s4 = []
+s5 = []
+s6 = []
+s7 = []
+s8 = []
+s9 = []
+s10 = []
+s11 = []
+s12 = []
+s13 = []
+s14 = []
+s15 = []
+s16 = []
+s17 = []
+s18 = []
+s19 = []
+s20 = []

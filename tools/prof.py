@@ -1,4 +1,5 @@
 """真卡上逐个 kernel 计时（性能优化用）：每个 kernel 一个小程序（`crates/prof`，feature = kernel 名），在卡上把它就地连调 REPS 遍。
+`--model unet`：量 UNet 的 kernel（`crates/unet/src/kernels.rs` ⇒ `crates/uprof`、`out/uprof`）；缺省是正式 VAE 的。
 
 为什么这么量：dort 0.4.1 的 `calbin run` 只给整次的墙钟（含部署、读写），没有卡上每个 kernel 的时间。这里让输入、输出都只有 64 B，
 权重与特征图全在卡上（@w 是全零的参数块，@act 不清零：只量时间、不看数），于是
@@ -6,7 +7,7 @@
 base 是一个只有屏障、不调 kernel 的程序，扣掉一次调用的固定开销（建进程、configure、写读 64 B、起程序）。
 kernel 的形状直接从 `crates/vae/src/kernels.rs` 读（同模拟器：`cvxsim.parse_specs`），测的就是分段程序里跑的那一份。
 
-用法（先 source env.sh；Python 用参照环境 `$CALCULET_HOME/venv/bin/python -I tools/prof.py …`）：
+用法（先 source env.sh；Python 用参照环境 `$CALCULET_HOME/venv/bin/python -I tools/prof.py [--model unet] …`）：
   gen                         生成 crates/prof（Cargo.toml 的 feature 与 src/lib.rs）
   build [k1,k2,…]             每个 kernel 出一个 calbin（tools/calbin.sh，参数块全零：只验结构、只用来计时）⇒ out/prof/<k>/cal
   board [k1,k2,…] [--runs N]  🚨 上板：要 SD15NPU_ALLOW_BOARD=1。先只读查卡 ⇒ 每个程序只部署一次 + 整次 N 遍 ⇒ out/prof/board.json 与一张表
@@ -30,8 +31,17 @@ from sd15npu import cvxsim  # noqa: E402
 REPS = 4
 B = 2
 MARGIN_PX = 128
+MODELS = {"vae": ("vae", "prof", "正式 VAE"), "unet": ("unet", "uprof", "UNet")}  # 模型 ⇒ (kernel 所在的 crate, 计时 crate, 名字)
 KRS = ROOT / "crates" / "vae" / "src" / "kernels.rs"
 OUT = ROOT / "out" / "prof"
+CRATE, SRC, LABEL = "prof", "vae", "正式 VAE"
+
+
+def use_model(m: str):
+    global KRS, OUT, CRATE, SRC, LABEL
+    SRC, CRATE, LABEL = MODELS[m]
+    KRS = ROOT / "crates" / SRC / "src" / "kernels.rs"
+    OUT = ROOT / "out" / CRATE
 
 
 def a4k(n: int) -> int:
@@ -83,8 +93,33 @@ def plan(kind: str, c: dict) -> dict:
         return {"act": {"x": n, "y": n}, "w": {}, "args": ["act:x", "act:y"], "flop": None, "bytes": 2 * n}
     if kind == "linear":
         r, k, n = c["rows"], c["k"], c["n"]
-        return {"act": {"x": r * k * 2, "y": r * n * 2}, "w": {"w": n * k * 2, "b": n * 4}, "args": ["act:x", "w:w", "w:b", "act:y"],
-                "flop": 2 * r * k * n, "bytes": None}
+        bias = c.get("bias") == "f32"
+        return {"act": {"x": r * k * 2, "y": r * n * 2}, "w": {"w": n * k * 2, **({"b": n * 4} if bias else {})},
+                "args": ["act:x", "w:w"] + (["w:b"] if bias else []) + ["act:y"], "flop": 2 * r * k * n, "bytes": None}
+    if kind == "attention":
+        t, hh, d = c["rows"], c["heads"], c["head"]
+        tk = c.get("keys", t)
+        return {"act": {"q": t * hh * d * 2, "k": tk * hh * d * 2, "v": tk * hh * d * 2, "o": t * hh * d * 2}, "w": {"m": tk * 2},
+                "args": ["act:q", "act:k", "act:v", "w:m", "act:o"], "flop": 4 * t * tk * d * hh, "bytes": None}
+    if kind == "ln_nhwc":
+        h, ch, p = c["h"], c["c"], c["p"]
+        return {"act": {"x": img(h, p), "y": img(h, p)}, "w": {"w": ch * 4, "b": ch * 4}, "args": ["act:x", "w:w", "w:b", "act:y"],
+                "flop": None, "bytes": 2 * h * c["w"] * ch * 2}
+    if kind == "geglu":
+        n = c["n"]
+        return {"act": {"h": n * 2, "g": n * 2, "y": n * 2}, "w": {}, "args": ["act:h", "act:g", "act:y"], "flop": None, "bytes": 3 * n * 2}
+    if kind == "copy_win":
+        h, ch = c["h"], c["c"]
+        return {"act": {"x": img(h, c["pin"]), "y": img(h, c["pout"])}, "w": {}, "args": ["act:x", "act:y"], "flop": None,
+                "bytes": 2 * h * c["w"] * ch * 2}
+    if kind == "timestep_embed":
+        return {"act": {"t": 64, "y": 4096}, "w": {"fp": 4096}, "args": ["act:t", "w:fp", "act:y"], "flop": None, "bytes": None}
+    if kind == "unary":
+        n = c["n"]
+        return {"act": {"x": n * 2, "y": n * 2}, "w": {}, "args": ["act:x", "act:y"], "flop": None, "bytes": 2 * n * 2}
+    if kind == "bias_fold":
+        n = c["n"]
+        return {"act": {"b": n * 2, "y": n * 4}, "w": {"a": n * 4}, "args": ["w:a", "act:b", "act:y"], "flop": None, "bytes": 10 * n}
     if kind == "attn_wide":
         n = c["rows"] * c["heads"] * c["head"] * 2
         return {"act": {"q": n, "k": n, "v": n, "o": n}, "w": {}, "args": ["act:q", "act:k", "act:v", "act:o"],
@@ -107,18 +142,18 @@ def offsets(blocks: dict) -> tuple[dict, int]:
 def cmd_gen(a):
     sp = specs()
     feats = ["base"] + list(sp)
-    d = ROOT / "crates" / "prof"
+    d = ROOT / "crates" / CRATE
     (d / "src").mkdir(parents=True, exist_ok=True)
     (d / "Cargo.toml").write_text(
-        '[package]\nname = "prof"\nversion = "0.1.0"\nedition = "2024"\npublish = false\n'
-        'description = "真卡上逐个 kernel 计时：每个 feature 一个程序，把正式 VAE 的一个 kernel 就地连调几遍（tools/prof.py 生成，不要手改）"\n\n'
+        f'[package]\nname = "{CRATE}"\nversion = "0.1.0"\nedition = "2024"\npublish = false\n'
+        f'description = "真卡上逐个 kernel 计时：每个 feature 一个程序，把{LABEL}的一个 kernel 就地连调几遍（tools/prof.py 生成，不要手改）"\n\n'
         '[lib]\ncrate-type = ["rlib"]\n\n# 一次只开一个（src/lib.rs 里有断言守着）\n[features]\n'
         + "".join(f"{f} = []\n" for f in feats)
         + '\n[dependencies]\nnpu.workspace = true\ncalblas.workspace = true\nsd-kernels = { path = "../kernels" }\n')
-    lines = ["//! 真卡上逐个 kernel 计时（**`tools/prof.py gen` 生成，不要手改**）：每个 feature 一个程序，把正式 VAE 的一个 kernel 就地连调",
+    lines = [f"//! 真卡上逐个 kernel 计时（**`tools/prof.py{' --model unet' if CRATE == 'uprof' else ''} gen` 生成，不要手改**）：每个 feature 一个程序，把{LABEL}的一个 kernel 就地连调",
              f"//! {REPS} 遍，输入输出各 64 B、权重全零、@act 不清零（只量时间、不看数）。`base` 只有屏障，扣固定开销用。",
              "#![no_std]", "#![allow(dead_code)]", "",
-             '#[path = "../../vae/src/kernels.rs"]', "mod vae_kernels;", "",
+             f'#[path = "../../{SRC}/src/kernels.rs"]', "mod vae_kernels;", "",
              "const N_FEATURES: usize = " + " + ".join(f'cfg!(feature = "{f}") as usize' for f in feats) + ";",
              'const _: () = assert!(N_FEATURES <= 1, "prof：一次只开一个 feature");', ""]
     lines += ['#[cfg(feature = "base")]', "mod prog {", "    use npu::prelude::*;",
@@ -141,7 +176,7 @@ def cmd_gen(a):
             lines += [f"        crate::vae_kernels::{name}({call_args});", "        sync_cores();"]
         lines += ["    }", "}", ""]
     (d / "src" / "lib.rs").write_text("\n".join(lines))
-    print(f"crates/prof：{len(feats)} 个程序（base + {len(sp)} 个 kernel）")
+    print(f"crates/{CRATE}：{len(feats)} 个程序（base + {len(sp)} 个 kernel）")
 
 
 def _names(arg: str | None) -> list[str]:
@@ -150,14 +185,22 @@ def _names(arg: str | None) -> list[str]:
 
 
 def cmd_build(a):
+    from concurrent.futures import ThreadPoolExecutor
+
     bad = []
     t0 = time.time()
-    for k in _names(a.kernels):
-        r = subprocess.run([str(ROOT / "tools/calbin.sh"), "prof", "--features", k, "-o", str(OUT / k)], cwd=ROOT, capture_output=True, text=True)
-        ok = r.returncode == 0 and "⛔ 拒收 0 条" in (OUT / k / "doctor.txt").read_text()
-        print(f"{'✓' if ok else '✗'} {k}：{(r.stdout.strip().splitlines() or [''])[-3:][0] if ok else (r.stdout + r.stderr)[-300:]}", flush=True)
-        if not ok:
-            bad.append(k)
+
+    def one(k):
+        # 每个 feature 自己的 target 目录（calbin.sh），并行编互不干扰
+        r = subprocess.run([str(ROOT / "tools/calbin.sh"), CRATE, "--features", k, "-o", str(OUT / k)], cwd=ROOT, capture_output=True, text=True)
+        doc = OUT / k / "doctor.txt"
+        return k, r, r.returncode == 0 and doc.exists() and "⛔ 拒收 0 条" in doc.read_text()
+
+    with ThreadPoolExecutor(a.jobs) as ex:
+        for k, r, ok in ex.map(one, _names(a.kernels)):
+            print(f"{'✓' if ok else '✗'} {k}：{(r.stdout.strip().splitlines() or [''])[-3:][0] if ok else (r.stdout + r.stderr)[-300:]}", flush=True)
+            if not ok:
+                bad.append(k)
     print(f"{'全部出来了' if not bad else '出不来：' + '、'.join(bad)}（{time.time() - t0:.0f} s）")
     sys.exit(1 if bad else 0)
 
@@ -178,8 +221,8 @@ def cmd_board(a):
         cal = OUT / k / "cal"
         if not cal.exists():
             sys.exit(f"没有 {cal}（先 tools/prof.py build）")
-        dep = dort.deploy_only(cal, "prof", log=log)["deploy_wall_s"]
-        walls = [dort.run_raw(cal, "prof", bytes(64), "in_x", "out_y", log=log)[1]["dort_wall_s"] for _ in range(a.runs)]
+        dep = dort.deploy_only(cal, CRATE, log=log)["deploy_wall_s"]
+        walls = [dort.run_raw(cal, CRATE, bytes(64), "in_x", "out_y", log=log)[1]["dort_wall_s"] for _ in range(a.runs)]
         res[k] = {"deploy_only_s": dep, "run_walls_s": walls, "net_s": statistics.median(walls) - dep}
         print(f"  {k}：只部署 {dep * 1e3:.1f} ms，整次 {', '.join(f'{w * 1e3:.1f}' for w in walls)} ms", flush=True)
     base = res["base"]["net_s"]
@@ -206,16 +249,19 @@ def cmd_board(a):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--model", choices=list(MODELS), default="vae")
     sub = ap.add_subparsers(dest="cmd", required=True)
     sub.add_parser("gen").set_defaults(f=cmd_gen)
     p = sub.add_parser("build")
     p.add_argument("kernels", nargs="?")
+    p.add_argument("-j", "--jobs", type=int, default=6, help="同时编几个")
     p.set_defaults(f=cmd_build)
     p = sub.add_parser("board")
     p.add_argument("kernels", nargs="?")
     p.add_argument("--runs", type=int, default=3)
     p.set_defaults(f=cmd_board)
     a = ap.parse_args()
+    use_model(a.model)
     a.f(a)
 
 

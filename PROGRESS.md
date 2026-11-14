@@ -8,7 +8,7 @@
 | A1 | 新写的算子（quick_gelu、erf-GELU / GEGLU、时间步嵌入、NHWC GroupNorm+SiLU……），各配独立参照与边界测试 | 进行中：时间步嵌入**真机实测**过了（2026-11-14 npu3；cos_approx 分辨率 1/128，DESIGN F19）；quick_gelu、NHWC GroupNorm 未写 |
 | B1 | VAE 解码上 NPU（先 TAESD，再正式 VAE），接进 ComfyUI | ✅ 2026-11-14：TAESD 与正式 VAE 都**真机跑通**、ComfyUI 解码走 npu；正式 VAE 优化后 0.98 s，比 CPU 快约 1.75 倍（V7） |
 | B2 | CLIP 文本编码器上 NPU | |
-| B3 | UNet 一次前向对 diffusers | 进行中：U0 可行性探针、U1 独立参照做完（2026-11-14） |
+| B3 | UNet 一次前向对 diffusers | 进行中：**第一版真机跑通**（2026-11-14 npu3：20 段、CFG 两路一次调用，对 bf16 参照 49.8 / 50.1 dB，2 遍逐字节一致）；但一步 12.35 s，比 CPU 慢，正在优化；还没接进 ComfyUI |
 | B4 | ComfyUI 原生工作流 512² 出图（去噪循环在设备上，见 DESIGN D2） | |
 | B5 | 性能、多尺寸档位、一键拉起、文档 | |
 
@@ -164,11 +164,24 @@ UNet（B3）几乎全要用 ⇒ 先在一个「只跑一次前向、好对 diffu
       新写 `ln_nhwc!`（NHWC LayerNorm）与 `geglu!`（GEGLU 的后半），都还没上卡。
 - [x] 2026-11-14 U1 独立参照 `ref/unet_ref.py`：diffusers fp32 与按 D18 的切法逐 kernel 舍 bf16 的参照（时间步投影折进 conv1 的 bias、投影当 1×1 卷积、GEGLU 拆开）。
       `python -I ref/unet_ref.py`：bf16 参照对 fp32 —— t = 999、500.5 时余弦 ≥ 0.999996、信噪比 51–52 dB，t = 1 时 41 dB（有提示词、空提示词一样）；CPU 上一次 fp32 约 1 s。
-- [ ] U2 时间步那一路：`timestep_embed!`（已有）⇒ `linear!` 320（补到 384）→ 1280 ⇒ SiLU ⇒ 1280 → 1280 ⇒ SiLU ⇒ 全部 ResNet 的 time_emb_proj 一次算完 ⇒ 加进各 conv1 的 f32 bias（小 kernel）。
-- [ ] U3 偏移表与切段：先按探针的代码量估每段 < 1 MB（约 6–8 段），跳连的图按通道窗口放、跨段经主机转手。
-- [ ] U4 整步程序 `crates/unet` + 打包 `host/sd15npu/unet.py` + 模拟器认新模板（`ln_nhwc`、`geglu`、`attention`）⇒ 模拟对两份参照。
-- [ ] U5 上板（负责人点头）：先单 kernel（ln_nhwc、geglu、带边框 token 的注意力），再整个 UNet，量每步时间。
-- [ ] U6 ComfyUI：自定义 MODEL（`apply_model` 调 NPU 的 UNet，每步一次、CFG 两路同一次调用）⇒ 原生 KSampler 照用；再看要不要把去噪循环放进设备（D2 / D19）。
+- [x] 2026-11-14 U2 时间步那一路（第一段里算一次、两路共用）：`timestep_embed!` ⇒ `linear!`（16 行，320 补到 384）→ 1280 ⇒ `unary!(silu)` ⇒ 1280 → 1280 ⇒ SiLU
+      ⇒ 22 个 ResNet 的 time_emb_proj 竖着拼成一个 1280 → 20224 的 `linear!` ⇒ 新写 `bias_fold!` 加进各 conv1 的 f32 bias，传给后面各段。
+- [x] 2026-11-14 U3 生成器 `tools/unet_gen.py`（DESIGN D20）：从 diffusers 的模块结构走一遍，出 128 个 kernel 特化（`crates/unet/src/kernels.rs`）、
+      一路 536 个算子；`probe` 把 kernel 分批编、从 ELF 符号表按 kernel 量代码（合计约 4.9 MB，`crates/unet/kernel_sizes.json`）；
+      `program` 按「每核 ≤ 900 KB」贪心切成 **20 段**，偏移只算一份，同时写进 `crates/unet/src/step.rs`（字面量）与 `crates/unet/plan.json`（主机读）。
+      docc 排不下 32² × 640 通道输入的 1×1 卷积（DESIGN F26）⇒ 那几个投影走 calblas `linear!`（整张带边框的图当稠密行）、proj_out 的输入补到 768 通道。
+- [x] 2026-11-14 U4 主机打包 `host/sd15npu/unet.py`（权重按头补零、组掩码、注意力掩码、时间步常数表；段间只按偏移搬字节）+ 模拟器认新模板
+      （`attention`、`ln_nhwc`、`geglu`、`copy_win`、`unary`、`bias_fold`；`.func` 的参数表折行也认）+ `tools/unet.py`。
+      `tools/unet.py sim --t 500`：20 段接线检查全过；对 bf16 参照 有提示词 53.7 dB、空提示词 53.2 dB，对 fp32 51.3 / 50.6 dB（`out/unet-sim/`）。
+- [x] 2026-11-14 U5 上板（**真机实测**，`tools/unet.py board --t 500 --runs 2`）：20 段 doctor 拒收 0 条、每核 .text 208–871 KB；
+      **第一次就算对**：2 遍逐字节一致，对 bf16 参照 有提示词 余弦 0.999995、49.8 dB，空提示词 50.1 dB；对 diffusers fp32 49.4 / 48.0 dB。
+      但**一步（CFG 两路）12.35 s**（只部署合计 0.56 s，1.62 GiB），比同机 CPU fp32（两路约 2 s）慢约 6 倍。
+      逐 kernel 计时（`tools/prof.py --model unet`，DESIGN F27）：64² 的自注意力一次 625 ms（0.07 TFLOPS）× 10 次 = 6.25 s，是大头；
+      输入 ≥ 1280 通道的卷积在 8²–32² 走原路、0.1–0.2 TFLOPS，合计约 4 s。结果在 `test/results/npu3-20261114/unet/`。
+      单 kernel 测试（ktest）没另做：整条对参照已经过了，新 kernel 的 ktest 项待补。
+- [ ] U6 性能（按逐 kernel 计时的大头来）：① 注意力换成「一块 K / V 给多块 q 用」的写法（把 K 先转好再算试过，627 ms，没用）；
+      ② 小图上宽通道的卷积（1×1 的改走 `linear!`，3×3 的想办法走快路）；③ 量完再看段数（`linear!` 的代码只有 2–3 KB）。
+- [ ] U7 ComfyUI：自定义 MODEL（把 `diffusion_model` 换成调 NPU 的，每步一次、CFG 两路同一次调用）⇒ 原生 KSampler 照用；再看要不要把去噪循环放进设备（D2 / D19）。
 
 之后：B2 CLIP（LLM 式模板现成：`layer_norm!`、`linear!`、`attention!(mask = full)`；新写 quick_gelu）⇒ B3 UNet 一次前向 ⇒ B4 去噪循环进设备（D2）⇒ B5 性能与多尺寸。
 
