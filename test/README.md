@@ -27,6 +27,8 @@ bash test/run_example.sh
 板锁文件按现场规矩给：npu3 上用的是 `/opt/data/locks/board-0000:07:00.0.lock`；不设 `SD15NPU_BOARD_LOCK` 时，用的是 dort 的缺省 `/opt/data/locks/board.lock`。
 挂死就停、找管卡的人：⛔ kill 在飞的 dort、⛔ 复位、⛔ 刷写。
 
+**复现过**：2026-11-14 在 npu3 上，从 GitHub 匿名克隆到一个全新目录，`bootstrap.sh` 之后跑 `run_example.sh --comfy`，真卡上出的三张图（TAESD、ComfyUI 的 NPU 解码与 CPU 对照）和下面存的逐字节相同。
+
 完整的上板检查是一条命令：`SD15NPU_ALLOW_BOARD=1 SD15NPU_BOARD_LOCK=… $CALCULET_HOME/venv/bin/python -I tools/board_check.py --comfy`。
 它依次重出 calbin、静态核对、只读查卡、跑 7 个单 kernel、跑整个解码器、跑 ComfyUI，任何一步不对就停。下面的结果就是它跑出来的。
 
@@ -51,6 +53,15 @@ bash test/run_example.sh
 | ![](results/npu3-20261114/taesd_image/source.png) | ![](results/npu3-20261114/taesd_image/board.png) | ![](results/npu3-20261114/taesd_image/ref_fp32.png) |
 
 TAESD 本身是有损的：同一张图编码再解码，fp32 也只有 27.3 dB。NPU 和 fp32 参照之间的差（55.9 dB）比这小得多。
+
+另外三组 latent 也在真卡上跑了（`tools/taesd.py board --latent <K> --runs 3`，结果在 `results/npu3-20261114/taesd_latents/`）：
+
+| latent | 逐字节一致（3 遍） | 对 bf16 参照 余弦 / PSNR | 对 fp32 PSNR | numpy 模拟（对照） | 整次墙钟 |
+| --- | --- | --- | --- | --- | --- |
+| image（上表） | ✓ | 0.9999987 / 60.3 dB | 55.9 dB | 60.6 / 55.9 dB | 0.111 s |
+| randn:0（标准正态） | ✓ | 0.9999903 / 52.7 dB | 46.8 dB | 52.7 / 46.8 dB | 0.114 s |
+| zeros | ✓ | 0.9999993 / 65.8 dB | 59.4 dB | 67.3 / 59.4 dB | 0.112 s |
+| big（±8，过 tanh 饱和段） | ✓ | 0.9999943 / 56.1 dB | 50.7 dB | 56.2 / 50.7 dB | 0.114 s |
 
 ### 2. ComfyUI 原生工作流（解码在 NPU 上）
 
@@ -93,7 +104,8 @@ test/
     ├── dort_device.txt       只读查卡时 dort device 的原样输出
     ├── kernels.json          7 个单 kernel、20 个用例的比对结果
     ├── taesd_image/          TAESD 解码：metrics.json、dort.log、board.png（真卡出的图）、source.png、ref_fp32.png
+    ├── taesd_latents/        另外三组 latent（randn-0、zeros、big）：各自的 metrics.json、board.png；run.log
     └── comfyui/              ComfyUI 工作流：run.json、node_log.txt、taesd_npu.png（真卡）、vae_cpu_ref.png（CPU 对照）
 ```
 
-`board_summary.json`、`kernels.json` 里的 `tolerance` 是当时（首轮）的门槛。之后按这次实测收紧了，现在的门槛在 `ref/ktest.py` 和 `tools/taesd.py` 的 `BOARD_TOL`。
+`board_summary.json`、`kernels.json`、`taesd_image/metrics.json` 里的 `tolerance` 是当时（首轮）的门槛。之后按这次实测收紧了，现在的门槛在 `ref/ktest.py` 和 `tools/taesd.py` 的 `BOARD_TOL`。

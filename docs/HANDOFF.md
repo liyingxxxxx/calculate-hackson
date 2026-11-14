@@ -20,6 +20,7 @@ SD15NPU_ALLOW_BOARD=1 SD15NPU_BOARD_LOCK=<板锁文件> bash test/run_example.sh
 SD15NPU_ALLOW_BOARD=1 SD15NPU_BOARD_LOCK=<板锁文件> $CALCULET_HOME/venv/bin/python -I tools/board_check.py --comfy
 ```
 
+这几步 2026-11-14 在 npu3 上照做过：从 GitHub 克隆到全新目录，从零重建约 6 分钟、自检全过；真卡上出的图和仓里存的逐字节相同。
 跑出来的结果应该和 [`test/README.md`](../test/README.md) 里 2026-11-14 npu3 那一份对得上：
 TAESD 3 遍逐字节一致、对 bf16 参照约 60 dB、对 fp32 约 56 dB；7 个单 kernel 全过；ComfyUI 出图，节点日志写 `backend=npu`。
 对不上就停，把 `out/board/summary-*.json` 和那一步的输出发给负责人。
@@ -34,6 +35,7 @@ TAESD 3 遍逐字节一致、对 bf16 参照约 60 dB、对 fp32 约 56 dB；7 �
 - **真机实测（2026-11-14，npu3）**：`tools/board_check.py --comfy` 6 步全过。
   - 单 kernel：7 个 kernel、20 个用例（19 个必过）全过；
   - TAESD 整个解码器：3 遍逐字节一致，对 bf16 参照 60.3 dB、对 fp32 55.9 dB，只部署 0.003 s、推理约 0.11 s；
+    另外三组 latent（randn:0、zeros、big）也在真卡上过了，最差的 randn:0 也有 52.7 dB；
   - ComfyUI 原生工作流：解码走 npu，没有落回 CPU。
   - 结果与图在 `test/results/npu3-20261114/`。
 - 编译链：赛方工具链装在隔离目录，经赛方 cargo 源依赖 calblas；整步程序 ⇒ CalVX ⇒ docc 出 calbin，doctor 拒收 0 条。
@@ -44,7 +46,7 @@ TAESD 3 遍逐字节一致、对 bf16 参照约 60 dB、对 fp32 约 56 dB；7 �
 
 ### 1.2 没做的（⛔ 不能说成做完了）
 
-- **真机实测只覆盖 TAESD 和它的 7 个单 kernel**：一块卡、一次，TAESD 的 latent 只测了 image 这一组。别的数都是 CPU 上的模拟与参照。`npu-sim` 不是 NPU，不算 NPU 贡献。
+- **真机实测只覆盖 TAESD 和它的 7 个单 kernel**：一块卡（npu3）、一天，TAESD 测了四组 latent。别的数都是 CPU 上的模拟与参照。`npu-sim` 不是 NPU，不算 NPU 贡献。
 - ComfyUI 工作流里的 CLIP、UNet（KSampler）和正式 VAE，现在是 ComfyUI 原生节点在 **CPU** 上跑；B2–B4 还没写。
 - 时间步嵌入：板上 `cos_approx` 的输出只有 1/128 的分辨率（DESIGN F19），对 UNet 有多大影响还没测。
 - 只有 512×512 一个档位。
@@ -160,14 +162,13 @@ npu3 上的实测：一次 `dort calbin run`，小 kernel 约 2 ms，TAESD 整�
 
 接着做什么：
 
-1. **卡上**（要负责人点头）：TAESD 另外三组 latent（`tools/taesd.py board --latent randn:0`、`zeros`、`big`），实测后再收 `tools/taesd.py` 的门槛。
-2. **B1b 正式 VAE**（`git checkout wip/vae-decoder`，计划在那边 PROGRESS 的「B1b」一节）。
+1. **B1b 正式 VAE**（代码在 `wip/vae-decoder` 分支，计划在 PROGRESS 的「B1b」一节）。
    - 结构：post_quant_conv ⇒ conv_in(4→512) @64² ⇒ 中间块（ResNet、单头 512 维注意力、ResNet）⇒ 4 个上采样段（通道 512 / 512 / 256 / 128）⇒ GN+SiLU ⇒ conv_out。
    - GroupNorm 先走「排布转换 + calblas `group_norm!`」（D13）；注意力走稠密 token + `attn_wide!`（D14）。
    - 剩下的步骤：V2b 单 kernel 测试与模拟器 ⇒ V3 整步程序 `crates/vae` 与打包 ⇒ V4 模拟对参照 ⇒ V5 ComfyUI 节点 ⇒ V6 上板。
-3. **B2 CLIP**：quick_gelu（x · σ(1.702x)，新写一个逐元素 kernel）、因果注意力（`attention!` 的 `mask = full`）、77 个 token 补到 128。
-4. **B3 UNet 一次前向**：时间步嵌入（已写）⇒ 线性层 + SiLU ⇒ 各 ResNet；交叉注意力（77 ⇒ 128 补齐）；GEGLU 拆两个 `linear!`。
-5. 每加一种 kernel：在 `host/sd15npu/cvxsim.py` 加一个 `_k_<模板>`，在 `crates/ktest` 加一个测试，上板先单 kernel、再整个程序。
+2. **B2 CLIP**：quick_gelu（x · σ(1.702x)，新写一个逐元素 kernel）、因果注意力（`attention!` 的 `mask = full`）、77 个 token 补到 128。
+3. **B3 UNet 一次前向**：时间步嵌入（已写）⇒ 线性层 + SiLU ⇒ 各 ResNet；交叉注意力（77 ⇒ 128 补齐）；GEGLU 拆两个 `linear!`。
+4. 每加一种 kernel：在 `host/sd15npu/cvxsim.py` 加一个 `_k_<模板>`，在 `crates/ktest` 加一个测试，上板先单 kernel、再整个程序。
 
 ## 9. 未决 / 要问组委会
 

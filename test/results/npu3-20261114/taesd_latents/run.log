@@ -1,0 +1,44 @@
++------------------------------------------------------------------------------+
+| CALC-SMI          Driver Version: 1.0.0          Devices: 1                  |
++------------------------------------------------------------------------------+
+| [0] /dev/calculet0   PCI 0000:07:00.0   ID 20f5:c001                         |
+|     State: active     Health: good (0)     Mode: irq                         |
+|     Dev  : OS up   RT up   chips: 2                                          |
+|     DRT  : commit 4e938d65 · 0x03010101（rt 3.1 / ABI 1.1）· 线协议 rev 1 ·  |
+|            floor 1 · 表 0xea                                                 |
+|            本 dortcli（线协议 rev 2）：放行（按 rev 1 说）                   |
+|     Link : 16.0 GT/s x4 (max 16.0 GT/s x4)                                   |
+|     PCIe : D0         IRQ: 101        NUMA: -1                               |
++------------------------------------------------------------------------------+
+| Processes:                                                                   |
+|   DEV       PID      PPID     UID  COMMAND           ACTIVE                  |
+|     0   1691787   1691785    1010  dort              yes                     |
++------------------------------------------------------------------------------+
+
+━━ randn:0
+wrote /home/sweet/hachson/sd15-npu/out/taesd-real/cal
+crate=taesd features=无 chiplets=1 weights=2650112 字节 params=/home/sweet/hachson/sd15-npu/out/taesd/params
+rustc 1.98.1 (48a229cea 2026-09-01)；docc 0.4.1 (unknown)
+设备遍 0.03 s；docc from-calvx 4.56 s
+  检查    ⛔ 拒收 0 条  ⚠ 警告 2 条  ⛔ 解不开的稳态流 0 份
+/home/sweet/hachson/sd15-npu/out/taesd/params/param_blk0.bin（2650112 字节）sha256 ed33d7027ee760b51cd163eab9e1cd2f1a2843e1921ac397a4ffab174d404955
+✓ TAESD 上板（真机实测）：3 次逐字节一致；对 bf16 参照余弦 0.999990、PSNR 52.7 dB，对 fp32 PSNR 46.8 dB；只部署 0.00 s，整次中位 0.11 s ⇒ 推理约 0.11 s（估算）；/home/sweet/hachson/sd15-npu/out/taesd-board/randn-0
+退出 0
+━━ zeros
+wrote /home/sweet/hachson/sd15-npu/out/taesd-real/cal
+crate=taesd features=无 chiplets=1 weights=2650112 字节 params=/home/sweet/hachson/sd15-npu/out/taesd/params
+rustc 1.98.1 (48a229cea 2026-09-01)；docc 0.4.1 (unknown)
+设备遍 0.01 s；docc from-calvx 4.65 s
+  检查    ⛔ 拒收 0 条  ⚠ 警告 2 条  ⛔ 解不开的稳态流 0 份
+/home/sweet/hachson/sd15-npu/out/taesd/params/param_blk0.bin（2650112 字节）sha256 ed33d7027ee760b51cd163eab9e1cd2f1a2843e1921ac397a4ffab174d404955
+✓ TAESD 上板（真机实测）：3 次逐字节一致；对 bf16 参照余弦 0.999999、PSNR 65.8 dB，对 fp32 PSNR 59.4 dB；只部署 0.00 s，整次中位 0.11 s ⇒ 推理约 0.11 s（估算）；/home/sweet/hachson/sd15-npu/out/taesd-board/zeros
+退出 0
+━━ big
+wrote /home/sweet/hachson/sd15-npu/out/taesd-real/cal
+crate=taesd features=无 chiplets=1 weights=2650112 字节 params=/home/sweet/hachson/sd15-npu/out/taesd/params
+rustc 1.98.1 (48a229cea 2026-09-01)；docc 0.4.1 (unknown)
+设备遍 0.01 s；docc from-calvx 4.58 s
+  检查    ⛔ 拒收 0 条  ⚠ 警告 2 条  ⛔ 解不开的稳态流 0 份
+/home/sweet/hachson/sd15-npu/out/taesd/params/param_blk0.bin（2650112 字节）sha256 ed33d7027ee760b51cd163eab9e1cd2f1a2843e1921ac397a4ffab174d404955
+✓ TAESD 上板（真机实测）：3 次逐字节一致；对 bf16 参照余弦 0.999994、PSNR 56.1 dB，对 fp32 PSNR 50.7 dB；只部署 0.00 s，整次中位 0.11 s ⇒ 推理约 0.11 s（估算）；/home/sweet/hachson/sd15-npu/out/taesd-board/big
+退出 0
